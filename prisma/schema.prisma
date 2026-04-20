@@ -4,10 +4,137 @@
 // Get a free hosted Postgres database in seconds: `npx create-db`
 
 generator client {
-  provider = "prisma-client"
-  output   = "../app/generated/prisma"
+  provider = "prisma-client-js"
 }
 
 datasource db {
   provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id               Int      @id @default(autoincrement())
+  nip              String?
+  email            String?
+  password_hash    String?
+  nama_lengkap     String?
+  pangkat_golongan String?
+  jabatan          String?
+  unit_kerja       String?
+  role             String?
+  created_at       DateTime? @db.Timestamptz()
+  updated_at       DateTime? @db.Timestamptz()
+
+  pengajuan_studi    PengajuanStudi[]
+  pesan_komunikasi   PesanKomunikasi[]
+
+  @@map("users")
+}
+
+model MasterDokumen {
+  id             Int      @id @default(autoincrement())
+  nama_dokumen   String?
+  is_mandatory   Boolean?
+  kategori_studi String?
+  created_at     DateTime? @db.Timestamptz()
+  updated_at     DateTime? @db.Timestamptz()
+
+  dokumen_pengajuan DokumenPengajuan[]
+
+  @@map("master_dokumen")
+}
+
+model PengajuanStudi {
+  id                Int      @id @default(autoincrement())
+  user_id           Int?
+  jenis_studi       String?
+  jalur             String?
+  status_pengajuan  String?
+  tanggal_pengajuan DateTime? @db.Date
+  created_at        DateTime? @db.Timestamptz()
+  updated_at        DateTime? @db.Timestamptz()
+
+  user                    User?              @relation(fields: [user_id], references: [id])
+  dokumen_pengajuan       DokumenPengajuan[]
+  sk_kementerian          SkKementerian[]
+  monitoring_khs          MonitoringKhs[]
+  pengajuan_reimbursement PengajuanReimbursement[]
+  pesan_komunikasi        PesanKomunikasi[]
+
+  @@map("pengajuan_studi")
+}
+
+model DokumenPengajuan {
+  id                 Int      @id @default(autoincrement())
+  pengajuan_id       Int?
+  master_dokumen_id  Int?
+  file_path          String?
+  status_verifikasi  String?
+  catatan_revisi     String?
+  created_at         DateTime? @db.Timestamptz()
+  updated_at         DateTime? @db.Timestamptz()
+
+  pengajuan_studi PengajuanStudi? @relation(fields: [pengajuan_id], references: [id])
+  master_dokumen  MasterDokumen?  @relation(fields: [master_dokumen_id], references: [id])
+
+  @@map("dokumen_pengajuan")
+}
+
+model SkKementerian {
+  id            Int      @id @default(autoincrement())
+  pengajuan_id  Int?
+  nomor_sk      String?
+  file_sk_path  String?
+  tanggal_terbit DateTime? @db.Date
+  status_studi  String?
+  created_at    DateTime? @db.Timestamptz()
+  updated_at    DateTime? @db.Timestamptz()
+
+  pengajuan_studi PengajuanStudi? @relation(fields: [pengajuan_id], references: [id])
+
+  @@map("sk_kementerian")
+}
+
+model MonitoringKhs {
+  id               Int      @id @default(autoincrement())
+  pengajuan_id     Int?
+  semester_ke      Int?
+  file_khs_path    String?
+  catatan_evaluasi String?
+  tanggal_unggah   DateTime? @db.Date
+  created_at       DateTime? @db.Timestamptz()
+  updated_at       DateTime? @db.Timestamptz()
+
+  pengajuan_studi PengajuanStudi? @relation(fields: [pengajuan_id], references: [id])
+
+  @@map("monitoring_khs")
+}
+
+model PengajuanReimbursement {
+  id               Int      @id @default(autoincrement())
+  pengajuan_id     Int?
+  semester_ke      Int?
+  file_bukti_bayar String?
+  nominal          Decimal?
+  status_pencairan String?
+  tanggal_pengajuan DateTime? @db.Date
+  created_at       DateTime? @db.Timestamptz()
+  updated_at       DateTime? @db.Timestamptz()
+
+  pengajuan_studi PengajuanStudi? @relation(fields: [pengajuan_id], references: [id])
+
+  @@map("pengajuan_reimbursement")
+}
+
+model PesanKomunikasi {
+  id           Int      @id @default(autoincrement())
+  pengajuan_id Int?
+  pengirim_id  Int?
+  isi_pesan    String?
+  waktu_kirim  DateTime? @db.Timestamptz()
+
+  pengajuan_studi PengajuanStudi? @relation(fields: [pengajuan_id], references: [id])
+  pengirim        User?           @relation(fields: [pengirim_id], references: [id])
+
+  @@map("pesan_komunikasi")
 }
