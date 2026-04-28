@@ -1,60 +1,105 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Get a free hosted Postgres database in seconds: `npx create-db`
-
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
+}
+
+model MasterRole {
+  id        Int     @id @default(autoincrement())
+  nama_role String?
+  users     User[]
+
+  @@map("master_role")
 }
 
 model User {
-  id               Int      @id @default(autoincrement())
-  nip              String?
-  email            String?
-  password_hash    String?
-  nama_lengkap     String?
-  pangkat_golongan String?
-  jabatan          String?
-  unit_kerja       String?
-  role             String?
-  created_at       DateTime? @db.Timestamptz()
-  updated_at       DateTime? @db.Timestamptz()
+  id           Int       @id @default(autoincrement())
+  username     String?
+  email        String?
+  password_hash String?
+  role_id      Int?
+  status_akun  String?
+  created_at   DateTime? @db.Timestamptz()
+  updated_at   DateTime? @db.Timestamptz()
 
-  pengajuan_studi    PengajuanStudi[]
-  pesan_komunikasi   PesanKomunikasi[]
+  role                 MasterRole?      @relation(fields: [role_id], references: [id])
+  master_dosen         MasterDosen?
+  pengajuan_studi      PengajuanStudi[]
+  pesan_komunikasi     PesanKomunikasi[]
 
   @@map("users")
 }
 
+model MasterDosen {
+  id               Int       @id @default(autoincrement())
+  user_id          Int?      @unique
+  nip              String?
+  nama_lengkap     String?
+  pangkat_golongan String?
+  jabatan          String?
+  unit_kerja       String?
+  created_at       DateTime? @db.Timestamptz()
+  updated_at       DateTime? @db.Timestamptz()
+
+  user User? @relation(fields: [user_id], references: [id])
+
+  @@map("master_dosen")
+}
+
+model MasterJenisStudi {
+  id         Int              @id @default(autoincrement())
+  nama_jenis String?
+  pengajuan  PengajuanStudi[]
+
+  @@map("master_jenis_studi")
+}
+
+model MasterJalurPendanaan {
+  id             Int              @id @default(autoincrement())
+  nama_pendanaan String?
+  pengajuan      PengajuanStudi[]
+
+  @@map("master_jalur_pendanaan")
+}
+
+model MasterStatusPengajuan {
+  id          Int              @id @default(autoincrement())
+  nama_status String?
+  pengajuan   PengajuanStudi[]
+
+  @@map("master_status_pengajuan")
+}
+
 model MasterDokumen {
-  id             Int      @id @default(autoincrement())
+  id             Int                @id @default(autoincrement())
   nama_dokumen   String?
   is_mandatory   Boolean?
-  kategori_studi String?
-  created_at     DateTime? @db.Timestamptz()
-  updated_at     DateTime? @db.Timestamptz()
-
-  dokumen_pengajuan DokumenPengajuan[]
+  syarat_wilayah String?
+  created_at     DateTime?          @db.Timestamptz()
+  updated_at     DateTime?          @db.Timestamptz()
+  dokumen        DokumenPengajuan[]
 
   @@map("master_dokumen")
 }
 
 model PengajuanStudi {
-  id                Int      @id @default(autoincrement())
-  user_id           Int?
-  jenis_studi       String?
-  jalur             String?
-  status_pengajuan  String?
-  tanggal_pengajuan DateTime? @db.Date
-  created_at        DateTime? @db.Timestamptz()
-  updated_at        DateTime? @db.Timestamptz()
+  id                 Int       @id @default(autoincrement())
+  user_id            Int?
+  jenis_studi_id     Int?
+  jalur_pendanaan_id Int?
+  wilayah_studi      String?
+  status_id          Int?
+  tanggal_pengajuan  DateTime? @db.Date
+  created_at         DateTime? @db.Timestamptz()
+  updated_at         DateTime? @db.Timestamptz()
 
-  user                    User?              @relation(fields: [user_id], references: [id])
+  user             User?                  @relation(fields: [user_id], references: [id])
+  jenis_studi      MasterJenisStudi?      @relation(fields: [jenis_studi_id], references: [id])
+  jalur_pendanaan  MasterJalurPendanaan?  @relation(fields: [jalur_pendanaan_id], references: [id])
+  status           MasterStatusPengajuan? @relation(fields: [status_id], references: [id])
+
   dokumen_pengajuan       DokumenPengajuan[]
   sk_kementerian          SkKementerian[]
   monitoring_khs          MonitoringKhs[]
@@ -65,14 +110,14 @@ model PengajuanStudi {
 }
 
 model DokumenPengajuan {
-  id                 Int      @id @default(autoincrement())
-  pengajuan_id       Int?
-  master_dokumen_id  Int?
-  file_path          String?
-  status_verifikasi  String?
-  catatan_revisi     String?
-  created_at         DateTime? @db.Timestamptz()
-  updated_at         DateTime? @db.Timestamptz()
+  id                Int       @id @default(autoincrement())
+  pengajuan_id      Int?
+  master_dokumen_id Int?
+  file_path         String?
+  status_verifikasi String?
+  catatan_revisi    String?
+  created_at        DateTime? @db.Timestamptz()
+  updated_at        DateTime? @db.Timestamptz()
 
   pengajuan_studi PengajuanStudi? @relation(fields: [pengajuan_id], references: [id])
   master_dokumen  MasterDokumen?  @relation(fields: [master_dokumen_id], references: [id])
@@ -81,14 +126,12 @@ model DokumenPengajuan {
 }
 
 model SkKementerian {
-  id            Int      @id @default(autoincrement())
-  pengajuan_id  Int?
-  nomor_sk      String?
-  file_sk_path  String?
+  id             Int       @id @default(autoincrement())
+  pengajuan_id   Int?
+  nomor_sk       String?
+  file_sk_path   String?
   tanggal_terbit DateTime? @db.Date
-  status_studi  String?
-  created_at    DateTime? @db.Timestamptz()
-  updated_at    DateTime? @db.Timestamptz()
+  status_studi   String?
 
   pengajuan_studi PengajuanStudi? @relation(fields: [pengajuan_id], references: [id])
 
@@ -96,14 +139,12 @@ model SkKementerian {
 }
 
 model MonitoringKhs {
-  id               Int      @id @default(autoincrement())
+  id               Int       @id @default(autoincrement())
   pengajuan_id     Int?
   semester_ke      Int?
   file_khs_path    String?
   catatan_evaluasi String?
   tanggal_unggah   DateTime? @db.Date
-  created_at       DateTime? @db.Timestamptz()
-  updated_at       DateTime? @db.Timestamptz()
 
   pengajuan_studi PengajuanStudi? @relation(fields: [pengajuan_id], references: [id])
 
@@ -111,15 +152,12 @@ model MonitoringKhs {
 }
 
 model PengajuanReimbursement {
-  id               Int      @id @default(autoincrement())
-  pengajuan_id     Int?
-  semester_ke      Int?
-  file_bukti_bayar String?
-  nominal          Decimal?
-  status_pencairan String?
-  tanggal_pengajuan DateTime? @db.Date
-  created_at       DateTime? @db.Timestamptz()
-  updated_at       DateTime? @db.Timestamptz()
+  id                Int       @id @default(autoincrement())
+  pengajuan_id      Int?
+  semester_ke       Int?
+  file_bukti_bayar  String?
+  nominal           Decimal?
+  status_pencairan  String?
 
   pengajuan_studi PengajuanStudi? @relation(fields: [pengajuan_id], references: [id])
 
@@ -127,7 +165,7 @@ model PengajuanReimbursement {
 }
 
 model PesanKomunikasi {
-  id           Int      @id @default(autoincrement())
+  id           Int       @id @default(autoincrement())
   pengajuan_id Int?
   pengirim_id  Int?
   isi_pesan    String?
