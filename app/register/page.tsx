@@ -37,7 +37,7 @@ export default function Register() {
       const data = await res.json();
 
       if (res.ok) {
-        alert("Berhasil mendaftar! Silakan tunggu konfirmasi dari Admin.");
+        alert("Berhasil mendaftar!");
         router.push("/login"); 
       } else {
         alert(data.error || "Gagal mendaftar");

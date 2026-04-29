@@ -26,7 +26,7 @@ export async function POST(req: Request) {
         username: nip, 
         email: email,
         password_hash: hashedPassword,
-        status_akun: "Pending",
+        status_akun: "Aktif",
         role: {
           connect: { id: 1 } // Menghubungkan ke Role Dosen
         },
