@@ -1,51 +1,54 @@
-import { NextResponse } from "next/server";
-import { prisma } from "@/src/lib/prisma";
-import bcrypt from "bcryptjs";
+import { NextResponse } from 'next/server';
+import { prisma } from '@/src/lib/prisma';
+import bcrypt from 'bcryptjs';
 
-export async function POST(req: Request) {
+export async function POST(request: Request) {
   try {
-    const { identifier, password } = await req.json();
+    const { email, password } = await request.json();
 
-    // 1. Cari user berdasarkan Email atau Username (NIP)
+    if (!email || !password) {
+      return NextResponse.json({ message: "Email dan password wajib diisi" }, { status: 400 });
+    }
+
+    // Ambil user beserta relasi Role dan MasterDosen
     const user = await prisma.user.findFirst({
-      where: {
-        OR: [
-          { email: identifier },
-          { username: identifier }
-        ]
-      },
+      where: { email: email },
       include: {
-        role: true 
+        role: true,
+        master_dosen: true
       }
     });
 
-    if (!user) {
-      return NextResponse.json({ error: "Pengguna tidak ditemukan!" }, { status: 404 });
+    if (!user || !user.password_hash) {
+      return NextResponse.json({ message: "Kredensial tidak valid" }, { status: 401 });
     }
 
-    // 2. Cek apakah akun sudah Aktif (disetujui Admin)
-    if (user.status_akun === "Pending") {
-      return NextResponse.json({ error: "Akun Anda belum disetujui oleh Admin." }, { status: 403 });
-    }
-
-    // 3. Verifikasi Password
-    const isPasswordValid = await bcrypt.compare(password, user.password_hash || "");
+    const isPasswordValid = await bcrypt.compare(password, user.password_hash);
     if (!isPasswordValid) {
-      return NextResponse.json({ error: "Password salah!" }, { status: 401 });
+      return NextResponse.json({ message: "Kredensial tidak valid" }, { status: 401 });
     }
 
-    // 4. Kirim respon sukses
+    const roleName = user.role?.nama_role;
+
+    if (roleName === 'dosen' && user.status_akun === 'menunggu') {
+      return NextResponse.json({ 
+        message: "Akun belum diaktifkan. Silakan hubungi Admin." 
+      }, { status: 403 });
+    }
+
     return NextResponse.json({
-      message: "Login Berhasil!",
+      message: "Login berhasil",
       user: {
         id: user.id,
-        username: user.username,
-        role: user.role?.nama_role
+        email: user.email,
+        role: roleName,
+        // Dosen ambil nama_lengkap, Admin/Master ambil username
+        nama: user.master_dosen?.nama_lengkap || user.username 
       }
     }, { status: 200 });
 
-  } catch (error: any) {
-    console.error("LOGIN_ERROR:", error);
-    return NextResponse.json({ error: "Terjadi kesalahan pada server" }, { status: 500 });
+  } catch (error) {
+    console.error("Login Error:", error);
+    return NextResponse.json({ message: "Terjadi kesalahan pada server" }, { status: 500 });
   }
 }

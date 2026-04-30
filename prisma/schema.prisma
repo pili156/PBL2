@@ -19,7 +19,7 @@ model MasterRole {
 model User {
   id           Int       @id @default(autoincrement())
   username     String?
-  email        String?
+  email        String?   @unique
   password_hash String?
   role_id      Int?
   status_akun  String?

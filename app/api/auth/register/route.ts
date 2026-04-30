@@ -1,49 +1,57 @@
-import { NextResponse } from "next/server";
-import { prisma } from "@/src/lib/prisma"; 
-import bcrypt from "bcryptjs";
+import { NextResponse } from 'next/server';
+import { prisma } from '@/src/lib/prisma';
+import bcrypt from 'bcryptjs';
 
-export async function POST(req: Request) {
+export async function POST(request: Request) {
   try {
-    const body = await req.json();
-    const { email, nama_lengkap, nip, program_studi, password } = body;
+    const { nip, email, password, nama_lengkap } = await request.json();
 
-    if (!email || !nip || !password || !nama_lengkap) {
-      return NextResponse.json({ error: "Semua kolom wajib diisi!" }, { status: 400 });
+    if (!email || !password || !nip || !nama_lengkap) {
+      return NextResponse.json({ message: "Semua kolom wajib diisi" }, { status: 400 });
     }
 
-    const existingUser = await prisma.user.findFirst({
-      where: { OR: [{ email: email }, { username: nip }] },
+    // Cek email di tabel User
+    const existingUser = await prisma.user.findFirst({ where: { email } });
+    // Cek NIP di tabel MasterDosen
+    const existingDosen = await prisma.masterDosen.findFirst({ where: { nip } });
+
+    if (existingUser || existingDosen) {
+      return NextResponse.json({ message: "Email atau NIP sudah terdaftar" }, { status: 400 });
+    }
+
+    // Cari ID untuk role 'dosen'
+    const dosenRole = await prisma.masterRole.findFirst({ 
+      where: { nama_role: 'dosen' } 
     });
 
-    if (existingUser) {
-      return NextResponse.json({ error: "Email atau NIP sudah terdaftar!" }, { status: 400 });
+    if (!dosenRole) {
+      return NextResponse.json({ message: "Role dosen belum diatur di database" }, { status: 500 });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const newUser = await prisma.user.create({
+    // Insert ke tabel User SEKALIGUS ke tabel MasterDosen
+    await prisma.user.create({
       data: {
-        username: nip, 
-        email: email,
+        email,
         password_hash: hashedPassword,
-        status_akun: "Aktif",
-        role: {
-          connect: { id: 1 } // Menghubungkan ke Role Dosen
-        },
+        role_id: dosenRole.id,
+        status_akun: 'menunggu',
         master_dosen: {
           create: {
-            nip: nip,
-            nama_lengkap: nama_lengkap,
-            unit_kerja: program_studi, 
-          },
-        },
-      },
+            nip,
+            nama_lengkap
+          }
+        }
+      }
     });
 
-    return NextResponse.json({ message: "Registrasi berhasil!" }, { status: 201 });
+    return NextResponse.json({ 
+      message: "Registrasi berhasil. Silakan tunggu persetujuan Admin." 
+    }, { status: 201 });
 
-  } catch (error: any) {
-    console.error("DETEKSI ERROR PRISMA:", error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error) {
+    console.error("Register Error:", error);
+    return NextResponse.json({ message: "Terjadi kesalahan pada server" }, { status: 500 });
   }
 }
