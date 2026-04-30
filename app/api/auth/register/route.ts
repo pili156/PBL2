@@ -4,10 +4,10 @@ import bcrypt from 'bcryptjs';
 
 export async function POST(request: Request) {
   try {
-    const { nip, email, password, nama_lengkap } = await request.json();
+    const { email, password, nip, nama_lengkap, jurusan, program_studi } = await request.json();
 
     if (!email || !password || !nip || !nama_lengkap) {
-      return NextResponse.json({ message: "Semua kolom wajib diisi" }, { status: 400 });
+      return NextResponse.json({ error: "Kolom wajib belum diisi" }, { status: 400 });
     }
 
     // Cek email di tabel User
@@ -16,7 +16,7 @@ export async function POST(request: Request) {
     const existingDosen = await prisma.masterDosen.findFirst({ where: { nip } });
 
     if (existingUser || existingDosen) {
-      return NextResponse.json({ message: "Email atau NIP sudah terdaftar" }, { status: 400 });
+      return NextResponse.json({ error: "Email atau NIP sudah terdaftar" }, { status: 400 });
     }
 
     // Cari ID untuk role 'dosen'
@@ -25,7 +25,7 @@ export async function POST(request: Request) {
     });
 
     if (!dosenRole) {
-      return NextResponse.json({ message: "Role dosen belum diatur di database" }, { status: 500 });
+      return NextResponse.json({ error: "Role dosen belum diatur di database" }, { status: 500 });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -40,7 +40,9 @@ export async function POST(request: Request) {
         master_dosen: {
           create: {
             nip,
-            nama_lengkap
+            nama_lengkap,
+            jurusan,          // Data tambahan dari form
+            program_studi     // Data tambahan dari form
           }
         }
       }
@@ -52,6 +54,6 @@ export async function POST(request: Request) {
 
   } catch (error) {
     console.error("Register Error:", error);
-    return NextResponse.json({ message: "Terjadi kesalahan pada server" }, { status: 500 });
+    return NextResponse.json({ error: "Terjadi kesalahan pada server" }, { status: 500 });
   }
 }

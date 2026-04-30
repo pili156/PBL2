@@ -8,7 +8,7 @@ import { useRouter } from "next/navigation";
 export default function Login() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
-  const [identifier, setIdentifier] = useState(""); // NIP atau Email
+  const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -26,8 +26,15 @@ export default function Login() {
 
       if (res.ok) {
         alert("Login Berhasil!");
-        // Arahkan ke dashboard sesuai role
-        router.push(data.user.role === "Admin" ? "/user/dashboard" : "/dashboard");
+        
+        // Arahkan ke dashboard sesuai role dari database
+        if (data.user.role === "admin") {
+          router.push("/admin/dashboard");
+        } else if (data.user.role === "master_user") {
+          router.push("/masteruser/dashboard");
+        } else {
+          router.push("/user/dashboard"); // Default dosen
+        }
       } else {
         alert(data.error || "Login Gagal");
       }
@@ -44,12 +51,12 @@ export default function Login() {
       <div className="relative hidden w-[55%] flex-col justify-center px-20 lg:flex overflow-hidden font-['Poppins']">
         <div 
           className="absolute inset-0 bg-cover bg-center opacity-30"
-          style={{ backgroundImage: "url('/background1.png')" }}
+          style={{ backgroundImage: "url('/auth/background1.jpeg')" }} 
         />
         <div className="absolute inset-0 bg-gradient-to-b from-[#007DFE] via-[#013564] to-[#02182D] opacity-80" />
         
         <div className="relative z-10 text-white">
-          <Image src="/logo1.png" alt="Logo Polines" width={161} height={161} className="mb-8" />
+          <Image src="/auth/logo1.png" alt="Logo Polines" width={161} height={161} className="mb-8" />
           <h1 className="text-6xl font-bold mb-4">SIGAP</h1>
           <h2 className="text-3xl font-medium mb-6 leading-tight w-[80%]">
             Sistem Informasi Gelar Akademik Polines
