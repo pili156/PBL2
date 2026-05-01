@@ -55,12 +55,13 @@ export default function Register() {
       <div className="relative hidden w-[55%] flex-col justify-center px-20 lg:flex overflow-hidden font-['Poppins']">
         <div 
           className="absolute inset-0 bg-cover bg-center opacity-30"
-          style={{ backgroundImage: "url('/background1.png')" }}
+          // pastikan path ini benar, saya samakan dengan login page
+          style={{ backgroundImage: "url('/auth/background1.jpeg')" }} 
         />
         <div className="absolute inset-0 bg-gradient-to-b from-[#007DFE] via-[#013564] to-[#02182D] opacity-80" />
         
         <div className="relative z-10 text-white">
-          <Image src="/logo1.png" alt="Logo Polines" width={161} height={161} className="mb-8" />
+          <Image src="/auth/logo1.png" alt="Logo Polines" width={161} height={161} className="mb-8" />
           <h1 className="text-6xl font-bold mb-4">SIGAP</h1>
           <h2 className="text-3xl font-medium mb-6 leading-tight w-[80%]">
             Sistem Informasi Gelar Akademik Polines

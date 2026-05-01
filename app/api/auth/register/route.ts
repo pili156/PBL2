@@ -30,7 +30,7 @@ export async function POST(request: Request) {
     await prisma.user.create({
       data: {
         email,
-        password_hash: hashedPassword, // Di sinilah letak perbaikannya
+        password_hash: hashedPassword,
         role_id: dosenRole.id,
         status_akun: 'menunggu',
         master_dosen: {

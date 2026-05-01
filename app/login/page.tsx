@@ -27,13 +27,13 @@ export default function Login() {
       if (res.ok) {
         alert("Login Berhasil!");
         
-        // Arahkan ke dashboard sesuai role dari database
+        // Cek nama role dari data JSON hasil return login di route.ts
         if (data.user.role === "admin") {
           router.push("/admin/dashboard");
-        } else if (data.user.role === "master_user") {
-          router.push("/masteruser/dashboard");
+        } else if (data.user.role === "master_admin" || data.user.role === "master admin") {
+          router.push("/master_admin/dashboard"); 
         } else {
-          router.push("/user/dashboard"); // Default dosen
+          router.push("/user/dashboard"); // Default
         }
       } else {
         alert(data.error || "Login Gagal");
