@@ -26,12 +26,12 @@ export default function Login() {
 
       if (res.ok) {
         alert("Login Berhasil!");
-        
+
         // Cek nama role dari data JSON hasil return login di route.ts
         if (data.user.role === "admin") {
           router.push("/admin/dashboard");
         } else if (data.user.role === "master_admin" || data.user.role === "master admin") {
-          router.push("/master_admin/dashboard"); 
+          router.push("/master_admin/dashboard");
         } else {
           router.push("/user/dashboard"); // Default
         }
@@ -45,69 +45,125 @@ export default function Login() {
     }
   };
 
+  // Menggunakan font-sans bawaan Tailwind yang lebih standar
   return (
-    <div className="flex min-h-screen bg-white font-['Inter']">
-      {/* Sisi Kiri - Informasi */}
-      <div className="relative hidden w-[55%] flex-col justify-center px-20 lg:flex overflow-hidden font-['Poppins']">
-        <div 
-          className="absolute inset-0 bg-cover bg-center opacity-30"
-          style={{ backgroundImage: "url('/auth/background1.jpeg')" }} 
+    <div className="flex min-h-screen w-full relative font-sans bg-[#005B9F]">
+      {/* Layer Background Gambar - Diatur ke absolute agar ter-overlap mulus oleh panel putih */}
+      <div className="absolute inset-0 lg:w-[60%] z-0">
+        <div
+          className="absolute inset-0 bg-cover bg-center"
+          style={{ backgroundImage: "url('/auth/background2.jpeg')" }}
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-[#007DFE] via-[#013564] to-[#02182D] opacity-80" />
-        
-        <div className="relative z-10 text-white">
-          <Image src="/auth/logo1.png" alt="Logo Polines" width={161} height={161} className="mb-8" />
-          <h1 className="text-6xl font-bold mb-4">SIGAP</h1>
-          <h2 className="text-3xl font-medium mb-6 leading-tight w-[80%]">
-            Sistem Informasi Gelar Akademik Polines
+        {/* Overlay Biru - Opacity 70% sesuai permintaan */}
+        <div className="absolute inset-0 bg-[#005B9F] opacity-70" />
+      </div>
+
+      {/* Sisi Kiri - Konten Informasi */}
+      <div className="relative z-10 hidden w-[55%] flex-col justify-center px-16 lg:flex">
+        <div className="text-white mt-10">
+          <Image
+            src="/auth/logo2.png"
+            alt="Logo Polines"
+            width={120}
+            height={120}
+            className="mb-6"
+          />
+          <h1 className="text-5xl font-bold mb-2 tracking-wide">SIGAP</h1>
+          <h2 className="text-2xl font-medium mb-6 leading-snug w-[80%]">
+            Sistem Informasi Gelar <br /> Akademik Polines
           </h2>
-          <div className="w-[86px] h-0 border-[5px] border-[#F6EB16] mb-6"></div>
-          <p className="text-sm font-normal w-[80%] leading-relaxed">
-            Masuk ke akun Anda untuk mengelola pengajuan studi lanjut dan memantau progres akademik Anda.
+          <div className="w-[50px] h-[4px] bg-[#F6EB16] mb-6"></div>
+          <p className="text-sm font-light w-[85%] leading-relaxed max-w-md opacity-90">
+            Platform terintegrasi untuk pengajuan, verifikasi, monitoring studi
+            lanjut, hingga pengelolaan reimbursement dosen secara efisien dalam
+            satu sistem.
           </p>
         </div>
       </div>
 
-      {/* Sisi Kanan - Form Login */}
-      <div className="flex w-full lg:w-[45%] flex-col justify-center items-center p-8 lg:p-12 relative">
-        <div className="w-full max-w-md bg-white rounded-2xl relative z-10">
-          <h2 className="text-2xl font-bold text-[#111827] mb-8">Masuk ke Akun</h2>
+      {/* Sisi Kanan - Panel Form Putih Edge-to-Edge */}
+      {/* Lengkungan dikurangi dari rounded-l-[40px] menjadi rounded-l-2xl */}
+      <div className="relative z-10 flex w-full lg:w-[45%] flex-col justify-center items-center bg-white lg:rounded-l-2xl shadow-[-10px_0_20px_rgba(0,0,0,0.05)]">
+        
+        {/* Container pembatas lebar form agar tidak terlalu melebar */}
+        <div className="w-full max-w-md p-8 lg:p-12">
+          <div className="text-center mb-8">
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">
+              Selamat Datang!
+            </h2>
+            <p className="text-sm text-gray-500">Masuk untuk Melanjutkan</p>
+          </div>
 
-          <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-            <input 
-              id="identifier"
-              name="identifier"
-              autoComplete="username"
-              type="text" 
-              required
-              placeholder="Email atau NIP" 
-              value={identifier}
-              onChange={(e) => setIdentifier(e.target.value)}
-              className="w-full border border-[#E5E7EB] rounded px-4 py-3 text-sm text-gray-700 outline-none focus:border-blue-500"
-            />
-            <input 
-              id="password"
-              name="password"
-              autoComplete="current-password"
-              type="password" 
-              required
-              placeholder="Password" 
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full border border-[#E5E7EB] rounded px-4 py-3 text-sm text-gray-700 outline-none focus:border-blue-500"
-            />
+          <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+            {/* Input Email / NIP */}
+            <div className="relative">
+              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <rect width="20" height="16" x="2" y="4" rx="2" />
+                  <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+                </svg>
+              </span>
+              <input
+                id="identifier"
+                name="identifier"
+                autoComplete="username"
+                type="text"
+                required
+                placeholder="Email / NIP"
+                value={identifier}
+                onChange={(e) => setIdentifier(e.target.value)}
+                className="w-full border border-gray-200 rounded-full pl-12 pr-4 py-3 text-sm text-gray-700 outline-none focus:border-blue-500 transition-colors bg-gray-50/50"
+              />
+            </div>
 
-            <button 
+            {/* Input Password */}
+            <div className="relative">
+              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <rect width="18" height="11" x="3" y="11" rx="2" ry="2" />
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                </svg>
+              </span>
+              <input
+                id="password"
+                name="password"
+                autoComplete="current-password"
+                type="password"
+                required
+                placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full border border-gray-200 rounded-full pl-12 pr-4 py-3 text-sm text-gray-700 outline-none focus:border-blue-500 transition-colors bg-gray-50/50"
+              />
+            </div>
+
+            {/* Checkbox Ingat Saya */}
+            <div className="flex items-center gap-2 mt-1 mb-2 px-2">
+              <input 
+                type="checkbox" 
+                id="remember" 
+                className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" 
+              />
+              <label htmlFor="remember" className="text-xs text-gray-500 cursor-pointer">
+                ingat saya
+              </label>
+            </div>
+
+            {/* Tombol Masuk */}
+            <button
               type="submit"
               disabled={loading}
-              className="w-full py-4 mt-6 bg-gradient-to-r from-[#017CFE] via-[#015AB7] to-[#014A98] text-white rounded-[30px] font-medium text-sm hover:opacity-90 transition-opacity disabled:opacity-50"
+              className="w-full py-3.5 bg-[#005B9F] hover:bg-[#004A85] text-white rounded-full font-medium text-sm transition-colors disabled:opacity-50"
             >
-              {loading ? "Memproses..." : "Login"}
+              {loading ? "Memproses..." : "Masuk"}
             </button>
           </form>
-          
+
           <p className="text-center text-xs text-gray-500 mt-6">
-            Belum punya akun? <Link href="/register" className="text-[#017CFE] font-medium">Daftar Sekarang</Link>
+            Belum punya akun?{" "}
+            <Link href="/register" className="text-[#005B9F] font-medium hover:underline">
+              Daftar
+            </Link>
           </p>
         </div>
       </div>

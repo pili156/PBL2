@@ -21,8 +21,8 @@ model User {
   password_hash String?
   role_id       Int?
   status_akun   String?
-  created_at    DateTime? @db.Timestamptz()
-  updated_at    DateTime? @db.Timestamptz()
+  created_at DateTime? @default(now()) @db.Timestamptz
+  updated_at DateTime? @updatedAt @db.Timestamptz
 
   role             MasterRole?       @relation(fields: [role_id], references: [id])
   master_dosen     MasterDosen?
@@ -42,8 +42,8 @@ model MasterDosen {
   unit_kerja       String?
   jurusan          String?   // Pastikan baris ini ada
   program_studi    String?   // Pastikan baris ini ada
-  created_at       DateTime? @db.Timestamptz()
-  updated_at       DateTime? @db.Timestamptz()
+  created_at DateTime? @default(now()) @db.Timestamptz
+  updated_at DateTime? @updatedAt @db.Timestamptz
 
   user User? @relation(fields: [user_id], references: [id])
 
