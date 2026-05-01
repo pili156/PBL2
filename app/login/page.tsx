@@ -32,6 +32,8 @@ export default function Login() {
           router.push("/admin/dashboard");
         } else if (data.user.role === "master_admin" || data.user.role === "master admin") {
           router.push("/master_admin/dashboard");
+        } else if (data.user.role === "keuangan") {
+          router.push("/keuangan/dashboard"); // <--- TAMBAHAN ROLE KEUANGAN
         } else {
           router.push("/user/dashboard"); // Default
         }
