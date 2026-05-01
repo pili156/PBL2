@@ -4,7 +4,7 @@ import bcrypt from 'bcryptjs';
 async function main() {
   console.log('Memulai proses seeding...');
 
-  // 1. Buat 3 Master Role utama menggunakan upsert
+  // 1. Buat 4 Master Role utama menggunakan upsert
   const roleMaster = await prisma.masterRole.upsert({
     where: { id: 1 },
     update: { nama_role: 'master_admin' }, 
@@ -19,8 +19,15 @@ async function main() {
 
   const roleDosen = await prisma.masterRole.upsert({
     where: { id: 3 },
-    update: { nama_role: 'dosen' }, // ID 3 sekarang resmi milik Dosen
+    update: { nama_role: 'dosen' },
     create: { id: 3, nama_role: 'dosen' },
+  });
+
+  // Tambahkan Role Keuangan di ID 4
+  const roleKeuangan = await prisma.masterRole.upsert({
+    where: { id: 4 },
+    update: { nama_role: 'keuangan' },
+    create: { id: 4, nama_role: 'keuangan' },
   });
 
   // 2. Hash Password Default untuk semua akun (rahasia123)
@@ -71,7 +78,22 @@ async function main() {
     },
   });
 
-  console.log('Seed berhasil! 3 Role (Master Admin, Admin, Dosen) dan Akun Default telah siap digunakan.');
+  // 6. Buat Akun Keuangan Default
+  await prisma.user.upsert({
+    where: { 
+      email: 'keuangan@gmail.com' 
+    },
+    update: { role_id: roleKeuangan.id },
+    create: {
+      username: 'Admin Keuangan',
+      email: 'keuangan@gmail.com',
+      password_hash: hashedPassword,
+      role_id: roleKeuangan.id,
+      status_akun: 'aktif',
+    },
+  });
+
+  console.log('Seed berhasil! 4 Role (Master Admin, Admin, Dosen, Keuangan) dan Akun Default telah siap digunakan.');
 }
 
 main()
@@ -80,6 +102,5 @@ main()
     process.exit(1);
   })
   .finally(async () => {
-    // Selalu putuskan koneksi prisma setelah selesai
     await prisma.$disconnect();
   });

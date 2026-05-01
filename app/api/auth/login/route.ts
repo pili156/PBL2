@@ -49,12 +49,12 @@ export async function POST(request: Request) {
     }
 
     // --- LOGIC REDIRECT DITENTUKAN DI BACKEND ---
-    let targetUrl = "/user/dashboard"; // Default folder untuk user biasa / dosen
+    let targetUrl = "/user/dashboard"; // Default folder untuk dosen
 
-    if (roleName === "admin") {
-      targetUrl = "/admin/dashboard";
-    } else if (roleName === "master_admin") { // Pastikan string ini sama dengan yang di Prisma Studio
-      targetUrl = "/master_admin/dashboard";
+    if (roleName === "admin" || roleName === "master_admin") {
+      targetUrl = "/admin/dashboard"; // Mengarah ke dashboard admin
+    } else if (roleName === "keuangan") {
+      targetUrl = "/keuangan/dashboard"; // Tambahan redirect untuk role keuangan
     }
 
     console.log(`4. Login SUKSES! Role: ${roleName}, Redirect ke: ${targetUrl}`);
