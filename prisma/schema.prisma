@@ -40,8 +40,8 @@ model MasterDosen {
   pangkat_golongan String?
   jabatan          String?
   unit_kerja       String?
-  jurusan          String?   // Kolom baru
-  program_studi    String?   // Kolom baru
+  jurusan          String?   // Pastikan baris ini ada
+  program_studi    String?   // Pastikan baris ini ada
   created_at       DateTime? @db.Timestamptz()
   updated_at       DateTime? @db.Timestamptz()
 

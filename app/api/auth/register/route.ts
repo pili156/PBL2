@@ -10,16 +10,13 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Kolom wajib belum diisi" }, { status: 400 });
     }
 
-    // Cek email di tabel User
     const existingUser = await prisma.user.findFirst({ where: { email } });
-    // Cek NIP di tabel MasterDosen
     const existingDosen = await prisma.masterDosen.findFirst({ where: { nip } });
 
     if (existingUser || existingDosen) {
       return NextResponse.json({ error: "Email atau NIP sudah terdaftar" }, { status: 400 });
     }
 
-    // Cari ID untuk role 'dosen'
     const dosenRole = await prisma.masterRole.findFirst({ 
       where: { nama_role: 'dosen' } 
     });
@@ -30,19 +27,18 @@ export async function POST(request: Request) {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Insert ke tabel User SEKALIGUS ke tabel MasterDosen
     await prisma.user.create({
       data: {
         email,
-        password_hash: hashedPassword,
+        password_hash: hashedPassword, // Di sinilah letak perbaikannya
         role_id: dosenRole.id,
         status_akun: 'menunggu',
         master_dosen: {
           create: {
             nip,
             nama_lengkap,
-            jurusan,          // Data tambahan dari form
-            program_studi     // Data tambahan dari form
+            jurusan,          
+            program_studi     
           }
         }
       }
