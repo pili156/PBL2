@@ -1,93 +1,113 @@
-"use client";
-
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { cookies } from "next/headers";
+import { 
+  LayoutDashboard, 
+  FileText, 
+  CheckSquare, 
+  ListOrdered, 
+  CreditCard, 
+  UserCircle
+} from "lucide-react";
 
-export default function DashboardLayout({
+// Import komponen Client ProfileDropdown
+import ProfileDropdown from "./ProfileDropdown"; 
+
+// Menggunakan instance Prisma
+import { prisma } from "../../src/lib/prisma";
+
+export default async function UserLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const pathname = usePathname();
+  const cookieStore = await cookies();
+  const userEmailFromCookie = cookieStore.get("user_email")?.value;
 
-  const menuItems = [
-    { name: "Dashboard", href: "/dashboard", icon: "📊" },
-    { name: "Profil Saya", href: "/dashboard/profil", icon: "👤" },
-    { name: "Pengajuan", href: "/dashboard/pengajuan", icon: "📝" },
-  ];
+  let currentUserEmail: string = "Guest";
+  
+  if (userEmailFromCookie) {
+    // Query paling aman, tidak akan kena error relasi
+    const user = await prisma.user.findUnique({
+      where: {
+        email: userEmailFromCookie,
+      },
+      select: {
+        email: true,
+      }
+    });
+
+    if (user && user.email) {
+      currentUserEmail = user.email;
+    }
+  }
 
   return (
-    <div className="flex min-h-screen bg-[#F3F4F6] font-['Inter']">
+    <div className="flex h-screen bg-[#F4F7F6] font-sans">
       {/* Sidebar */}
-      <aside className="w-64 bg-gradient-to-b from-[#007DFE] via-[#013564] to-[#02182D] text-white flex flex-col shadow-xl">
-        <div className="p-8 flex flex-col items-center border-b border-white/10">
-          <Image 
-            src="/logo1.png" 
-            alt="Logo Polines" 
-            width={80} 
-            height={80} 
-            className="mb-4"
-          />
-          <h1 className="text-2xl font-bold tracking-wider">SIGAP</h1>
-          <p className="text-[10px] text-gray-300 text-center mt-1 uppercase tracking-widest">
-            Gelar Akademik Polines
-          </p>
+      <aside className="w-[260px] bg-[#0A192F] text-white flex flex-col flex-shrink-0">
+        <div className="p-6 flex items-center gap-3 border-b border-slate-700/50">
+          <div className="w-10 h-10 relative flex-shrink-0">
+            <Image
+              src="/dashboard/logo2.png"
+              alt="Logo SIGAP"
+              fill
+              className="object-contain"
+            />
+          </div>
+          <div className="flex flex-col">
+            <h1 className="text-2xl font-bold tracking-wide leading-none">SIGAP</h1>
+            <p className="text-[8px] text-slate-300 mt-1 leading-tight uppercase tracking-wider">
+              Sistem Informasi Gelar Akademik Polines
+            </p>
+          </div>
         </div>
 
-        <nav className="flex-1 mt-6 px-4 space-y-2">
-          {menuItems.map((item) => {
-            const isActive = pathname === item.href;
-            return (
-              <Link
-                key={item.name}
-                href={item.href}
-                className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
-                  isActive 
-                    ? "bg-[#F6EB16] text-[#013564] font-bold shadow-md" 
-                    : "hover:bg-white/10 text-white"
-                }`}
-              >
-                <span>{item.icon}</span>
-                <span className="text-sm">{item.name}</span>
-              </Link>
-            );
-          })}
+        <nav className="flex-1 py-4 flex flex-col">
+          {/* Link disesuaikan ke dashboard user */}
+          <Link href="/user/dashboard" className="flex items-center gap-3 px-8 py-3.5 bg-[#1A56DB] text-white">
+            <LayoutDashboard size={20} strokeWidth={2} />
+            <span className="text-sm font-medium">Dashboard</span>
+          </Link>
+          <Link href="#" className="flex items-center gap-3 px-8 py-3.5 text-slate-300 hover:bg-slate-800 transition-colors">
+            <FileText size={20} strokeWidth={2} />
+            <span className="text-sm font-medium">Pengajuan</span>
+          </Link>
+          <Link href="#" className="flex items-center gap-3 px-8 py-3.5 text-slate-300 hover:bg-slate-800 transition-colors">
+            <CheckSquare size={20} strokeWidth={2} />
+            <span className="text-sm font-medium">Status</span>
+          </Link>
+          <Link href="#" className="flex items-center gap-3 px-8 py-3.5 text-slate-300 hover:bg-slate-800 transition-colors">
+            <ListOrdered size={20} strokeWidth={2} />
+            <span className="text-sm font-medium">Laporan KHS</span>
+          </Link>
+          <Link href="#" className="flex items-center gap-3 px-8 py-3.5 text-slate-300 hover:bg-slate-800 transition-colors">
+            <CreditCard size={20} strokeWidth={2} />
+            <span className="text-sm font-medium">Reimbursement</span>
+          </Link>
+          <Link href="#" className="flex items-center gap-3 px-8 py-3.5 text-slate-300 hover:bg-slate-800 transition-colors">
+            <UserCircle size={20} strokeWidth={2} />
+            <span className="text-sm font-medium">Profil Saya</span>
+          </Link>
         </nav>
-
-        <div className="p-4 border-t border-white/10">
-          <button 
-            onClick={() => window.location.href = "/login"}
-            className="w-full flex items-center gap-3 px-4 py-3 text-sm text-red-300 hover:bg-red-500/10 rounded-lg transition-all"
-          >
-            <span></span> Keluar
-          </button>
-        </div>
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 flex flex-col overflow-hidden">
-        {/* Header Atas */}
-        <header className="h-16 bg-white shadow-sm flex items-center justify-between px-8">
-          <h2 className="font-semibold text-gray-700 text-lg">
-            {menuItems.find(item => item.href === pathname)?.name || "Dashboard"}
-          </h2>
-          <div className="flex items-center gap-4">
-            <div className="text-right">
-              <p className="text-xs font-bold text-gray-800">Dosen User</p>
-              <p className="text-[10px] text-gray-500">NIP: 198XXXXXXXXXXX</p>
-            </div>
-            <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center text-[#013564] font-bold border border-blue-200">
-              D
-            </div>
-          </div>
+      <div className="flex-1 flex flex-col overflow-hidden">
+        {/* Topbar */}
+        <header className="h-[80px] bg-[#0A192F] text-white flex items-center justify-between px-8 flex-shrink-0">
+          <h2 className="text-2xl font-bold tracking-wide">Dashboard</h2>
+          
+          {/* Memanggil Komponen Dropdown */}
+          <ProfileDropdown email={currentUserEmail} />
+
         </header>
 
-        {/* Isi Dashboard */}
-        <section className="flex-1 p-8 overflow-y-auto">
+        {/* Page Content */}
+        <main className="flex-1 overflow-auto p-8 bg-[#F8FAFC]">
           {children}
-        </section>
-      </main>
+        </main>
+      </div>
     </div>
   );
 }
