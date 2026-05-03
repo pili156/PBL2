@@ -7,13 +7,14 @@ import {
   CheckSquare, 
   ListOrdered, 
   CreditCard, 
-  UserCircle,
-  ChevronDown,
-  User
+  UserCircle
 } from "lucide-react";
 
+// Import komponen Client yang baru saja kita buat
+// Sesuaikan letak path-nya jika kamu menyimpannya di folder /components
+import ProfileDropdown from "./ProfileDropdown"; 
+
 // Menggunakan instance Prisma dari folder src/lib/prisma.ts kamu
-// (Bukan membuat new PrismaClient() baru agar tidak terjadi error/memory leak)
 import { prisma } from "../../src/lib/prisma";
 
 export default async function AdminLayout({
@@ -29,7 +30,6 @@ export default async function AdminLayout({
   let currentUserEmail: string = "Guest";
   
   if (userEmailFromCookie) {
-    // Menggunakan prisma instance yang di-import dari src/lib/prisma
     const user = await prisma.user.findUnique({
       where: {
         email: userEmailFromCookie,
@@ -49,12 +49,12 @@ export default async function AdminLayout({
       {/* Sidebar */}
       <aside className="w-[260px] bg-[#0A192F] text-white flex flex-col flex-shrink-0">
         <div className="p-6 flex items-center gap-3 border-b border-slate-700/50">
-          <div className="w-10 h-10 relative flex-shrink-0 bg-white rounded-full p-1">
+          <div className="w-10 h-10 relative flex-shrink-0">
             <Image
               src="/dashboard/logo2.png"
               alt="Logo SIGAP"
               fill
-              className="object-contain rounded-full"
+              className="object-contain"
             />
           </div>
           <div className="flex flex-col">
@@ -99,17 +99,9 @@ export default async function AdminLayout({
         <header className="h-[80px] bg-[#0A192F] text-white flex items-center justify-between px-8 flex-shrink-0">
           <h2 className="text-2xl font-bold tracking-wide">Dashboard</h2>
           
-          <div className="flex items-center gap-3 cursor-pointer hover:bg-slate-800 p-2 rounded-lg transition-colors">
-            <div className="w-10 h-10 bg-slate-200 rounded-full flex items-center justify-center text-slate-700">
-              <User size={20} />
-            </div>
-            <div className="flex flex-col">
-              {/* Email dari database akan tampil di sini */}
-              <span className="text-sm font-semibold leading-none">{currentUserEmail}</span>
-              <span className="text-xs text-slate-400 mt-1">Admin</span>
-            </div>
-            <ChevronDown size={16} className="text-slate-400 ml-2" />
-          </div>
+          {/* Menggunakan komponen Client untuk Dropdown */}
+          <ProfileDropdown email={currentUserEmail} />
+
         </header>
 
         {/* Page Content */}
