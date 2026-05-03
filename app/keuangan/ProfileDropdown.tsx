@@ -29,8 +29,8 @@ export default function ProfileDropdown({ email }: { email: string }) {
         </div>
         <div className="flex flex-col">
           <span className="text-sm font-semibold leading-none text-white">{email}</span>
-          {/* Label diubah menjadi Master Admin */}
-          <span className="text-xs text-slate-400 mt-1">Master Admin</span>
+          {/* Label diubah menjadi Keuangan */}
+          <span className="text-xs text-slate-400 mt-1">Keuangan</span>
         </div>
         <ChevronDown 
           size={16} 
