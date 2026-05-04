@@ -28,7 +28,7 @@ export default function Login() {
         alert("Login Berhasil!");
 
         // Cek nama role dari data JSON hasil return login di route.ts
-        if (data.user.role === "admin") {
+        if (data.user.role === "admin_fakultas") {
           router.push("/admin/dashboard");
         } else if (data.user.role === "master_admin" || data.user.role === "master admin") {
           router.push("/master_admin/dashboard");
