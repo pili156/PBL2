@@ -1,19 +1,11 @@
 // app/admin/riwayat-dosen/[id_dosen]/keuangan/[id]/page.tsx
-
 import { prisma } from '@/lib/prisma';
-import { ArrowLeft, Download, FileText, AlertCircle, CheckSquare, XSquare } from 'lucide-react';
+import { ArrowLeft, Download, FileText, Check, Send, Star, Info, XCircle, CheckSquare } from 'lucide-react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import { evaluateKeuangan, acceptKeuangan, rejectKeuangan } from '../../../actions';
 
 export const dynamic = 'force-dynamic';
-
-const formatRupiah = (angka: number) => {
-  return new Intl.NumberFormat('id-ID', {
-    style: 'currency',
-    currency: 'IDR',
-    minimumFractionDigits: 0,
-  }).format(angka);
-};
 
 export default async function DetailKeuanganPage({
   params,
@@ -24,187 +16,156 @@ export default async function DetailKeuanganPage({
   const keuanganId = Number(id);
   const idDosen = Number(id_dosen);
 
-  if (isNaN(keuanganId)) {
-    notFound();
-  }
+  if (isNaN(keuanganId)) notFound();
 
   const keuangan = await prisma.pengajuanReimbursement.findUnique({
     where: { id: keuanganId },
     include: {
       pengajuan_studi: {
         include: {
-          jenis_studi: true,
-          user: {
-            include: { master_dosen: true },
-          },
+          user: { include: { master_dosen: true } },
         },
       },
     },
   });
 
-  if (!keuangan) {
-    notFound();
-  }
+  if (!keuangan) notFound();
 
-  const dosen = keuangan.pengajuan_studi?.user;
-  const namaDosen = dosen?.master_dosen?.nama_lengkap || dosen?.username || '-';
-  const nip = dosen?.master_dosen?.nip || '-';
-  const jurusan = dosen?.master_dosen?.jurusan || '-';
-  const jenisBiaya = keuangan.pengajuan_studi?.jenis_studi?.nama_jenis || 'SPP';
+  const status = keuangan.status_pencairan?.toUpperCase() || 'PENDING';
+  const isSelesai = status === 'DICAIRKAN' || status === 'SELESAI';
+  const isDitolak = status === 'DITOLAK';
+  const isVerifikasi = status !== 'PENDING' && status !== 'DRAFT'; 
+
+  const formatRupiah = (angka: number) => {
+    return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(angka);
+  };
 
   return (
-    <div className="bg-white rounded-b-xl border border-slate-200 border-t-0 p-6 md:p-8">
+    <div className="w-full space-y-6">
       
-      {/* HEADER: Judul & Tombol Kembali ditarik ke kanan */}
-      <div className="flex justify-between items-center border-b border-slate-100 pb-4 mb-6">
-        <h3 className="text-2xl font-bold text-slate-800">
-          Detail Pengajuan Reimbursement
-        </h3>
-        <Link
-          href={`/admin/riwayat-dosen/${idDosen}/keuangan`}
-          className="flex items-center gap-2 text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors"
-        >
-          <ArrowLeft size={18} />
-          Kembali
+      {/* 1. HEADER & STATUS (Full Width) */}
+      <div className="flex justify-between items-center bg-white p-4 rounded-xl border border-slate-100 shadow-sm">
+        <div className="flex items-center gap-4">
+          <h2 className="text-lg font-bold text-slate-800">Detail Pengajuan Keuangan</h2>
+          <span className={`px-3 py-1 text-[10px] font-bold rounded-full uppercase tracking-wider ${isSelesai ? 'bg-emerald-100 text-emerald-600' : 'bg-amber-100 text-amber-600'}`}>
+            {status}
+          </span>
+        </div>
+        <Link href={`/admin/riwayat-dosen/${idDosen}/keuangan`} className="flex items-center gap-2 text-xs font-bold text-slate-500 hover:text-blue-600 transition-all group">
+          <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" /> Kembali
         </Link>
       </div>
 
-      {/* GRID 2 KOLOM (Sesuai Desain UI) */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      {/* 2. TOP SUMMARY CARDS (3 Columns Berjajar) */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="bg-white p-5 rounded-xl border border-slate-100 shadow-sm">
+          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Semester</p>
+          <p className="text-lg font-bold text-slate-800 font-mono">Semester {keuangan.semester_ke}</p>
+        </div>
+        <div className="bg-white p-5 rounded-xl border border-slate-100 shadow-sm">
+          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Nominal</p>
+          <p className="text-lg font-bold text-blue-600">{keuangan.nominal ? formatRupiah(Number(keuangan.nominal)) : '-'}</p>
+        </div>
+        <div className="bg-white p-5 rounded-xl border border-slate-100 shadow-sm">
+          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Tanggal Pengajuan</p>
+          <p className="text-lg font-bold text-slate-800">
+            {keuangan.created_at ? keuangan.created_at.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) : '-'}
+          </p>
+        </div>
+      </div>
+
+      {/* 3. MAIN CONTENT (Split View) */}
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
         
-        {/* KOLOM KIRI: Data Dosen & Catatan Evaluasi */}
+        {/* LEFT SIDE: Tracking & Catatan */}
         <div className="space-y-6">
           
-          {/* Box 1: Data Dosen */}
-          <div className="border border-slate-200 rounded-xl p-6">
-            <h4 className="font-bold text-slate-800 border-b border-slate-100 pb-3 mb-4">Data Dosen</h4>
-            
-            <div className="space-y-3.5">
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-slate-500">Nama Dosen</span>
-                <span className="text-sm font-bold text-slate-800">{namaDosen}</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-slate-500">NIP</span>
-                <span className="text-sm font-bold text-slate-800">{nip}</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-slate-500">Program Studi / Jurusan</span>
-                <span className="text-sm font-bold text-slate-800">{jurusan}</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-slate-500">Jenis Biaya</span>
-                <span className="text-sm font-bold text-slate-800">{jenisBiaya} Semester {keuangan.semester_ke} 2025</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-slate-500">Semester</span>
-                <span className="text-sm font-bold text-slate-800">Semester {keuangan.semester_ke}</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-slate-500">Tanggal Upload</span>
-                <span className="text-sm font-bold text-slate-800">
-                  {keuangan.created_at
-                    ? keuangan.created_at.toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })
-                    : '-'}
-                </span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-slate-500">Nominal Diajukan</span>
-                <span className="text-sm font-bold text-slate-800">
-                  {keuangan.nominal ? formatRupiah(Number(keuangan.nominal)) : 'Rp 0'}
-                </span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-slate-500">Bank</span>
-                <span className="text-sm font-bold text-slate-800">BCA - 1234 2435 3456 3456</span>
-              </div>
-              <div className="flex justify-between items-center pt-2">
-                <span className="text-sm text-slate-500">Status Pengajuan</span>
-                <span
-                  className={`inline-block px-3 py-1 text-xs rounded-md font-bold ${
-                    keuangan.status_pencairan === 'Dicairkan' || keuangan.status_pencairan === 'Selesai'
-                      ? 'bg-green-100 text-green-700'
-                      : keuangan.status_pencairan === 'Dibatalkan' || keuangan.status_pencairan === 'Ditolak'
-                      ? 'bg-red-100 text-red-700'
-                      : 'bg-yellow-100 text-yellow-700'
-                  }`}
-                >
-                  {keuangan.status_pencairan?.toUpperCase() || 'DITERIMA'}
-                </span>
-              </div>
+          {/* Tracking Section */}
+          <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-6">
+            <h4 className="text-sm font-bold text-slate-800 mb-8 pb-4 border-b border-slate-50">Tracking Pengajuan</h4>
+            <div className="space-y-8 relative">
+              <div className="absolute left-[15px] top-2 bottom-2 w-0.5 bg-slate-100"></div>
+
+              {[
+                { label: 'Upload Bukti Pembayaran', sub: 'Oleh Dosen', date: keuangan.created_at, icon: Check, color: 'bg-emerald-500', active: true },
+                { label: 'Diverifikasi Admin', sub: 'Oleh Admin', date: isVerifikasi ? keuangan.updated_at : null, icon: Check, color: isVerifikasi ? 'bg-emerald-500' : 'bg-slate-200', active: isVerifikasi },
+                { label: 'Disetujui', sub: 'Oleh Admin', date: isVerifikasi ? keuangan.updated_at : null, icon: Check, color: isVerifikasi ? 'bg-emerald-500' : 'bg-slate-200', active: isVerifikasi },
+                { label: 'Dana Ditransfer', sub: 'Oleh Keuangan', date: isSelesai ? keuangan.tanggal_pencairan : null, icon: Send, color: isSelesai ? 'bg-blue-600' : 'bg-slate-200', active: isSelesai },
+                { label: 'Selesai', sub: isSelesai ? 'Proses Selesai' : 'Menunggu konfirmasi', date: isSelesai ? keuangan.tanggal_pencairan : null, icon: Star, color: isSelesai ? 'bg-emerald-500' : 'bg-slate-200', active: isSelesai },
+              ].map((step, i) => (
+                <div key={i} className="relative flex gap-6 items-start">
+                  <div className={`relative z-10 w-8 h-8 rounded-full flex items-center justify-center text-white shadow-sm border-4 border-white ${step.color}`}>
+                    <step.icon size={14} strokeWidth={3} />
+                  </div>
+                  <div className="flex-1 flex justify-between items-start">
+                    <div>
+                      <p className={`text-sm font-bold ${step.active ? 'text-slate-800' : 'text-slate-400'}`}>{step.label}</p>
+                      <p className="text-[11px] text-slate-400 mt-0.5">{step.sub}</p>
+                    </div>
+                    {step.date && <p className="text-[10px] text-slate-400 font-medium">
+                      {step.date.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })} WIB
+                    </p>}
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
 
-          {/* Box 2: Catatan Evaluasi & Aksi */}
-          <div className="border border-slate-200 rounded-xl p-6">
-            <h4 className="font-bold text-slate-800 border-b border-slate-100 pb-3 mb-4">Catatan Evaluasi</h4>
-            
-            <textarea 
-              className="w-full border border-slate-200 rounded-lg p-3 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4 resize-none"
-              rows={4}
-              placeholder="Tulis alasan revisi atau catatan di sini..."
+          {/* Admin Evaluation Form */}
+          <form className="bg-white rounded-xl border border-slate-100 shadow-sm p-6 space-y-5">
+            <h4 className="text-sm font-bold text-slate-800">Tindakan & Catatan Admin</h4>
+            <input type="hidden" name="keuanganId" value={keuanganId} />
+            <textarea
+              name="catatan"
+              className="w-full text-sm p-4 bg-slate-50 border border-slate-100 rounded-xl focus:ring-2 focus:ring-blue-100 outline-none min-h-[120px] transition-all"
+              placeholder="Tambahkan catatan audit dana di sini..."
               defaultValue={keuangan.catatan_keuangan || ''}
             ></textarea>
-
-            {/* Banner Peringatan */}
-            <div className="bg-[#FFFDF5] border border-yellow-200 rounded-lg p-3 flex items-start gap-3 mb-5">
-              <AlertCircle className="text-yellow-600 flex-shrink-0 mt-0.5" size={16} />
-              <p className="text-xs text-slate-600">
-                Setelah menyetujui pengajuan, pastikan melakukan transfer ke rekening dosen yang terdaftar.
-              </p>
-            </div>
-
-            {/* Tombol Aksi (DITERIMA / DITOLAK) */}
-            <div className="flex gap-3">
-              <button className="flex-1 flex items-center justify-center gap-2 bg-green-100 text-green-700 border border-green-200 font-bold py-2.5 rounded-lg hover:bg-green-200 transition-colors">
-                DITERIMA <CheckSquare size={18} />
+            <div className="grid grid-cols-2 gap-4">
+              <button type="submit" formAction={acceptKeuangan}
+                className="py-3 bg-emerald-500 text-white rounded-xl text-xs font-bold hover:bg-emerald-600 shadow-md shadow-emerald-100 transition-all flex items-center justify-center gap-2 uppercase tracking-widest">
+                DITERIMA <CheckSquare size={16} />
               </button>
-              <button className="flex-1 flex items-center justify-center gap-2 bg-red-50 text-red-600 border border-red-100 font-bold py-2.5 rounded-lg hover:bg-red-100 transition-colors">
-                DITOLAK <AlertCircle size={18} />
+              <button type="submit" formAction={rejectKeuangan}
+                className="py-3 bg-white text-red-600 border border-red-100 rounded-xl text-xs font-bold hover:bg-red-50 transition-all flex items-center justify-center gap-2 uppercase tracking-widest">
+                DITOLAK <XCircle size={16} />
               </button>
             </div>
-          </div>
+          </form>
         </div>
 
-        {/* KOLOM KANAN: Bukti Pembayaran */}
-        <div className="border border-slate-200 rounded-xl p-6 flex flex-col h-full">
-          <h4 className="font-bold text-slate-800 border-b border-slate-100 pb-3 mb-4">Bukti Pembayaran</h4>
-          
-          {/* Area Preview Dokumen */}
-          <div className="flex-1 border border-slate-200 rounded-xl bg-slate-50 flex flex-col items-center justify-center p-8 text-center min-h-[500px] relative overflow-hidden">
-            {keuangan.file_bukti_bayar ? (
-              <>
-                {/* Asumsi file berupa gambar (receipt). Jika PDF, bisa pakai iframe */}
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img 
-                  src={keuangan.file_bukti_bayar} 
-                  alt="Bukti Pembayaran" 
-                  className="absolute inset-0 w-full h-full object-contain p-2"
-                />
-              </>
-            ) : (
-              <>
-                <FileText size={48} className="text-slate-300 mb-4" />
-                <p className="text-sm font-semibold text-slate-500 mb-1">Dokumen Belum Tersedia</p>
-                <p className="text-xs text-slate-400">Dosen belum mengunggah file bukti pembayaran.</p>
-              </>
-            )}
-          </div>
-
-          {/* Tombol Download di bawah preview */}
-          <div className="mt-4 pt-4 border-t border-slate-100">
-            <a
-              href={keuangan.file_bukti_bayar || '#'}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={`flex items-center justify-center gap-2 w-max text-sm font-bold text-blue-600 border border-blue-200 bg-white px-4 py-2.5 rounded-lg hover:bg-blue-50 transition-colors ${!keuangan.file_bukti_bayar && 'opacity-50 cursor-not-allowed pointer-events-none'}`}
-            >
-              Download Dokumen <Download size={16} />
+        {/* RIGHT SIDE: Bukti Pembayaran (Full Height Preview) */}
+        <div className="bg-white rounded-xl border border-slate-100 shadow-sm flex flex-col min-h-[600px]">
+          <div className="p-5 border-b border-slate-50 flex justify-between items-center">
+            <h4 className="text-sm font-bold text-slate-800">Bukti Pembayaran</h4>
+            <a href={keuangan.file_bukti_bayar || '#'} target="_blank" className="flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-600 rounded-lg text-xs font-bold hover:bg-blue-600 hover:text-white transition-all">
+              <Download size={14} /> Download File
             </a>
+          </div>
+          <div className="flex-1 p-6 bg-slate-50 flex items-center justify-center overflow-hidden">
+            <div className="w-full h-full bg-white rounded-xl shadow-inner relative flex items-center justify-center border border-slate-200 group">
+              {keuangan.file_bukti_bayar ? (
+                <img src={keuangan.file_bukti_bayar} alt="Bukti Transfer" className="max-w-full max-h-full object-contain p-4 group-hover:scale-[1.02] transition-transform duration-500" />
+              ) : (
+                <div className="text-center text-slate-300">
+                  <FileText size={64} className="mx-auto mb-4 opacity-20" />
+                  <p className="text-sm italic font-medium">File bukti pembayaran belum diunggah atau tidak dapat ditampilkan.</p>
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
       </div>
+
+      {/* 4. FOOTER INFO BANNER */}
+      <div className="bg-blue-50 border border-blue-100 rounded-xl p-4 flex items-center gap-4">
+        <Info className="text-blue-500 flex-shrink-0" size={20} />
+        <p className="text-xs text-blue-800 font-medium">
+          Sistem mendeteksi pengajuan ini sebagai <strong>Reimbursement Biaya Studi</strong>. Pastikan nominal dan bukti transfer sudah sesuai dengan SK yang berlaku sebelum melakukan verifikasi.
+        </p>
+      </div>
+
     </div>
   );
 }

@@ -11,7 +11,7 @@ export default function TabNavigation({ idDosen }: { idDosen: string }) {
 
   const tabs = [
     {
-      name: 'Riwayat Studi',
+      name: 'Status Studi',
       href: baseUrl,
     },
     {

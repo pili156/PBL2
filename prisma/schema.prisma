@@ -94,6 +94,7 @@ model PengajuanStudi {
   jenis_studi_id          Int?
   status_id               Int?
   wilayah_studi           String?
+  perguruan_tinggi        String?
   dokumen_pengajuan       DokumenPengajuan[]
   monitoring_khs          MonitoringKhs[]
   pengajuan_reimbursement PengajuanReimbursement[]
@@ -159,6 +160,8 @@ model PengajuanReimbursement {
   nominal           Decimal?        @db.Decimal(12, 2)
   status_pencairan  String?         @default("Pending")
   catatan_keuangan  String?
+  nomor_rekening    String?
+  nama_bank         String?
   created_at        DateTime?       @default(now()) @db.Timestamptz(6)
   tanggal_pencairan DateTime?       @db.Timestamptz(6)
   updated_at        DateTime?       @updatedAt @db.Timestamptz(6)
