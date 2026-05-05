@@ -113,16 +113,28 @@ async function main() {
     create: { id: 1, nama_pendanaan: 'Beasiswa' },
   });
 
-  const pendanaanMandiri = await prisma.masterJalurPendanaan.upsert({
+const pendanaanMandiri = await prisma.masterJalurPendanaan.upsert({
     where: { id: 2 },
     update: { nama_pendanaan: 'Mandiri' },
     create: { id: 2, nama_pendanaan: 'Mandiri' },
   });
-  
-  console.log('Seed berhasil! 4 Role (Master Admin, Admin, Dosen, Keuangan) dan Akun Default telah siap digunakan.');
-}
 
-  // 9. Seed Master Dokumen
+  // 9. Seed Master Wilayah
+  await prisma.masterWilayah.upsert({
+    where: { id: 1 },
+    update: { nama_wilayah: 'Dalam Negeri' },
+    create: { id: 1, nama_wilayah: 'Dalam Negeri' },
+  });
+
+  await prisma.masterWilayah.upsert({
+    where: { id: 2 },
+    update: { nama_wilayah: 'Luar Negeri' },
+    create: { id: 2, nama_wilayah: 'Luar Negeri' },
+  });
+
+  console.log('Seed berhasil! 4 Role (Master Admin, Admin, Dosen, Keuangan) dan Akun Default telah siap digunakan.');
+
+  // 10. Seed Master Dokumen
   const dokumenList = [
     { id: 1, nama_dokumen: 'Kartu virtual ASN / Kartu pegawai', is_mandatory: true, syarat_wilayah: 'Semua' },
     { id: 2, nama_dokumen: 'SK CPNS', is_mandatory: true, syarat_wilayah: 'Semua' },
@@ -164,6 +176,7 @@ async function main() {
       },
     });
   }
+}
 
 main()
   .catch((e) => {
