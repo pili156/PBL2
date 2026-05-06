@@ -10,6 +10,11 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Kolom wajib belum diisi" }, { status: 400 });
     }
 
+    // Validasi domain email polines secara ketat
+    if (!email.endsWith('@polines.ac.id')) {
+      return NextResponse.json({ error: "Gagal: Hanya akun @polines.ac.id yang diizinkan untuk mendaftar." }, { status: 400 });
+    }
+
     const existingUser = await prisma.user.findFirst({ where: { email } });
     const existingDosen = await prisma.masterDosen.findFirst({ where: { nip } });
 
