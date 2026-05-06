@@ -30,15 +30,18 @@ export async function POST(request: Request) {
 
     console.log('Input:', { jenis_studi_id, jalur_pendanaan_id, wilayah_studi, alamat_kampus });
 
-    const statusMenunggu = await prisma.masterStatusPengajuan.findFirst({
+    let statusMenunggu = await prisma.masterStatusPengajuan.findFirst({
       where: { nama_status: 'menunggu' },
     });
 
     console.log('Status menunggu:', statusMenunggu);
 
     if (!statusMenunggu) {
-      console.error('Status menunggu not found in master_status_pengajuan');
-      return NextResponse.json({ error: 'Status not configured' }, { status: 500 });
+      console.warn('Status menunggu not found in master_status_pengajuan, creating default entry');
+      statusMenunggu = await prisma.masterStatusPengajuan.create({
+        data: { nama_status: 'menunggu' },
+      });
+      console.log('Created default status menunggu:', statusMenunggu);
     }
 
     const pengajuan = await prisma.pengajuanStudi.create({

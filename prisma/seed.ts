@@ -132,6 +132,13 @@ const pendanaanMandiri = await prisma.masterJalurPendanaan.upsert({
     create: { id: 2, nama_wilayah: 'Luar Negeri' },
   });
 
+  // 10. Seed Master Status Pengajuan
+  await prisma.masterStatusPengajuan.upsert({
+    where: { id: 1 },
+    update: { nama_status: 'menunggu' },
+    create: { id: 1, nama_status: 'menunggu' },
+  });
+
   console.log('Seed berhasil! 4 Role (Master Admin, Admin, Dosen, Keuangan) dan Akun Default telah siap digunakan.');
 
   // 10. Seed Master Dokumen
