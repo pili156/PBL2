@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Step1JenisStudi from "./components/Step1JenisStudi";
 import Step2Dokumen from "./components/Step2Dokumen";
 import Step3DocumentUpload from "./components/Step3DocumentUpload";
@@ -16,7 +16,7 @@ type MasterData = {
   nama_wilayah?: string;
   nama_dokumen?: string;
   is_mandatory?: boolean;
- syarat_wilayah?: string;
+  syarat_wilayah?: string;
 };
 
 const initialDocuments = Object.keys(DOCUMENT_GROUPS).reduce((acc, group) => {
@@ -43,6 +43,8 @@ export default function PengajuanPage() {
     wilayah: MasterData[];
   }>({ jenisStudi: [], jalurPendanaan: [], wilayah: [] });
   const [loading, setLoading] = useState(false);
+  const [lastSaved, setLastSaved] = useState<Date | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     async function fetchMasterData() {
@@ -61,7 +63,17 @@ export default function PengajuanPage() {
     fetchMasterData();
   }, []);
 
-  // Calculate progress step for sidebar
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (flowStep !== "step1" && flowStep !== "completed" && pengajuanId === null) {
+        e.preventDefault();
+        e.returnValue = '';
+      }
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [flowStep, pengajuanId]);
+
   const documentGroupOrder: DocumentGroup[] = ["kesehatan", "identitas", "kepegawaian", "akademik"];
   const currentGroupIndex = documentGroupOrder.indexOf(currentDocumentGroup);
   const progressStep = flowStep === "step1" ? 0 : flowStep === "step2" ? 1 : flowStep === "step3" ? currentGroupIndex + 1 : 5;
@@ -72,6 +84,7 @@ export default function PengajuanPage() {
     studyRegion: string;
   }) => {
     setLoading(true);
+    setError(null);
     try {
       const selectedJenisStudi = masterData.jenisStudi.find(
         (j) => j.nama_jenis?.toLowerCase().replace(/ /g, '_') === data.studyType
@@ -82,11 +95,6 @@ export default function PengajuanPage() {
       const selectedWilayah = masterData.wilayah.find(
         (w) => w.nama_wilayah?.toLowerCase().replace(/ /g, '_') === data.studyRegion
       );
-
-      console.log('=== DEBUG CREATE PENGajuan ===');
-      console.log('jenis_studi_id:', selectedJenisStudi?.id);
-      console.log('jalur_pendanaan_id:', selectedJalurPendanaan?.id);
-      console.log('wilayah_studi:', selectedWilayah?.id);
 
       const response = await fetch('/api/pengajuan', {
         method: 'POST',
@@ -99,17 +107,14 @@ export default function PengajuanPage() {
       });
 
       const responseText = await response.text();
-      console.log('Response status:', response.status);
-      console.log('Response text:', responseText);
 
       if (!response.ok) {
         throw new Error(`Server error: ${response.status} - ${responseText}`);
       }
 
       const result = JSON.parse(responseText);
-      console.log('Pengajuan created:', result.pengajuan);
-
       setPengajuanId(result.pengajuan.id);
+      setLastSaved(new Date());
 
       setFormData((prev) => ({
         ...prev,
@@ -117,11 +122,13 @@ export default function PengajuanPage() {
         fundingType: data.fundingType as any,
         studyRegion: data.studyRegion as any,
       }));
+
+      localStorage.removeItem("pengajuan_step1_draft");
       setFlowStep("step2");
     } catch (error: unknown) {
       console.error('Error creating pengajuan:', error);
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      alert(`Gagal membuat pengajuan: ${errorMessage}`);
+      setError(`Gagal membuat pengajuan: ${errorMessage}`);
     } finally {
       setLoading(false);
     }
@@ -136,27 +143,20 @@ export default function PengajuanPage() {
     const currentGroupIndex = documentGroupOrder.indexOf(currentDocumentGroup);
     
     if (currentGroupIndex < documentGroupOrder.length - 1) {
-      // Move to next group
       setCurrentDocumentGroup(documentGroupOrder[currentGroupIndex + 1]);
     } else {
-      // All groups completed, move to completion
       setFlowStep("completed");
     }
   };
 
   const handleDocumentUpload = async (docType: DocumentType, file: UploadFile, fileObj: File) => {
     if (!pengajuanId) {
-      alert('Pengajuan belum dibuat. Silakan lengkapi langkah sebelumnya.');
+      setError('Pengajuan belum dibuat. Silakan lengkapi langkah sebelumnya.');
       return;
     }
 
     try {
       const masterDokumenId = DOCUMENT_TYPE_TO_MASTER_ID[docType];
-      console.log('=== DEBUG UPLOAD FRONTEND ===');
-      console.log('docType:', docType);
-      console.log('masterDokumenId:', masterDokumenId);
-      console.log('pengajuanId:', pengajuanId);
-      console.log('file:', file.name);
       
       const formDataFile = new FormData();
       formDataFile.append('file', fileObj);
@@ -168,8 +168,6 @@ export default function PengajuanPage() {
       });
 
       const responseText = await response.text();
-      console.log('Response status:', response.status);
-      console.log('Response text:', responseText);
 
       if (!response.ok) {
         throw new Error(`Server error: ${response.status} - ${responseText}`);
@@ -187,10 +185,11 @@ export default function PengajuanPage() {
           },
         },
       }));
+      setLastSaved(new Date());
     } catch (error: unknown) {
       console.error('Error uploading document:', error);
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      alert(`Gagal mengunggah dokumen: ${errorMessage}`);
+      setError(`Gagal mengunggah dokumen: ${errorMessage}`);
     }
   };
 
@@ -212,11 +211,27 @@ export default function PengajuanPage() {
     setFlowStep("step1");
   };
 
+  const clearError = () => setError(null);
+
   return (
-    <div className="flex gap-8 min-h-screen bg-gray-50 p-8">
-      {/* Main Content */}
+    <div className="flex gap-8 min-h-screen bg-gray-50 p-4 md:p-8">
       <div className="flex-1">
-        <div className="bg-white p-8 rounded-xl shadow-sm min-h-[700px]">
+        {error && (
+          <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg flex items-start justify-between">
+            <div className="flex items-start gap-3">
+              <div className="text-red-600 text-lg">⚠️</div>
+              <div>
+                <p className="font-semibold text-red-800">Terjadi Kesalahan</p>
+                <p className="text-sm text-red-700">{error}</p>
+              </div>
+            </div>
+            <button onClick={clearError} className="text-red-500 hover:text-red-700">
+              ✕
+            </button>
+          </div>
+        )}
+
+        <div className="bg-white p-6 md:p-8 rounded-xl shadow-sm min-h-[700px]">
           {flowStep === "step1" && (
             <Step1JenisStudi onNext={handleStep1Next} />
           )}
@@ -242,19 +257,17 @@ export default function PengajuanPage() {
           {flowStep === "completed" && (
             <StepCompleted
               onViewStatus={() => {
-                // Navigate to status page
                 window.location.href = "/user/pengajuan/status";
               }}
               onBackHome={() => {
-                // Navigate to dashboard
                 window.location.href = "/user/dashboard";
               }}
+              pengajuanId={pengajuanId || undefined}
             />
           )}
         </div>
       </div>
 
-      {/* Sidebar */}
       {flowStep !== "completed" && (
         <ProgressSidebar
           currentStep={flowStep === "step3" ? currentGroupIndex + 1 : 0}
