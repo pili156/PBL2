@@ -135,16 +135,16 @@ const pendanaanMandiri = await prisma.masterJalurPendanaan.upsert({
   console.log('Seed berhasil! 4 Role (Master Admin, Admin, Dosen, Keuangan) dan Akun Default telah siap digunakan.');
 
   // 10. Seed Master Dokumen
-  const dokumenList = [
+const dokumenList = [
     { id: 1, nama_dokumen: 'Kartu virtual ASN / Kartu pegawai', is_mandatory: true, syarat_wilayah: 'Semua' },
-    { id: 2, nama_dokumen: 'SK CPNS', is_mandatory: true, syarat_wilayah: 'Semua' },
+    { id: 2, nama_dokumen: 'SK Cpns', is_mandatory: true, syarat_wilayah: 'Semua' },
     { id: 3, nama_dokumen: 'SK PNS', is_mandatory: true, syarat_wilayah: 'Semua' },
     { id: 4, nama_dokumen: 'SK Pangkat Terakhir', is_mandatory: true, syarat_wilayah: 'Semua' },
     { id: 5, nama_dokumen: 'SK Jabatan Terakhir', is_mandatory: true, syarat_wilayah: 'Semua' },
     { id: 6, nama_dokumen: 'Penilaian Prestasi Kerja / SKPP 2 tahun', is_mandatory: true, syarat_wilayah: 'Semua' },
     { id: 7, nama_dokumen: 'Akta Nikah', is_mandatory: false, syarat_wilayah: 'Semua' },
     { id: 8, nama_dokumen: 'Tunjangan keluarga PNS (KP4)', is_mandatory: false, syarat_wilayah: 'Semua' },
-    { id: 9, nama_dokumen: 'Surat keterangan sehat jasmani & rohani', is_mandatory: true, syarat_wilayah: 'Semua' },
+    { id: 9, nama_dokumen: 'Surat keterangan sehat jasmani', is_mandatory: true, syarat_wilayah: 'Semua' },
     { id: 10, nama_dokumen: 'Surat rekomendasi dari atasan langsung', is_mandatory: true, syarat_wilayah: 'Semua' },
     { id: 11, nama_dokumen: 'Surat keterangan pimpinan (kesesuaian bidang)', is_mandatory: true, syarat_wilayah: 'Semua' },
     { id: 12, nama_dokumen: 'Perjanjian Tugas Belajar', is_mandatory: true, syarat_wilayah: 'Semua' },
@@ -155,6 +155,7 @@ const pendanaanMandiri = await prisma.masterJalurPendanaan.upsert({
     { id: 17, nama_dokumen: 'Ijazah Pendidikan Terakhir', is_mandatory: true, syarat_wilayah: 'Semua' },
     { id: 18, nama_dokumen: 'Dokumen akreditasi prodi & PT / PTLN', is_mandatory: true, syarat_wilayah: 'Luar Negeri' },
     { id: 19, nama_dokumen: 'Surat Persetujuan Setneg', is_mandatory: true, syarat_wilayah: 'Luar Negeri' },
+    { id: 20, nama_dokumen: 'Surat keterangan sehat rohani', is_mandatory: true, syarat_wilayah: 'Semua' },
   ];
 
   for (const dokumen of dokumenList) {
