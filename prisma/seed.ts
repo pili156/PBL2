@@ -167,7 +167,97 @@ async function main() {
     },
   });
 
+   // 7. Seed Master Jenis Studi
+  const jenisTugasBelajar = await prisma.masterJenisStudi.upsert({
+    where: { id: 1 },
+    update: { nama_jenis: 'Tugas Belajar' },
+    create: { id: 1, nama_jenis: 'Tugas Belajar' },
+  });
+
+  const jenisIzinBelajar = await prisma.masterJenisStudi.upsert({
+    where: { id: 2 },
+    update: { nama_jenis: 'Izin Belajar' },
+    create: { id: 2, nama_jenis: 'Izin Belajar' },
+  });
+
+  // 8. Seed Master Jalur Pendanaan
+  const pendanaanBeasiswa = await prisma.masterJalurPendanaan.upsert({
+    where: { id: 1 },
+    update: { nama_pendanaan: 'Beasiswa' },
+    create: { id: 1, nama_pendanaan: 'Beasiswa' },
+  });
+
+const pendanaanMandiri = await prisma.masterJalurPendanaan.upsert({
+    where: { id: 2 },
+    update: { nama_pendanaan: 'Mandiri' },
+    create: { id: 2, nama_pendanaan: 'Mandiri' },
+  });
+
+  // 9. Seed Master Wilayah
+  await prisma.masterWilayah.upsert({
+    where: { id: 1 },
+    update: { nama_wilayah: 'Dalam Negeri' },
+    create: { id: 1, nama_wilayah: 'Dalam Negeri' },
+  });
+
+  await prisma.masterWilayah.upsert({
+    where: { id: 2 },
+    update: { nama_wilayah: 'Luar Negeri' },
+    create: { id: 2, nama_wilayah: 'Luar Negeri' },
+  });
+
+  // 10. Seed Master Status Pengajuan
+  await prisma.masterStatusPengajuan.upsert({
+    where: { id: 1 },
+    update: { nama_status: 'menunggu' },
+    create: { id: 1, nama_status: 'menunggu' },
+  });
+
   console.log('Proses Seeding Berhasil! Budi Doremi resmi berkuliah di ITB.');
+
+  // 10. Seed Master Dokumen
+const dokumenList = [
+    { id: 1, nama_dokumen: 'Kartu virtual ASN / Kartu pegawai', is_mandatory: true, syarat_wilayah: 'Semua' },
+    { id: 2, nama_dokumen: 'SK Cpns', is_mandatory: true, syarat_wilayah: 'Semua' },
+    { id: 3, nama_dokumen: 'SK PNS', is_mandatory: true, syarat_wilayah: 'Semua' },
+    { id: 4, nama_dokumen: 'SK Pangkat Terakhir', is_mandatory: true, syarat_wilayah: 'Semua' },
+    { id: 5, nama_dokumen: 'SK Jabatan Terakhir', is_mandatory: true, syarat_wilayah: 'Semua' },
+    { id: 6, nama_dokumen: 'Penilaian Prestasi Kerja / SKPP 2 tahun', is_mandatory: true, syarat_wilayah: 'Semua' },
+    { id: 7, nama_dokumen: 'Akta Nikah', is_mandatory: false, syarat_wilayah: 'Semua' },
+    { id: 8, nama_dokumen: 'Tunjangan keluarga PNS (KP4)', is_mandatory: false, syarat_wilayah: 'Semua' },
+    { id: 9, nama_dokumen: 'Surat keterangan sehat jasmani', is_mandatory: true, syarat_wilayah: 'Semua' },
+    { id: 10, nama_dokumen: 'Surat rekomendasi dari atasan langsung', is_mandatory: true, syarat_wilayah: 'Semua' },
+    { id: 11, nama_dokumen: 'Surat keterangan pimpinan (kesesuaian bidang)', is_mandatory: true, syarat_wilayah: 'Semua' },
+    { id: 12, nama_dokumen: 'Perjanjian Tugas Belajar', is_mandatory: true, syarat_wilayah: 'Semua' },
+    { id: 13, nama_dokumen: 'Surat jaminan Pembiayaan tugas belajar', is_mandatory: false, syarat_wilayah: 'Semua' },
+    { id: 14, nama_dokumen: 'Hasil kelulusan / LoA dari lembaga', is_mandatory: true, syarat_wilayah: 'Semua' },
+    { id: 15, nama_dokumen: 'Surat pernyataan pimpinan unit kerja', is_mandatory: true, syarat_wilayah: 'Semua' },
+    { id: 16, nama_dokumen: 'Surat pernyataan pegawai bersangkutan', is_mandatory: true, syarat_wilayah: 'Semua' },
+    { id: 17, nama_dokumen: 'Ijazah Pendidikan Terakhir', is_mandatory: true, syarat_wilayah: 'Semua' },
+    { id: 18, nama_dokumen: 'Dokumen akreditasi prodi & PT / PTLN', is_mandatory: true, syarat_wilayah: 'Luar Negeri' },
+    { id: 19, nama_dokumen: 'Surat Persetujuan Setneg', is_mandatory: true, syarat_wilayah: 'Luar Negeri' },
+    { id: 20, nama_dokumen: 'Surat keterangan sehat rohani', is_mandatory: true, syarat_wilayah: 'Semua' },
+  ];
+
+  for (const dokumen of dokumenList) {
+    await prisma.masterDokumen.upsert({
+      where: { id: dokumen.id },
+      update: {
+        nama_dokumen: dokumen.nama_dokumen,
+        is_mandatory: dokumen.is_mandatory,
+        syarat_wilayah: dokumen.syarat_wilayah,
+        updated_at: new Date(),
+      },
+      create: {
+        id: dokumen.id,
+        nama_dokumen: dokumen.nama_dokumen,
+        is_mandatory: dokumen.is_mandatory,
+        syarat_wilayah: dokumen.syarat_wilayah,
+        created_at: new Date(),
+        updated_at: new Date(),
+      },
+    });
+  }
 }
 
 main()
