@@ -66,7 +66,7 @@ export default function Step2Dokumen({ onNext, onPrev }: Props) {
         <div className="bg-gradient-to-br from-amber-500 to-amber-600 p-5 rounded-xl text-white">
           <div className="flex items-center gap-2 mb-2">
             <Clock size={20} />
-            <span className="text-sm font-medium opacity-90">Terunggu</span>
+            <span className="text-sm font-medium opacity-90">Opsional</span>
           </div>
           <div className="text-3xl font-bold">{totalOptional}</div>
         </div>
@@ -76,7 +76,8 @@ export default function Step2Dokumen({ onNext, onPrev }: Props) {
             <AlertTriangle size={20} />
             <span className="text-sm font-medium opacity-90">Status</span>
           </div>
-          <div className="text-3xl font-bold">Menunggu</div>
+          {/* PERBAIKAN: Mengubah ukuran teks menjadi text-2xl dan menambahkan truncate */}
+          <div className="text-2xl font-bold truncate" title="Menunggu">Menunggu</div>
         </div>
       </div>
 
@@ -101,7 +102,7 @@ export default function Step2Dokumen({ onNext, onPrev }: Props) {
                     </span>
                     {group.optionalCount > 0 && (
                       <span className="inline-flex items-center gap-1 text-xs font-semibold text-amber-600 bg-amber-100 px-2 py-1 rounded">
-                        {group.optionalCount} TERUNGGU
+                        {group.optionalCount} OPSIONAL
                       </span>
                     )}
                   </div>
@@ -140,7 +141,7 @@ export default function Step2Dokumen({ onNext, onPrev }: Props) {
             <p className="font-semibold mb-1">Perhatian Penting:</p>
             <ul className="space-y-1 list-disc list-inside">
               <li>Pastikan semua dokumen WAJIB sudah disiapkan sebelum melanjutkan</li>
-              <li>Dokumen terunggu bersifat opsional namun sangat disarankan</li>
+              <li>Dokumen opsional bersifat opsional namun sangat disarankan</li>
               <li> Semua dokumen harus dalam format PDF dengan ukuran maksimal 2MB</li>
             </ul>
           </div>
@@ -158,4 +159,3 @@ export default function Step2Dokumen({ onNext, onPrev }: Props) {
     </div>
   );
 }
-
