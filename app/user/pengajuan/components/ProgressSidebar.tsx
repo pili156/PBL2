@@ -77,6 +77,8 @@ function isGroupComplete(
 
 export default function ProgressSidebar({ currentStep, currentGroup, uploadedFiles }: Props) {
   const completedGroups = STEPS.filter((step) => isGroupComplete(step.groupKey, uploadedFiles)).length;
+  
+  // Dikembalikan ke perhitungan awal (hanya yang wajib)
   const totalRequired = STEPS.reduce((acc, step) => {
     const stats = getGroupStats(step.groupKey, uploadedFiles);
     return acc + stats.required;
@@ -93,6 +95,8 @@ export default function ProgressSidebar({ currentStep, currentGroup, uploadedFil
         <h3 className="font-bold text-gray-900 text-lg">PROGRESS</h3>
         <span className="text-sm font-semibold text-blue-600">{totalProgress}%</span>
       </div>
+      
+      {/* Dikembalikan ke teks awal */}
       <p className="text-xs text-gray-500 mb-6">
         {totalUploaded} dari {totalRequired} dokumen wajib terupload
       </p>
@@ -108,7 +112,8 @@ export default function ProgressSidebar({ currentStep, currentGroup, uploadedFil
             <div key={step.number} className="relative">
               {step.number < STEPS.length && (
                 <div
-                  className={`absolute left-5 top-12 w-0.5 h-10 ${
+                  // PERBAIKAN GARIS: menarik garis dari tengah lingkaran atas ke bawah, disembunyikan di belakang lingkaran
+                  className={`absolute left-[31px] top-8 -bottom-9 w-0.5 z-0 ${
                     isGroupCompleted ? "bg-green-500" : "bg-gray-200"
                   }`}
                 />
@@ -118,7 +123,8 @@ export default function ProgressSidebar({ currentStep, currentGroup, uploadedFil
                 isThisStepActive ? "bg-blue-50 border border-blue-200" : ""
               }`}>
                 <div
-                  className={`flex items-center justify-center w-10 h-10 rounded-full font-semibold text-sm flex-shrink-0 transition-all ${
+                  // PERBAIKAN LINGKARAN: ditambahkan "relative z-10" agar menutupi garis yang overlap
+                  className={`relative z-10 flex items-center justify-center w-10 h-10 rounded-full font-semibold text-sm flex-shrink-0 transition-all ${
                     isGroupCompleted
                       ? "bg-green-500 text-white"
                       : isThisStepActive

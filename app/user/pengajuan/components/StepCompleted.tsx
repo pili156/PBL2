@@ -2,6 +2,7 @@
 
 import { useState, useRef } from "react";
 import { CheckCircle, Download, Home, Printer, Mail, Phone, Calendar, FileText, Copy, Check, Clock, Users, Building } from "lucide-react";
+import { DOCUMENT_GROUPS } from "../constants";
 
 type Props = {
   onViewStatus: () => void;
@@ -23,6 +24,11 @@ export default function StepCompleted({ onViewStatus, onBackHome, pengajuanId }:
   const handlePrint = () => {
     window.print();
   };
+
+  const totalDocuments = Object.values(DOCUMENT_GROUPS).reduce(
+    (acc, group) => acc + group.documents.length,
+    0
+  );
 
   return (
     <div className="w-full">
@@ -92,7 +98,7 @@ export default function StepCompleted({ onViewStatus, onBackHome, pengajuanId }:
                   <FileText size={16} className="text-blue-300 print:text-gray-500" />
                   <span className="text-xs text-blue-200 print:text-gray-500">Total Dokumen</span>
                 </div>
-                <p className="font-semibold">21 Dokumen</p>
+                <p className="font-semibold">{totalDocuments} dokumen</p>
               </div>
             </div>
 

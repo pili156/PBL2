@@ -137,7 +137,7 @@ export default function Step3DocumentUpload({
           <div className="text-2xl font-bold text-red-900">{stats.requiredUploaded}/{stats.required}</div>
         </div>
         <div className="bg-gradient-to-br from-amber-50 to-amber-100 p-4 rounded-xl border border-amber-200">
-          <div className="text-sm text-amber-600 mb-1">Terunggah</div>
+          <div className="text-sm text-amber-600 mb-1">opsional</div>
           <div className="text-2xl font-bold text-amber-900">{stats.optionalUploaded}/{stats.optional}</div>
         </div>
         <div className="bg-gradient-to-br from-green-50 to-green-100 p-4 rounded-xl border border-green-200">

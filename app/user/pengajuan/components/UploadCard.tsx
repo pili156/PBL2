@@ -8,7 +8,7 @@ type Props = {
   title: string;
   description?: string;
   required?: boolean;
-  status?: "wajib" | "terunggu";
+  status?: "wajib" | "opsional";
   file?: { name: string; size?: number } | null;
   uploadProgress?: number;
   onUpload: (file: File) => void;
@@ -83,7 +83,7 @@ export default function UploadCard({
     }
     return (
       <span className="inline-flex items-center gap-1 text-xs font-semibold text-amber-600 bg-amber-100 px-2 py-1 rounded">
-        TERUNGGU
+        opsional
       </span>
     );
   };
