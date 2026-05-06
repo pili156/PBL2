@@ -139,6 +139,7 @@ model MonitoringKhs {
   id               Int             @id @default(autoincrement())
   pengajuan_id     Int?
   semester_ke      Int?
+  tahun_akademik   String?
   file_khs_path    String?
   catatan_evaluasi String?
   tanggal_unggah   DateTime?       @db.Date
