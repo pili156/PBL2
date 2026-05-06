@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { uploadKHS } from '../actions';
 import { getDashboardData } from '../actions';
 import { cookies } from 'next/headers';
+import { prisma } from '@/lib/prisma';
 
 export default async function UploadKHSPage({
   searchParams,
@@ -20,7 +21,6 @@ export default async function UploadKHSPage({
     return <div>Silakan login terlebih dahulu</div>;
   }
 
-  const { prisma } = await import('@/lib/prisma');
   const user = await prisma.user.findUnique({
     where: { email: userEmail },
   });
