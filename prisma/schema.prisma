@@ -99,6 +99,7 @@ model PengajuanStudi {
   jalur_pendanaan_id Int?
   wilayah_studi      Int?
   alamat_kampus      String?
+  perguruan_tinggi   String?
   status_id          Int?
   tanggal_pengajuan  DateTime? @db.Date
   created_at         DateTime? @db.Timestamptz()
@@ -113,10 +114,6 @@ model PengajuanStudi {
   dokumen_pengajuan       DokumenPengajuan[]
   monitoring_khs          MonitoringKhs[]
   pengajuan_reimbursement PengajuanReimbursement[]
-  jalur_pendanaan         MasterJalurPendanaan?    @relation(fields: [jalur_pendanaan_id], references: [id])
-  jenis_studi             MasterJenisStudi?        @relation(fields: [jenis_studi_id], references: [id])
-  status                  MasterStatusPengajuan?   @relation(fields: [status_id], references: [id])
-  user                    User?                    @relation(fields: [user_id], references: [id])
   pesan_komunikasi        PesanKomunikasi[]
   sk_kementerian          SkKementerian[]
 
