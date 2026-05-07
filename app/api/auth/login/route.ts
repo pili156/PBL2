@@ -56,7 +56,7 @@ export async function POST(request: Request) {
     // --- LOGIC REDIRECT DITENTUKAN DI BACKEND ---
     let targetUrl = "/user/dashboard"; // Default folder untuk dosen
 
-    if (roleName === "admin" || roleName === "master_admin") {
+    if (roleName === "admin_fakultas" || roleName === "master_admin") {
       targetUrl = "/admin/dashboard"; // Mengarah ke dashboard admin
     } else if (roleName === "keuangan") {
       targetUrl = "/keuangan/dashboard"; // Tambahan redirect untuk role keuangan

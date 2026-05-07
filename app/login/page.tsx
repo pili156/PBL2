@@ -36,7 +36,7 @@ export default function Login() {
 
       if (res.ok) {
         // Berhasil login, langsung proses redirect berdasarkan role (TANPA ALERT POPUP)
-        if (data.user.role === "admin") {
+        if (data.user.role === "admin_fakultas") {
           router.push("/admin/dashboard");
         } else if (data.user.role === "master_admin" || data.user.role === "master admin") {
           router.push("/master_admin/dashboard");
