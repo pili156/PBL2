@@ -27,6 +27,7 @@ async function main() {
   await prisma.masterWilayah.upsert({ where: { id: 1 }, update: { nama_wilayah: 'Dalam Negeri' }, create: { id: 1, nama_wilayah: 'Dalam Negeri' } });
   await prisma.masterWilayah.upsert({ where: { id: 2 }, update: { nama_wilayah: 'Luar Negeri' }, create: { id: 2, nama_wilayah: 'Luar Negeri' } });
 
+  // --- Master Dokumen (20 dokumen) ---
   const dokumenList = [
     { id: 1, nama_dokumen: 'Kartu virtual ASN / Kartu pegawai', is_mandatory: true, syarat_wilayah: 'Semua' },
     { id: 2, nama_dokumen: 'SK Cpns', is_mandatory: true, syarat_wilayah: 'Semua' },
@@ -57,56 +58,195 @@ async function main() {
     });
   }
 
-  // === USERS & Dosen ===
-  await prisma.user.upsert({ where: { email: 'master_admin@polines.ac.id' }, update: {}, create: { username: 'Master Admin', email: 'master_admin@polines.ac.id', password_hash: hashedPassword, role_id: roleMaster.id } });
-  await prisma.user.upsert({ where: { email: 'admin@polines.ac.id' }, update: {}, create: { username: 'Mbak Ayu', email: 'admin@polines.ac.id', password_hash: hashedPassword, role_id: roleAdmin.id } });
-  await prisma.user.upsert({ where: { email: 'keuangan@polines.ac.id' }, update: {}, create: { username: 'Admin Keuangan', email: 'keuangan@polines.ac.id', password_hash: hashedPassword, role_id: roleKeuangan.id } });
+  console.log('Data Master (Role, Jenis Studi, Pendanaan, Status, Dokumen) telah siap.');
 
+  // ===============================================================
+  // === USERS & DOSEN PROFILE (Budi Doremi) ===
+  // ===============================================================
+
+  // --- Master Admin ---
+  await prisma.user.upsert({
+    where: { email: 'master_admin@polines.ac.id' },
+    update: {},
+    create: {
+      username: 'Master Admin',
+      email: 'master_admin@polines.ac.id',
+      password_hash: hashedPassword,
+      role_id: roleMaster.id,
+      status_akun: 'aktif',
+    },
+  });
+
+  // --- Admin Fakultas ---
+  await prisma.user.upsert({
+    where: { email: 'admin@polines.ac.id' },
+    update: {},
+    create: {
+      username: 'Mbak Ayu',
+      email: 'admin@polines.ac.id',
+      password_hash: hashedPassword,
+      role_id: roleAdmin.id,
+      status_akun: 'aktif',
+    },
+  });
+
+  // --- Admin Keuangan ---
+  await prisma.user.upsert({
+    where: { email: 'keuangan@polines.ac.id' },
+    update: {},
+    create: {
+      username: 'Admin Keuangan',
+      email: 'keuangan@polines.ac.id',
+      password_hash: hashedPassword,
+      role_id: roleKeuangan.id,
+      status_akun: 'aktif',
+    },
+  });
+
+  // --- Akun Dosen PBL (Budi Doremi) ---
   const userDosenBudi = await prisma.user.upsert({
     where: { email: 'dosen@polines.ac.id' },
     update: { role_id: roleDosen.id, username: 'Budi Doremi' },
-    create: { id: 4, username: 'Budi Doremi', email: 'dosen@polines.ac.id', password_hash: hashedPassword, role_id: roleDosen.id, status_akun: 'aktif' },
+    create: {
+      id: 4,
+      username: 'Budi Doremi',
+      email: 'dosen@polines.ac.id',
+      password_hash: hashedPassword,
+      role_id: roleDosen.id,
+      status_akun: 'aktif',
+    },
   });
 
+  // --- Profil Dosen Lengkap Budi (Tabel MasterDosen) ---
   await prisma.masterDosen.upsert({
     where: { user_id: userDosenBudi.id },
     update: { nama_lengkap: 'Budi Doremi, S.Kom., M.T.' },
     create: {
-      user_id: userDosenBudi.id, nip: '198273645', nama_lengkap: 'Budi Doremi, S.Kom., M.T.',
-      pangkat_golongan: 'Penata Muda Tk I (III/b)', jabatan: 'Asisten Ahli', unit_kerja: 'Politeknik Negeri Semarang',
-      jurusan: 'Teknik Elektro', program_studi: 'Teknik Informatika',
+      user_id: userDosenBudi.id,
+      nip: '198273645',
+      nama_lengkap: 'Budi Doremi, S.Kom., M.T.',
+      pangkat_golongan: 'Penata Muda Tk I (III/b)',
+      jabatan: 'Asisten Ahli',
+      unit_kerja: 'Politeknik Negeri Semarang',
+      jurusan: 'Teknik Elektro',
+      program_studi: 'Teknik Informatika',
     },
   });
 
-  // === Transaksi ===
+  console.log('Users dan Profil Dosen (Budi Doremi) telah siap.');
+
+  // ===============================================================
+  // === TRANSAKSI (Skenario Histori Studi Budi) ===
+  // ===============================================================
+
+  // --- Buat Skenario Pengajuan Studi Aktif (Budi) ---
   const pengajuanStudiBudi = await prisma.pengajuanStudi.upsert({
     where: { id: 1 },
     update: {},
     create: {
-      user_id: userDosenBudi.id, jenis_studi_id: jenisTugasBelajar.id, jalur_pendanaan_id: jalurLPDP.id,
-      wilayah_studi: 1, perguruan_tinggi: 'Institut Teknologi Bandung (ITB)', status_id: statusMenunggu.id,
+      id: 1,
+      user_id: userDosenBudi.id,
+      jenis_studi_id: jenisTugasBelajar.id,
+      jalur_pendanaan_id: jalurLPDP.id,
+      wilayah_studi: 1,
+      perguruan_tinggi: 'Institut Teknologi Bandung (ITB)',
+      status_id: statusMenunggu.id,
       tanggal_pengajuan: new Date('2023-08-10'),
     },
   });
 
+  console.log('Data Pengajuan Studi (Skenario Budi - ITB) telah siap.');
+
+  // --- Buat Histori Monitoring KHS per Semester ---
   const khsData = [
-    { id: 1, semester_ke: 1, tahun_akademik: '2023/2024 Ganjil', file: 'uploads/khs/khs_budi_s1_12345.pdf', ipk: 3.85, status: 'Valid', catatan: 'Awal yang sangat bagus.', tgl: '2024-01-05' },
+    { id: 1, semester_ke: 1, tahun_akademik: '2023/2024 Ganjil', file: 'uploads/khs/khs_budi_s1_12345.pdf', ipk: 3.85, status: 'Valid', catatan: 'Awal yang sangat bagus, pertahankan performa studi.', tgl: '2024-01-05' },
     { id: 2, semester_ke: 2, tahun_akademik: '2023/2024 Genap', file: 'uploads/khs/khs_budi_s2_12345.pdf', ipk: 3.75, status: 'Valid', catatan: 'Aman, performa stabil.', tgl: '2024-06-01' },
     { id: 3, semester_ke: 3, tahun_akademik: '2024/2025 Ganjil', file: 'uploads/khs/khs_budi_s3_12345.pdf', ipk: 3.00, status: 'Revisi', catatan: 'Ada nilai C, tolong perbaiki progres studi.', tgl: '2025-01-01' },
-    { id: 4, semester_ke: 4, tahun_akademik: '2024/2025 Genap', status: 'Pending' },
+    { id: 4, semester_ke: 4, tahun_akademik: '2024/2025 Genap', status: 'Pending', catatan: null, tgl: null },
   ];
   for (const khs of khsData) {
     await prisma.monitoringKhs.upsert({
       where: { id: khs.id },
       update: {},
       create: {
-        id: khs.id, pengajuan_id: pengajuanStudiBudi.id, semester_ke: khs.semester_ke, tahun_akademik: khs.tahun_akademik,
-        file_khs_path: khs.file, ipk: khs.ipk, status_evaluasi: khs.status, catatan_evaluasi: khs.catatan, tanggal_unggah: khs.tgl ? new Date(khs.tgl) : undefined,
+        id: khs.id,
+        pengajuan_id: pengajuanStudiBudi.id,
+        semester_ke: khs.semester_ke,
+        tahun_akademik: khs.tahun_akademik,
+        file_khs_path: khs.file || null,
+        ipk: khs.ipk || null,
+        status_evaluasi: khs.status,
+        catatan_evaluasi: khs.catatan,
+        tanggal_unggah: khs.tgl ? new Date(khs.tgl) : null,
       },
     });
   }
 
-  console.log('Seeding selesai! Budi Doremi berkuliah di ITB.');
+  console.log('Histori Monitoring KHS (Semester 1-4) telah siap.');
+
+  // --- Buat Histori Monitoring Keuangan per Semester ---
+  await prisma.pengajuanReimbursement.upsert({
+    where: { id: 1 },
+    update: {},
+    create: {
+      id: 1,
+      pengajuan_id: pengajuanStudiBudi.id,
+      semester_ke: 1,
+      nominal: 5000000,
+      status_pencairan: 'Dicairkan',
+      catatan_keuangan: 'Audit pembayaran dana Tugas Belajar Sem 1 lulus.',
+    },
+  });
+
+  await prisma.pengajuanReimbursement.upsert({
+    where: { id: 2 },
+    update: {},
+    create: {
+      id: 2,
+      pengajuan_id: pengajuanStudiBudi.id,
+      semester_ke: 2,
+      nominal: 5000000,
+      status_pencairan: 'Dicairkan',
+      catatan_keuangan: 'Audit pembayaran dana Tugas Belajar Sem 2 lulus.',
+    },
+  });
+
+  await prisma.pengajuanReimbursement.upsert({
+    where: { id: 3 },
+    update: {},
+    create: {
+      id: 3,
+      pengajuan_id: pengajuanStudiBudi.id,
+      semester_ke: 3,
+      nominal: 5000000,
+      status_pencairan: 'Pending',
+      catatan_keuangan: null,
+    },
+  });
+
+  console.log('Histori Monitoring Keuangan (Semester 1-3) telah siap.');
+
+  // --- Buat Pesan Komunikasi Contoh ---
+  await prisma.pesanKomunikasi.upsert({
+    where: { id: 1 },
+    update: {},
+    create: {
+      id: 1,
+      pengajuan_id: pengajuanStudiBudi.id,
+      pengirim_id: userDosenBudi.id,
+      isi_pesan: 'Mohon izin, Mbak Ayu. Saya sudah mengunggah KHS Semester 1-3 dan Bukti Bayar Sem 1-3. Mohon diverifikasi. Terima kasih.',
+    },
+  });
+
+  console.log('Proses Seeding (SIGAP PBL2) Berhasil!');
+  console.log('-----------------------------------');
+  console.log('Skenario Data Hidup:');
+  console.log('- Akun Master Admin: master_admin@polines.ac.id');
+  console.log('- Akun Admin:       admin@polines.ac.id');
+  console.log('- Akun Keuangan:    keuangan@polines.ac.id');
+  console.log('- Akun Dosen:       dosen@polines.ac.id (Budi Doremi)');
+  console.log('- Password Semuanya: rahasia123');
+  console.log('-----------------------------------');
 }
 
 main()

@@ -1,14 +1,6 @@
 import Image from "next/image";
-import Link from "next/link";
 import { cookies } from "next/headers";
-import { 
-  LayoutDashboard, 
-  FileText, 
-  CheckSquare, 
-  ListOrdered, 
-  CreditCard, 
-  UserCircle
-} from "lucide-react";
+
 
 // Import komponen Client yang baru saja kita buat
 // Sesuaikan letak path-nya jika kamu menyimpannya di folder /components
@@ -66,7 +58,7 @@ export default async function AdminLayout({
           </div>
         </div>
 
-        <SidebarNav />
+<SidebarNav />
       </aside>
 
       {/* Main Content */}
