@@ -56,10 +56,12 @@ export async function POST(request: Request) {
     // --- LOGIC REDIRECT DITENTUKAN DI BACKEND ---
     let targetUrl = "/user/dashboard"; // Default folder untuk dosen
 
-    if (roleName === "admin_fakultas" || roleName === "master_admin") {
-      targetUrl = "/admin/dashboard"; // Mengarah ke dashboard admin
+    if (roleName === "master_admin") {
+      targetUrl = "/master_admin/dashboard";
+    } else if (roleName === "admin_fakultas") {
+      targetUrl = "/admin/dashboard";
     } else if (roleName === "keuangan") {
-      targetUrl = "/keuangan/dashboard"; // Tambahan redirect untuk role keuangan
+      targetUrl = "/keuangan/dashboard";
     }
 
     console.log(`4. Login SUKSES! Role: ${roleName}, Redirect ke: ${targetUrl}`);
