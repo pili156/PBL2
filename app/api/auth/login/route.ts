@@ -14,6 +14,11 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Email/NIP dan password wajib diisi" }, { status: 400 });
     }
 
+    // Validasi domain email polines (jika input berupa email)
+    if (identifier.includes('@') && !identifier.endsWith('@polines.ac.id')) {
+      return NextResponse.json({ error: "Gagal: Gunakan email @polines.ac.id untuk login." }, { status: 400 });
+    }
+
     // Cari user berdasarkan email atau NIP dosen
     const user = await prisma.user.findFirst({
       where: {

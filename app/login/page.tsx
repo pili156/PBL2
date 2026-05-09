@@ -8,11 +8,21 @@ import { useRouter } from "next/navigation";
 export default function Login() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState(""); // Menyimpan pesan error
+  
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setErrorMsg(""); // Reset pesan error setiap kali submit
+
+    // Pengecekan domain polines di sisi frontend (jika format berupa email)
+    if (identifier.includes('@') && !identifier.endsWith('@polines.ac.id')) {
+      setErrorMsg("Gunakan email @polines.ac.id untuk login!");
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -25,38 +35,36 @@ export default function Login() {
       const data = await res.json();
 
       if (res.ok) {
-        alert("Login Berhasil!");
-
-        // Cek nama role dari data JSON hasil return login di route.ts
+        // Berhasil login, langsung proses redirect berdasarkan role (TANPA ALERT POPUP)
         if (data.user.role === "admin") {
           router.push("/admin/dashboard");
         } else if (data.user.role === "master_admin" || data.user.role === "master admin") {
           router.push("/master_admin/dashboard");
         } else if (data.user.role === "keuangan") {
-          router.push("/keuangan/dashboard"); // <--- TAMBAHAN ROLE KEUANGAN
+          router.push("/keuangan/dashboard"); 
         } else {
           router.push("/user/dashboard"); // Default
         }
       } else {
-        alert(data.error || "Login Gagal");
+        // Gagal login, tangkap pesan error dari API (misal: "Akun belum diaktifkan. Silakan hubungi Admin.")
+        setErrorMsg(data.error || "Login Gagal");
       }
     } catch (error) {
-      alert("Gagal terhubung ke server.");
+      setErrorMsg("Gagal terhubung ke server.");
     } finally {
       setLoading(false);
     }
   };
 
-  // Menggunakan font-sans bawaan Tailwind yang lebih standar
   return (
     <div className="flex min-h-screen w-full relative font-sans bg-[#005B9F]">
-      {/* Layer Background Gambar - Diatur ke absolute agar ter-overlap mulus oleh panel putih */}
+      {/* Layer Background Gambar */}
       <div className="absolute inset-0 lg:w-[60%] z-0">
         <div
           className="absolute inset-0 bg-cover bg-center"
           style={{ backgroundImage: "url('/auth/background2.jpeg')" }}
         />
-        {/* Overlay Biru - Opacity 70% sesuai permintaan */}
+        {/* Overlay Biru */}
         <div className="absolute inset-0 bg-[#005B9F] opacity-70" />
       </div>
 
@@ -83,18 +91,23 @@ export default function Login() {
         </div>
       </div>
 
-      {/* Sisi Kanan - Panel Form Putih Edge-to-Edge */}
-      {/* Lengkungan dikurangi dari rounded-l-[40px] menjadi rounded-l-2xl */}
+      {/* Sisi Kanan - Panel Form */}
       <div className="relative z-10 flex w-full lg:w-[45%] flex-col justify-center items-center bg-white lg:rounded-l-2xl shadow-[-10px_0_20px_rgba(0,0,0,0.05)]">
         
-        {/* Container pembatas lebar form agar tidak terlalu melebar */}
         <div className="w-full max-w-md p-8 lg:p-12">
-          <div className="text-center mb-8">
+          <div className="text-center mb-6">
             <h2 className="text-2xl font-bold text-gray-900 mb-2">
               Selamat Datang!
             </h2>
             <p className="text-sm text-gray-500">Masuk untuk Melanjutkan</p>
           </div>
+
+          {/* MENAMPILKAN PESAN ERROR */}
+          {errorMsg && (
+            <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-600 text-sm rounded-lg text-center">
+              {errorMsg}
+            </div>
+          )}
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-5">
             {/* Input Email / NIP */}
@@ -111,10 +124,10 @@ export default function Login() {
                 autoComplete="username"
                 type="text"
                 required
-                placeholder="Email / NIP"
+                placeholder="Email Polines / NIP"
                 value={identifier}
                 onChange={(e) => setIdentifier(e.target.value)}
-                className="w-full border border-gray-200 rounded-full pl-12 pr-4 py-3 text-sm text-gray-700 outline-none focus:border-blue-500 transition-colors bg-gray-50/50"
+                className={`w-full border rounded-full pl-12 pr-4 py-3 text-sm text-gray-700 outline-none transition-colors bg-gray-50/50 ${errorMsg ? "border-red-400 focus:border-red-500" : "border-gray-200 focus:border-blue-500"}`}
               />
             </div>
 
@@ -135,7 +148,7 @@ export default function Login() {
                 placeholder="Password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full border border-gray-200 rounded-full pl-12 pr-4 py-3 text-sm text-gray-700 outline-none focus:border-blue-500 transition-colors bg-gray-50/50"
+                className={`w-full border rounded-full pl-12 pr-4 py-3 text-sm text-gray-700 outline-none transition-colors bg-gray-50/50 ${errorMsg ? "border-red-400 focus:border-red-500" : "border-gray-200 focus:border-blue-500"}`}
               />
             </div>
 
