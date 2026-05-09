@@ -34,9 +34,8 @@ export default function Login() {
 
       const data = await res.json();
 
-      if (res.ok) {
-        // Berhasil login, langsung proses redirect berdasarkan role (TANPA ALERT POPUP)
-        if (data.user.role === "admin") {
+if (res.ok) {
+        if (data.user.role === "admin_fakultas" || data.user.role === "master_admin") {
           router.push("/admin/dashboard");
         } else if (data.user.role === "master_admin" || data.user.role === "master admin") {
           router.push("/master_admin/dashboard");

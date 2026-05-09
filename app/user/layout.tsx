@@ -79,7 +79,7 @@ export default async function UserLayout({
           </Link>
           <Link href="#" className="flex items-center gap-3 px-8 py-3.5 text-slate-300 hover:bg-slate-800 transition-colors">
             <ListOrdered size={20} strokeWidth={2} />
-            <span className="text-sm font-medium">Laporan KHS</span>
+            <span className="text-sm font-medium">Riwayat Dosen</span>
           </Link>
           <Link href="#" className="flex items-center gap-3 px-8 py-3.5 text-slate-300 hover:bg-slate-800 transition-colors">
             <CreditCard size={20} strokeWidth={2} />
