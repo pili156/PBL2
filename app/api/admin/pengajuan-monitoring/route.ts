@@ -2,10 +2,22 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/src/lib/prisma';
 
 const statusMapping: Record<string, string> = {
-  'pending': 'Menunggu Verifikasi (Admin)',
-  'revisi': 'Perlu Revisi (Dosen)',
+  'pending': 'Pending',
+  'revisi': 'Revisi',
   'terverifikasi': 'Terverifikasi',
-  'disetujui': 'Disetujui',
+};
+
+const determinePengajuanStatus = (dokumen: any[]): string => {
+  if (!dokumen || dokumen.length === 0) return 'Pending';
+  
+  const allTerverifikasi = dokumen.every((d) => d.status_verifikasi === 'terverifikasi');
+  const hasRevisi = dokumen.some((d) => d.status_verifikasi === 'revisi');
+  const allPending = dokumen.every((d) => d.status_verifikasi === 'pending');
+  
+  if (allTerverifikasi) return 'Terverifikasi';
+  if (hasRevisi) return 'Revisi';
+  if (allPending) return 'Pending';
+  return 'Pending';
 };
 
 export async function GET(request: Request) {
@@ -57,10 +69,13 @@ export async function GET(request: Request) {
 
     const monitoring = pengajuanList.map((p) => {
       const dosen = p.user?.master_dosen;
-      const terverifikasi = p.dokumen_pengajuan?.filter(
+      const dokumen = p.dokumen_pengajuan || [];
+      const terverifikasi = dokumen.filter(
         (d) => d.status_verifikasi === 'terverifikasi'
       ).length || 0;
-      const total = p.dokumen_pengajuan?.length || 0;
+      const total = dokumen.length || 0;
+      
+      const calculatedStatus = determinePengajuanStatus(dokumen);
 
       return {
         id: p.id,
@@ -68,7 +83,7 @@ export async function GET(request: Request) {
         nama_lengkap: dosen?.nama_lengkap || p.user?.username || 'Unknown',
         nip: dosen?.nip || 'N/A',
         jenis_studi: p.jenis_studi?.nama_jenis || 'N/A',
-        status: p.status?.nama_status || 'N/A',
+        status: calculatedStatus,
         tanggal_pengajuan: p.tanggal_pengajuan?.toISOString().split('T')[0] || '',
         total_dokumen: total,
         dokumen_terverifikasi: terverifikasi,

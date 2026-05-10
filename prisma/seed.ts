@@ -22,7 +22,10 @@ async function main() {
   await prisma.masterStatusPengajuan.upsert({ where: { id: 1 }, update: { nama_status: 'Draft' }, create: { id: 1, nama_status: 'Draft' } });
   const statusMenunggu = await prisma.masterStatusPengajuan.upsert({ where: { id: 2 }, update: { nama_status: 'Menunggu Verifikasi (Admin)' }, create: { id: 2, nama_status: 'Menunggu Verifikasi (Admin)' } });
   await prisma.masterStatusPengajuan.upsert({ where: { id: 3 }, update: { nama_status: 'Perlu Revisi (Dosen)' }, create: { id: 3, nama_status: 'Perlu Revisi (Dosen)' } });
-  await prisma.masterStatusPengajuan.upsert({ where: { id: 6 }, update: { nama_status: 'Studi Selesai (Lulus)' }, create: { id: 6, nama_status: 'Studi Selesai (Lulus)' } });
+  const statusPending = await prisma.masterStatusPengajuan.upsert({ where: { id: 4 }, update: { nama_status: 'Pending' }, create: { id: 4, nama_status: 'Pending' } });
+  const statusRevisi = await prisma.masterStatusPengajuan.upsert({ where: { id: 5 }, update: { nama_status: 'Revisi' }, create: { id: 5, nama_status: 'Revisi' } });
+  const statusTerverifikasi = await prisma.masterStatusPengajuan.upsert({ where: { id: 6 }, update: { nama_status: 'Terverifikasi' }, create: { id: 6, nama_status: 'Terverifikasi' } });
+  await prisma.masterStatusPengajuan.upsert({ where: { id: 7 }, update: { nama_status: 'Studi Selesai (Lulus)' }, create: { id: 7, nama_status: 'Studi Selesai (Lulus)' } });
 
   await prisma.masterWilayah.upsert({ where: { id: 1 }, update: { nama_wilayah: 'Dalam Negeri' }, create: { id: 1, nama_wilayah: 'Dalam Negeri' } });
   await prisma.masterWilayah.upsert({ where: { id: 2 }, update: { nama_wilayah: 'Luar Negeri' }, create: { id: 2, nama_wilayah: 'Luar Negeri' } });
@@ -150,7 +153,7 @@ async function main() {
       jalur_pendanaan_id: jalurLPDP.id,
       wilayah_studi: 1,
       perguruan_tinggi: 'Institut Teknologi Bandung (ITB)',
-      status_id: statusMenunggu.id,
+      status_id: statusPending.id,
       tanggal_pengajuan: new Date('2023-08-10'),
     },
   });

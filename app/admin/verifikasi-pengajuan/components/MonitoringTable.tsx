@@ -19,11 +19,11 @@ export default function MonitoringTable({
 }: MonitoringTableProps) {
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "terverifikasi":
+      case "Terverifikasi":
         return "text-green-600 bg-green-50";
-      case "revisi":
+      case "Revisi":
         return "text-red-600 bg-red-50";
-      case "pending":
+      case "Pending":
         return "text-yellow-600 bg-yellow-50";
       default:
         return "text-slate-600 bg-slate-50";

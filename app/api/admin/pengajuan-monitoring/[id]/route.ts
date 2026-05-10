@@ -81,6 +81,19 @@ export async function PUT(
     const body = await request.json();
     const { status_verifikasi, catatan_revisi } = body;
 
+    const dokumen = await prisma.dokumenPengajuan.findUnique({
+      where: { id: dokumentId },
+    });
+
+    if (!dokumen) {
+      return NextResponse.json(
+        { error: 'Dokumen not found' },
+        { status: 404 }
+      );
+    }
+
+    const pengajuanId = dokumen.pengajuan_id;
+
     const updated = await prisma.dokumenPengajuan.update({
       where: { id: dokumentId },
       data: {
@@ -89,6 +102,34 @@ export async function PUT(
         updated_at: new Date(),
       },
     });
+
+    const allDokumen = await prisma.dokumenPengajuan.findMany({
+      where: { pengajuan_id: pengajuanId },
+    });
+
+    const allTerverifikasi = allDokumen.every((d) => d.status_verifikasi === 'terverifikasi');
+    const hasRevisi = allDokumen.some((d) => d.status_verifikasi === 'revisi');
+    const allPending = allDokumen.every((d) => d.status_verifikasi === 'pending');
+
+    let newStatus: string;
+    if (allTerverifikasi) {
+      newStatus = 'Terverifikasi';
+    } else if (hasRevisi) {
+      newStatus = 'Revisi';
+    } else {
+      newStatus = 'Pending';
+    }
+
+    const statusMaster = await prisma.masterStatusPengajuan.findFirst({
+      where: { nama_status: newStatus },
+    });
+
+    if (statusMaster) {
+      await prisma.pengajuanStudi.update({
+        where: { id: pengajuanId },
+        data: { status_id: statusMaster.id },
+      });
+    }
 
     return NextResponse.json(updated, { status: 200 });
   } catch (error) {

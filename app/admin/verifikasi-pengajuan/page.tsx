@@ -48,33 +48,22 @@ export default function VerifikasiPengajuanPage() {
       )
     : data;
 
-  const getStatusLabel = (status: string) => {
-    const statusMap: Record<string, string> = {
-      "Menunggu Verifikasi (Admin)": "pending",
-      "Perlu Revisi (Dosen)": "revisi",
-      "Terverifikasi": "terverifikasi",
-      "Disetujui": "terverifikasi",
-      "Studi Selesai (Lulus)": "terverifikasi",
-    };
-    return statusMap[status] || status;
-  };
-
   const stats = [
     {
       label: "Belum Direview",
-      count: data.filter((d) => getStatusLabel(d.status) === "pending").length,
+      count: data.filter((d) => d.status === "Pending").length,
       color: "bg-gray-100",
       icon: "📋",
     },
     {
-      label: "Pending",
-      count: data.filter((d) => getStatusLabel(d.status) === "revisi").length,
+      label: "Revisi",
+      count: data.filter((d) => d.status === "Revisi").length,
       color: "bg-red-100",
       icon: "⚠️",
     },
     {
       label: "Terverifikasi",
-      count: data.filter((d) => getStatusLabel(d.status) === "terverifikasi").length,
+      count: data.filter((d) => d.status === "Terverifikasi").length,
       color: "bg-green-100",
       icon: "✓",
     },
@@ -143,8 +132,8 @@ export default function VerifikasiPengajuanPage() {
         >
           <option value="semua">Semua Status</option>
           <option value="pending">Pending</option>
-          <option value="terverifikasi">Terverifikasi</option>
           <option value="revisi">Revisi</option>
+          <option value="terverifikasi">Terverifikasi</option>
         </select>
 
         <button
