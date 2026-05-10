@@ -1,5 +1,5 @@
 // app/admin/riwayat-dosen/page.tsx
-import { prisma } from '@/lib/prisma';
+import { prisma } from '@/src/lib/prisma';
 import {
   Search,
   Filter,

@@ -1,6 +1,6 @@
 // app/user/laporanKHS/page.tsx
 
-import { prisma } from '@/lib/prisma';
+import { prisma } from '@/src/lib/prisma';
 import { Plus, Eye, Pencil, Upload, Info } from 'lucide-react';
 import Link from 'next/link';
 import { cookies } from 'next/headers';

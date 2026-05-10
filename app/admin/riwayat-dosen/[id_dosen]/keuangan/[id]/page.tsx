@@ -1,5 +1,5 @@
 // app/admin/riwayat-dosen/[id_dosen]/keuangan/[id]/page.tsx
-import { prisma } from '@/lib/prisma';
+import { prisma } from '@/src/lib/prisma';
 import { ArrowLeft, Download, FileText, Check, Send, Star, Info, XCircle, CheckSquare } from 'lucide-react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';

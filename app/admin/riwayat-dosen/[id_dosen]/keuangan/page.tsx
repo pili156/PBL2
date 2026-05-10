@@ -1,5 +1,5 @@
 // app/admin/riwayat-dosen/[id_dosen]/keuangan/page.tsx
-import { prisma } from '@/lib/prisma';
+import { prisma } from '@/src/lib/prisma';
 import { Info, Download, Cloud } from 'lucide-react'; // Ganti Search dengan Download sesuai gambar "Lihat Detail"
 import Link from 'next/link';
 import { notFound } from 'next/navigation';

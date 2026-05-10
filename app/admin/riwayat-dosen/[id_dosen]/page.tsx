@@ -1,5 +1,5 @@
 // app/admin/riwayat-dosen/[id_dosen]/page.tsx
-import { prisma } from '@/lib/prisma';
+import { prisma } from '@/src/lib/prisma';
 import { Info, Check, GraduationCap, Upload, FileText, Download, Landmark } from 'lucide-react';
 import { notFound } from 'next/navigation';
 

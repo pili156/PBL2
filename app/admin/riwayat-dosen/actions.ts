@@ -1,6 +1,6 @@
 'use server';
 
-import { prisma } from '@/lib/prisma';
+import { prisma } from '@/src/lib/prisma';
 import { revalidatePath } from 'next/cache';
 
 // Wrapper functions for form actions
