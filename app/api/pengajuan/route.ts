@@ -31,17 +31,37 @@ export async function POST(request: Request) {
     console.log('Input:', { jenis_studi_id, jalur_pendanaan_id, wilayah_studi, alamat_kampus });
 
     let statusMenunggu = await prisma.masterStatusPengajuan.findFirst({
-      where: { nama_status: 'menunggu' },
+      where: { nama_status: 'Menunggu Verifikasi (Admin)' },
     });
 
     console.log('Status menunggu:', statusMenunggu);
 
     if (!statusMenunggu) {
-      console.warn('Status menunggu not found in master_status_pengajuan, creating default entry');
-      statusMenunggu = await prisma.masterStatusPengajuan.create({
-        data: { nama_status: 'menunggu' },
+      statusMenunggu = await prisma.masterStatusPengajuan.findFirst({
+        where: { nama_status: { contains: 'Menunggu' } },
       });
-      console.log('Created default status menunggu:', statusMenunggu);
+    }
+
+    if (!statusMenunggu) {
+      return NextResponse.json(
+        { error: 'Status pengajuan tidak ditemukan. Silakan run seed database.' }, 
+        { status: 500 }
+      );
+    }
+
+    const pengajuanCount = await prisma.pengajuanStudi.count({
+      where: { user_id: user.id },
+    });
+
+    if (pengajuanCount > 0) {
+      const existingPengajuan = await prisma.pengajuanStudi.findFirst({
+        where: { user_id: user.id },
+        orderBy: { created_at: 'desc' },
+      });
+      return NextResponse.json({ 
+        pengajuan: existingPengajuan, 
+        message: 'Menggunakan pengajuan yang sudah ada' 
+      }, { status: 200 });
     }
 
     const pengajuan = await prisma.pengajuanStudi.create({
@@ -58,9 +78,17 @@ export async function POST(request: Request) {
 
     console.log('Pengajuan created:', pengajuan.id);
     return NextResponse.json({ pengajuan }, { status: 201 });
-  } catch (error) {
+  } catch (error: any) {
     console.error('=== ERROR CREATE PENGajuan ===');
     console.error(error);
+    
+    if (error.code === 'P2002') {
+      return NextResponse.json(
+        { error: 'Data sudah ada. ID mungkin bermasalah.' },
+        { status: 409 }
+      );
+    }
+    
     return NextResponse.json({ error: String(error) }, { status: 500 });
   }
 }

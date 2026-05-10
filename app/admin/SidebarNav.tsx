@@ -13,7 +13,7 @@ import {
 
 const menuItems = [
   { href: "/admin/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/admin/pengajuan", label: "Pengajuan", icon: FileText },
+  { href: "/admin/verifikasi-pengajuan", label: "Pengajuan", icon: FileText },
   { href: "/admin/status", label: "Status", icon: CheckSquare },
   { href: "/admin/riwayat-dosen", label: "Riwayat Dosen", icon: ListOrdered },
   { href: "/admin/reimbursement", label: "Reimbursement", icon: CreditCard },
