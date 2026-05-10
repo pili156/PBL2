@@ -1,6 +1,13 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/src/lib/prisma';
 
+const statusMapping: Record<string, string> = {
+  'pending': 'Menunggu Verifikasi (Admin)',
+  'revisi': 'Perlu Revisi (Dosen)',
+  'terverifikasi': 'Terverifikasi',
+  'disetujui': 'Disetujui',
+};
+
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
@@ -15,8 +22,9 @@ export async function GET(request: Request) {
       },
     };
     if (status && status !== 'semua') {
+      const dbStatus = statusMapping[status] || status;
       whereClause.status = {
-        nama_status: status,
+        nama_status: dbStatus,
       };
     }
 
