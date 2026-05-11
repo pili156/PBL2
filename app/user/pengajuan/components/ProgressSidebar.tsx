@@ -85,7 +85,7 @@ export default function ProgressSidebar({ currentStep, currentGroup, uploadedFil
   }, 0);
   const totalUploaded = STEPS.reduce((acc, step) => {
     const stats = getGroupStats(step.groupKey, uploadedFiles);
-    return acc + stats.requiredUploaded;
+    return acc + (stats.requiredUploaded ?? 0);
   }, 0);
   const totalProgress = totalRequired > 0 ? Math.round((totalUploaded / totalRequired) * 100) : 0;
 

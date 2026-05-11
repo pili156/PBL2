@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { uploadKHS } from '../actions';
 import { getDashboardData } from '../actions';
 import { cookies } from 'next/headers';
-import { prisma } from '@/lib/prisma';
+import { prisma } from '@/src/lib/prisma';
 
 export default async function UploadKHSPage({
   searchParams,

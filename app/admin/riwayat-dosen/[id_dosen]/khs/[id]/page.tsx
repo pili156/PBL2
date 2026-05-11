@@ -1,6 +1,6 @@
 // app/admin/riwayat-dosen/[id_dosen]/khs/[id]/page.tsx
 
-import { prisma } from '@/lib/prisma';
+import { prisma } from '@/src/lib/prisma';
 import { ArrowLeft, Download, FileText, AlertCircle, CheckSquare } from 'lucide-react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
