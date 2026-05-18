@@ -66,28 +66,27 @@ export default async function KeuanganLayout({
         </div>
 
         <nav className="flex-1 py-4 flex flex-col">
-          {/* Link disesuaikan ke rute /keuangan/dashboard */}
           <Link href="/keuangan/dashboard" className="flex items-center gap-3 px-8 py-3.5 bg-[#1A56DB] text-white">
             <LayoutDashboard size={20} strokeWidth={2} />
             <span className="text-sm font-medium">Dashboard</span>
           </Link>
-          <Link href="#" className="flex items-center gap-3 px-8 py-3.5 text-slate-300 hover:bg-slate-800 transition-colors">
+          <Link href="/keuangan/dashboard" className="flex items-center gap-3 px-8 py-3.5 text-slate-300 hover:bg-slate-800 transition-colors">
             <FileText size={20} strokeWidth={2} />
             <span className="text-sm font-medium">Pengajuan</span>
           </Link>
-          <Link href="#" className="flex items-center gap-3 px-8 py-3.5 text-slate-300 hover:bg-slate-800 transition-colors">
+          <Link href="/keuangan/dashboard" className="flex items-center gap-3 px-8 py-3.5 text-slate-300 hover:bg-slate-800 transition-colors">
             <CheckSquare size={20} strokeWidth={2} />
             <span className="text-sm font-medium">Status</span>
           </Link>
-          <Link href="#" className="flex items-center gap-3 px-8 py-3.5 text-slate-300 hover:bg-slate-800 transition-colors">
+          <Link href="/keuangan/dashboard" className="flex items-center gap-3 px-8 py-3.5 text-slate-300 hover:bg-slate-800 transition-colors">
             <ListOrdered size={20} strokeWidth={2} />
             <span className="text-sm font-medium">Laporan KHS</span>
           </Link>
-          <Link href="#" className="flex items-center gap-3 px-8 py-3.5 text-slate-300 hover:bg-slate-800 transition-colors">
+          <Link href="/keuangan/dashboard" className="flex items-center gap-3 px-8 py-3.5 text-slate-300 hover:bg-slate-800 transition-colors">
             <CreditCard size={20} strokeWidth={2} />
             <span className="text-sm font-medium">Reimbursement</span>
           </Link>
-          <Link href="#" className="flex items-center gap-3 px-8 py-3.5 text-slate-300 hover:bg-slate-800 transition-colors">
+          <Link href="/keuangan/dashboard" className="flex items-center gap-3 px-8 py-3.5 text-slate-300 hover:bg-slate-800 transition-colors">
             <UserCircle size={20} strokeWidth={2} />
             <span className="text-sm font-medium">Profil Saya</span>
           </Link>
