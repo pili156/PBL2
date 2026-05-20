@@ -1,6 +1,7 @@
 'use client'
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
@@ -27,10 +28,11 @@ export default function SidebarUser() {
     <aside className="w-[260px] bg-[#0A192F] text-white flex flex-col flex-shrink-0">
       <div className="p-6 flex items-center gap-3 border-b border-slate-700/50">
         <div className="w-10 h-10 relative flex-shrink-0">
-          <img
+          <Image
             src="/dashboard/logo2.png"
             alt="Logo SIGAP"
-            className="object-contain w-full h-full"
+            fill
+            className="object-contain"
           />
         </div>
         <div className="flex flex-col">

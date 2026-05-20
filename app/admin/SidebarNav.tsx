@@ -26,7 +26,7 @@ export default function SidebarNav() {
   return (
     <nav className="flex-1 py-4 flex flex-col">
       {menuItems.map((item) => {
-        const isActive = pathname === item.href;
+        const isActive = pathname.startsWith(item.href);
         const Icon = item.icon;
         
         return (
