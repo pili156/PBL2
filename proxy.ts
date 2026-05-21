@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { verifyToken } from '@/src/lib/jwt';
+import { verifyToken, type JwtPayload } from '@/src/lib/jwt';
 
 const ROLE_DASHBOARD_MAP: Record<string, string> = {
   dosen: '/user/dashboard',
@@ -20,6 +20,27 @@ const PATH_ROLE_MAP: Record<string, string[]> = {
   '/keuangan': ['keuangan'],
 };
 
+const ROLE_TO_COOKIE: Record<string, string> = {
+  dosen: 'token_dosen',
+  admin_fakultas: 'token_admin_fakultas',
+  master_admin: 'token_master_admin',
+  keuangan: 'token_keuangan',
+};
+
+const ALL_TOKEN_COOKIES = Object.values(ROLE_TO_COOKIE);
+
+function findToken(request: NextRequest, allowedRoles: string[]): { token: string; payload: JwtPayload } | null {
+  for (const role of allowedRoles) {
+    const cookieName = ROLE_TO_COOKIE[role];
+    const token = request.cookies.get(cookieName)?.value;
+    if (token) {
+      const payload = verifyToken(token);
+      if (payload) return { token, payload };
+    }
+  }
+  return null;
+}
+
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
@@ -36,21 +57,33 @@ export function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
-  const token = request.cookies.get('token')?.value;
+  let allowedRoles: string[] = [];
+  let matchedPrefix = '';
 
-  if (!token) {
-    const loginUrl = new URL('/login', request.url);
-    return NextResponse.redirect(loginUrl);
+  for (const [prefix, roles] of Object.entries(PATH_ROLE_MAP)) {
+    if (pathname === prefix || pathname.startsWith(`${prefix}/`) || pathname.startsWith(`/api${prefix}`)) {
+      allowedRoles = roles;
+      matchedPrefix = prefix;
+      break;
+    }
   }
 
-  const payload = verifyToken(token);
+  if (allowedRoles.length === 0) {
+    allowedRoles = Object.keys(ROLE_TO_COOKIE);
+  }
 
-  if (!payload) {
+  const found = findToken(request, allowedRoles);
+
+  if (!found) {
     const loginUrl = new URL('/login', request.url);
     const response = NextResponse.redirect(loginUrl);
-    response.cookies.delete('token');
+    for (const cookieName of ALL_TOKEN_COOKIES) {
+      response.cookies.delete(cookieName);
+    }
     return response;
   }
+
+  const { payload } = found;
 
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set('x-user-id', String(payload.userId));
@@ -58,26 +91,16 @@ export function proxy(request: NextRequest) {
   requestHeaders.set('x-user-role', payload.role);
   requestHeaders.set('x-user-nama', payload.nama);
 
-  if (!pathname.startsWith('/api/')) {
-    for (const [prefix, allowedRoles] of Object.entries(PATH_ROLE_MAP)) {
-      if (pathname.startsWith(prefix)) {
-        if (!allowedRoles.includes(payload.role)) {
-          const redirectUrl = new URL(getRedirectUrl(payload.role), request.url);
-          return NextResponse.redirect(redirectUrl);
-        }
-        break;
-      }
+  if (!pathname.startsWith('/api/') && matchedPrefix) {
+    if (!allowedRoles.includes(payload.role)) {
+      const redirectUrl = new URL(getRedirectUrl(payload.role), request.url);
+      return NextResponse.redirect(redirectUrl);
     }
   }
 
-  if (pathname.startsWith('/api/')) {
-    for (const [prefix, allowedRoles] of Object.entries(PATH_ROLE_MAP)) {
-      if (pathname.startsWith(`/api${prefix}`)) {
-        if (!allowedRoles.includes(payload.role)) {
-          return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-        }
-        break;
-      }
+  if (pathname.startsWith('/api/') && matchedPrefix) {
+    if (!allowedRoles.includes(payload.role)) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
   }
 

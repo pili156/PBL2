@@ -73,8 +73,12 @@ export async function POST(request: Request) {
       nama: user.master_dosen?.nama_lengkap || user.username || 'User',
     });
 
+    const cookieName = `token_${roleName}`;
+
     const cookieStore = await cookies();
-    cookieStore.set("token", token, {
+    cookieStore.delete("token");
+    cookieStore.delete("user_email");
+    cookieStore.set(cookieName, token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
