@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { FileText, Check, AlertCircle, Clock, Download, Award } from "lucide-react";
+import { FileText, Check, AlertCircle, Clock, Download, Award, Upload, Loader2 } from "lucide-react";
 
 type Dokumen = {
   id: number;
@@ -35,6 +35,7 @@ export default function DocumentStatusList() {
   const [data, setData] = useState<PengajuanData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [uploads, setUploads] = useState<Record<number, { file: File | null; uploading: boolean; error: string | null }>>({});
 
   useEffect(() => {
     async function fetchData() {
@@ -54,6 +55,65 @@ export default function DocumentStatusList() {
     }
     fetchData();
   }, []);
+
+  const handleFileSelect = (docId: number, file: File) => {
+    if (file.type !== 'application/pdf') {
+      setUploads(prev => ({ ...prev, [docId]: { file: null, uploading: false, error: 'Format file harus PDF' } }));
+      return;
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      setUploads(prev => ({ ...prev, [docId]: { file: null, uploading: false, error: 'Ukuran file tidak boleh lebih dari 2MB' } }));
+      return;
+    }
+    setUploads(prev => ({ ...prev, [docId]: { file, uploading: false, error: null } }));
+  };
+
+  const handleResubmit = async (docId: number) => {
+    const upload = uploads[docId];
+    if (!upload?.file) return;
+
+    setUploads(prev => ({ ...prev, [docId]: { ...prev[docId], uploading: true, error: null } }));
+
+    try {
+      const formData = new FormData();
+      formData.append('file', upload.file);
+
+      const response = await fetch(`/api/pengajuan/${data!.id}/dokumen/${docId}`, {
+        method: 'PUT',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const err = await response.json();
+        throw new Error(err.error || 'Gagal mengunggah');
+      }
+
+      const result = await response.json();
+
+      setData(prev => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          dokumen: prev.dokumen.map(d =>
+            d.id === docId
+              ? { ...d, file_path: result.filePath, status_verifikasi: 'menunggu', catatan_revisi: null }
+              : d
+          ),
+        };
+      });
+
+      setUploads(prev => {
+        const next = { ...prev };
+        delete next[docId];
+        return next;
+      });
+    } catch (err) {
+      setUploads(prev => ({
+        ...prev,
+        [docId]: { ...prev[docId], uploading: false, error: err instanceof Error ? err.message : 'Gagal mengunggah' },
+      }));
+    }
+  };
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -223,6 +283,50 @@ export default function DocumentStatusList() {
                   )}
                 </div>
               </div>
+              {doc.status_verifikasi === 'revisi' && (
+                <div className="mt-3 pt-3 border-t border-red-100">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <input
+                      type="file"
+                      accept=".pdf"
+                      hidden
+                      id={`resubmit-file-${doc.id}`}
+                      onChange={(e) => {
+                        if (e.target.files?.[0]) handleFileSelect(doc.id, e.target.files[0]);
+                      }}
+                    />
+                    <button
+                      onClick={() => document.getElementById(`resubmit-file-${doc.id}`)?.click()}
+                      className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors"
+                    >
+                      <Upload size={14} />
+                      Pilih File
+                    </button>
+                    {uploads[doc.id]?.file && (
+                      <span className="text-xs text-slate-600 truncate max-w-[180px]">
+                        {uploads[doc.id].file!.name}
+                      </span>
+                    )}
+                    {uploads[doc.id]?.file && !uploads[doc.id]?.uploading && (
+                      <button
+                        onClick={() => handleResubmit(doc.id)}
+                        className="px-3 py-1.5 text-xs font-medium text-white bg-red-600 hover:bg-red-700 rounded-lg transition-colors"
+                      >
+                        Kirim Ulang
+                      </button>
+                    )}
+                    {uploads[doc.id]?.uploading && (
+                      <div className="flex items-center gap-2">
+                        <Loader2 size={14} className="animate-spin text-blue-600" />
+                        <span className="text-xs text-blue-600">Mengirim ulang...</span>
+                      </div>
+                    )}
+                  </div>
+                  {uploads[doc.id]?.error && (
+                    <p className="text-xs text-red-600 mt-1">{uploads[doc.id].error}</p>
+                  )}
+                </div>
+              )}
             </div>
           ))}
         </div>
