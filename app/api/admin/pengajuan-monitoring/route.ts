@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/src/lib/prisma';
+import { headers } from 'next/headers';
 
 const statusMapping: Record<string, string> = {
   'pending': 'Pending',
@@ -22,6 +23,12 @@ const determinePengajuanStatus = (dokumen: any[]): string => {
 
 export async function GET(request: Request) {
   try {
+    const headersList = await headers();
+    const role = headersList.get('x-user-role');
+    if (!role || (role !== 'admin_fakultas' && role !== 'master_admin')) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
     const { searchParams } = new URL(request.url);
     const status = searchParams.get('status');
     const page = parseInt(searchParams.get('page') || '1');

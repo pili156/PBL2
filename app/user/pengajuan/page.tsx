@@ -5,6 +5,7 @@ import Step1JenisStudi from "./components/Step1JenisStudi";
 import Step2Dokumen from "./components/Step2Dokumen";
 import Step3DocumentUpload from "./components/Step3DocumentUpload";
 import StepCompleted from "./components/StepCompleted";
+import DocumentStatusList from "./components/DocumentStatusList";
 import ProgressSidebar from "./components/ProgressSidebar";
 import { PengajuanFormData, DocumentType, UploadFile } from "./type";
 import { DOCUMENT_GROUPS, DOCUMENT_TYPE_TO_MASTER_ID } from "./constants";
@@ -30,6 +31,8 @@ const initialDocuments = Object.keys(DOCUMENT_GROUPS).reduce((acc, group) => {
 type FlowStep = "step1" | "step2" | "step3" | "completed";
 type DocumentGroup = keyof typeof DOCUMENT_GROUPS;
 
+const COMPLETED_STATUSES = ['DITERIMA', 'Terverifikasi'];
+
 export default function PengajuanPage() {
   const [flowStep, setFlowStep] = useState<FlowStep>("step1");
   const [currentDocumentGroup, setCurrentDocumentGroup] = useState<DocumentGroup>("kesehatan");
@@ -45,12 +48,16 @@ export default function PengajuanPage() {
   const [loading, setLoading] = useState(false);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [isInitialized, setIsInitialized] = useState(false);
+  const [hasCompletedPengajuan, setHasCompletedPengajuan] = useState(false);
 
   useEffect(() => {
     async function fetchMasterData() {
       try {
         const res = await fetch('/api/master-data');
         const data = await res.json();
+        console.log('[DEBUG] Master Data received:', data);
+        console.log('[DEBUG] jalurPendanaan:', data.jalurPendanaan);
         setMasterData({
           jenisStudi: data.jenisStudi || [],
           jalurPendanaan: data.jalurPendanaan || [],
@@ -61,6 +68,56 @@ export default function PengajuanPage() {
       }
     }
     fetchMasterData();
+  }, []);
+
+  useEffect(() => {
+    async function checkExistingPengajuan() {
+      try {
+        const response = await fetch('/api/user/pengajuan');
+        
+        console.log('[DEBUG] Check pengajuan - Status:', response.status);
+        
+        if (response.status === 404) {
+          console.log('[DEBUG] Tidak ada pengajuan, mulai dari awal');
+          setIsInitialized(true);
+          return;
+        }
+
+        if (response.status === 401) {
+          console.log('[DEBUG] Unauthorized, redirect ke login');
+          window.location.href = '/login';
+          return;
+        }
+
+        if (response.ok) {
+          const data = await response.json();
+          console.log('[DEBUG] Data pengajuan:', JSON.stringify(data));
+          
+          if (COMPLETED_STATUSES.includes(data.status)) {
+            console.log('[DEBUG] Pengajuan sudah selesai, tampilkan status');
+            setHasCompletedPengajuan(true);
+            setFlowStep("completed");
+          } else {
+            const hasDocuments = data.dokumen && data.dokumen.length > 0;
+            const hasSk = data.sk && data.sk.file_sk_path;
+            
+            if (hasDocuments || hasSk) {
+              console.log('[DEBUG] Pengajuan ada dokumen/SK, tampilkan status');
+              setHasCompletedPengajuan(true);
+              setFlowStep("completed");
+            } else {
+              console.log('[DEBUG] Pengajuan kosong, hapus dan mulai ulang');
+              await fetch('/api/user/pengajuan', { method: 'DELETE' });
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Error checking pengajuan:', error);
+      } finally {
+        setIsInitialized(true);
+      }
+    }
+    checkExistingPengajuan();
   }, []);
 
   useEffect(() => {
@@ -86,15 +143,25 @@ export default function PengajuanPage() {
     setLoading(true);
     setError(null);
     try {
+      console.log('[DEBUG] Input from Step1:', data);
+      console.log('[DEBUG] masterData.jalurPendanaan:', masterData.jalurPendanaan);
+      
       const selectedJenisStudi = masterData.jenisStudi.find(
-        (j) => j.nama_jenis?.toLowerCase().replace(/ /g, '_') === data.studyType
+        (j) => j.nama_jenis?.toLowerCase().includes(data.studyType.toLowerCase().replace(/_/g, ' '))
       );
       const selectedJalurPendanaan = masterData.jalurPendanaan.find(
-        (j) => j.nama_pendanaan?.toLowerCase().replace(/ /g, '_') === data.fundingType
+        (j) => j.nama_pendanaan?.toLowerCase().includes(data.fundingType.toLowerCase())
       );
       const selectedWilayah = masterData.wilayah.find(
-        (w) => w.nama_wilayah?.toLowerCase().replace(/ /g, '_') === data.studyRegion
+        (w) => w.nama_wilayah?.toLowerCase().includes(data.studyRegion.toLowerCase().replace(/_/g, ' '))
       );
+
+      console.log('[DEBUG] selectedJenisStudi:', selectedJenisStudi);
+      console.log('[DEBUG] selectedWilayah:', selectedWilayah);
+      console.log('[DEBUG] studyType value:', data.studyType);
+      console.log('[DEBUG] studyRegion value:', data.studyRegion);
+      console.log('[DEBUG] selectedJalurPendanaan:', selectedJalurPendanaan);
+      console.log('[DEBUG] fundingType value:', data.fundingType);
 
       const response = await fetch('/api/pengajuan', {
         method: 'POST',
@@ -213,6 +280,17 @@ export default function PengajuanPage() {
 
   const clearError = () => setError(null);
 
+  if (!isInitialized) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gray-50">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+          <p className="text-slate-500">Memuat...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex gap-8 min-h-screen bg-gray-50 p-4 md:p-8">
       <div className="flex-1">
@@ -255,15 +333,28 @@ export default function PengajuanPage() {
           )}
 
           {flowStep === "completed" && (
-            <StepCompleted
-              onViewStatus={() => {
-                window.location.href = "/user/pengajuan/status";
-              }}
-              onBackHome={() => {
-                window.location.href = "/user/dashboard";
-              }}
-              pengajuanId={pengajuanId || undefined}
-            />
+            <div className="space-y-6">
+              <div className="bg-green-50 border border-green-200 rounded-lg p-4 flex items-center gap-3">
+                <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                  <span className="text-green-600 text-xl">✓</span>
+                </div>
+                <div>
+                  <h3 className="font-semibold text-green-900">Pengajuan Berhasil Dikirim</h3>
+                  <p className="text-sm text-green-700">Pengajuan Anda akan diproses dalam 2-5 hari kerja.</p>
+                </div>
+              </div>
+              <DocumentStatusList />
+              <div className="flex gap-4 justify-center pt-4">
+                <button
+                  onClick={() => {
+                    window.location.href = "/user/dashboard";
+                  }}
+                  className="inline-flex items-center gap-2 px-6 py-3 bg-gray-200 text-gray-700 rounded-lg font-semibold hover:bg-gray-300 transition-all"
+                >
+                  Kembali ke Dashboard
+                </button>
+              </div>
+            </div>
           )}
         </div>
       </div>

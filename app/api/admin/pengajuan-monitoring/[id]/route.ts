@@ -1,11 +1,21 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/src/lib/prisma';
+import { headers } from 'next/headers';
+
+function isAdminRole(role: string | null): boolean {
+  return role === 'admin_fakultas' || role === 'master_admin';
+}
 
 export async function GET(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const headersList = await headers();
+    if (!isAdminRole(headersList.get('x-user-role'))) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
     const { id } = await params;
     const pengajuanId = parseInt(id);
 
@@ -76,6 +86,11 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const headersList = await headers();
+    if (!isAdminRole(headersList.get('x-user-role'))) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
     const { id } = await params;
     const dokumentId = parseInt(id);
     const body = await request.json();
@@ -124,7 +139,7 @@ export async function PUT(
       where: { nama_status: newStatus },
     });
 
-    if (statusMaster) {
+    if (statusMaster && pengajuanId !== null) {
       await prisma.pengajuanStudi.update({
         where: { id: pengajuanId },
         data: { status_id: statusMaster.id },
