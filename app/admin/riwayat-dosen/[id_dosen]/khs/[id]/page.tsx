@@ -1,188 +1,145 @@
-// app/admin/riwayat-dosen/[id_dosen]/khs/[id]/page.tsx
-
-import { prisma } from '@/lib/prisma';
-import { ArrowLeft, Download, FileText, AlertCircle, CheckSquare } from 'lucide-react';
+import { prisma } from '@/src/lib/prisma';
+import { ArrowLeft, Download, FileText, Calendar, BookOpen, Target, User } from 'lucide-react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { evaluateKhs, acceptKhs, rejectKhs, submitRevisionKhs } from '../../../actions';
 
 export const dynamic = 'force-dynamic';
 
-interface DetailKhsPageProps {
+interface Props {
   params: Promise<{ id_dosen: string; id: string }>;
 }
 
-export default async function DetailKhsPage({ params }: DetailKhsPageProps) {
+const formatDate = (date: Date | null | undefined) => {
+  if (!date) return '-';
+  return date.toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' });
+};
+
+export default async function DetailKhsPage({ params }: Props) {
   const { id_dosen, id } = await params;
   const khsId = Number(id);
   const idDosen = Number(id_dosen);
 
-  if (isNaN(khsId) || isNaN(idDosen)) {
-    notFound();
-  }
+  if (isNaN(khsId) || isNaN(idDosen)) notFound();
 
   const khs = await prisma.monitoringKhs.findUnique({
     where: { id: khsId },
     include: {
       pengajuan_studi: {
         include: {
-          user: {
-            include: { master_dosen: true },
-          },
+          user: { include: { master_dosen: true } },
         },
       },
     },
   });
 
-  if (!khs) {
-    notFound();
-  }
-
-  const dosen = khs.pengajuan_studi?.user;
-  const namaDosen = dosen?.master_dosen?.nama_lengkap || dosen?.username || '-';
-  const nip = dosen?.master_dosen?.nip || '-';
-  const jurusan = dosen?.master_dosen?.jurusan || '-';
-
-  const getInitial = (name: string): string => {
-    return name.charAt(0).toUpperCase();
-  };
+  if (!khs) notFound();
 
   const ipkValue = khs.ipk ? Number(khs.ipk).toFixed(2) : '-';
+  const isDisabled = !khs.file_khs_path;
+  const namaDosen = khs.pengajuan_studi?.user?.master_dosen?.nama_lengkap || 'Dosen';
+
+  const infoItems = [
+    { icon: BookOpen, label: 'Semester', value: `Semester ${khs.semester_ke || '-'}` },
+    { icon: Calendar, label: 'Tahun Akademik', value: khs.tahun_akademik || '-' },
+    { icon: User, label: 'Dosen', value: namaDosen },
+    { icon: Calendar, label: 'Tanggal Upload', value: formatDate(khs.tanggal_unggah) },
+    { icon: Target, label: 'IPK', value: `${ipkValue} / 4.00`, highlight: true },
+  ];
 
   return (
-    <div className="bg-white rounded-b-xl border border-slate-200 border-t-0 p-6 md:p-8">
-       
-      <div className="flex justify-between items-center border-b border-slate-100 pb-4 mb-6">
-        <h3 className="text-2xl font-bold text-slate-800">
-          KHS Semester {khs.semester_ke}
-        </h3>
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-xl font-bold text-slate-900 tracking-tight">Preview KHS</h2>
+          <p className="text-sm text-slate-400 mt-0.5">Semester {khs.semester_ke || '-'} — {khs.tahun_akademik || 'Tahun tidak tersedia'}</p>
+        </div>
         <Link
           href={`/admin/riwayat-dosen/${idDosen}/khs`}
-          className="flex items-center gap-2 text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors"
+          className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 text-slate-600 rounded-lg text-sm font-medium hover:bg-slate-50 transition-colors shadow-sm"
         >
-          <ArrowLeft size={18} />
-          Kembali
+          <ArrowLeft size={16} /> Kembali
         </Link>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        
-        <div className="space-y-6">
-          
-          <div className="border border-slate-200 rounded-xl p-6">
-            <h4 className="font-bold text-slate-800 border-b border-slate-100 pb-3 mb-4">Data Dosen</h4>
-            
-            <div className="flex items-start gap-6">
-              <div className="w-16 h-16 rounded-full bg-sigap-primary flex items-center justify-center text-white text-xl font-bold flex-shrink-0">
-                {getInitial(namaDosen)}
+      <div className="grid grid-cols-1 xl:grid-cols-5 gap-6 items-start">
+        <div className="xl:col-span-2 space-y-6">
+          <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-6">
+            <h3 className="text-sm font-semibold text-slate-800 mb-5">Informasi KHS</h3>
+            <div className="space-y-3">
+              {infoItems.map((item) => {
+                const Icon = item.icon;
+                return (
+                  <div key={item.label} className="flex items-center gap-3 p-3 bg-slate-50 rounded-lg">
+                    <div className="p-2 bg-white rounded-lg shadow-sm">
+                      <Icon size={16} className="text-slate-400" />
+                    </div>
+                    <div>
+                      <p className="text-[10px] text-slate-400 font-medium">{item.label}</p>
+                      <p className={`text-sm ${item.highlight ? 'font-bold text-blue-600' : 'font-medium text-slate-800'}`}>
+                        {item.value}
+                      </p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {khs.catatan_evaluasi && (
+              <div className="mt-5 p-3 bg-slate-50 rounded-lg">
+                <p className="text-[10px] text-slate-400 font-medium mb-1">Catatan</p>
+                <p className="text-xs text-slate-700">{khs.catatan_evaluasi}</p>
               </div>
-              
-              <div className="space-y-4 w-full">
-                <div>
-                  <p className="text-xs text-slate-500 mb-0.5">Nama Dosen</p>
-                  <p className="text-sm font-bold text-slate-800">{namaDosen}</p>
-                </div>
-                <div>
-                  <p className="text-xs text-slate-500 mb-0.5">NIP</p>
-                  <p className="text-sm font-bold text-slate-800">{nip}</p>
-                </div>
-                <div>
-                  <p className="text-xs text-slate-500 mb-0.5">Program Studi / Jurusan</p>
-                  <p className="text-sm font-bold text-slate-800">{jurusan}</p>
-                </div>
-                <div>
-                  <p className="text-xs text-slate-500 mb-0.5">Semester</p>
-                  <p className="text-sm font-bold text-slate-800">Semester {khs.semester_ke}</p>
-                </div>
-                <div>
-                  <p className="text-xs text-slate-500 mb-0.5">IPK</p>
-                  <p className="text-sm font-bold text-slate-800">
-                    {ipkValue}
-                  </p>
-                </div>
-              </div>
+            )}
+
+            <div className="mt-5">
+              <a
+                href={khs.file_khs_path || '#'}
+                target="_blank"
+                className={`w-full flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-semibold transition-colors ${
+                  isDisabled
+                    ? 'bg-slate-50 text-slate-400 cursor-not-allowed'
+                    : 'bg-blue-600 text-white hover:bg-blue-700 shadow-sm'
+                }`}
+              >
+                <Download size={16} /> Download PDF
+              </a>
             </div>
           </div>
-
-          <div className="border border-slate-200 rounded-xl p-6">
-            <h4 className="font-bold text-slate-800 border-b border-slate-100 pb-3 mb-4">Keputusan Verifikasi</h4>
-            <div className="flex gap-4">
-              <form action={acceptKhs} className="flex-1">
-                <input type="hidden" name="khsId" value={khsId} />
-                <input type="hidden" name="catatan" form="khs-form" />
-                <button type="submit" className="w-full flex items-center justify-center gap-2 bg-green-100 text-green-700 border border-green-200 font-bold px-6 py-2.5 rounded-lg hover:bg-green-200 transition-colors">
-                  DITERIMA <CheckSquare size={18} />
-                </button>
-              </form>
-              <form action={rejectKhs} className="flex-1">
-                <input type="hidden" name="khsId" value={khsId} />
-                <input type="hidden" name="catatan" form="khs-form" />
-                <button type="submit" className="w-full flex items-center justify-center gap-2 bg-red-50 text-red-600 border border-red-100 font-bold px-6 py-2.5 rounded-lg hover:bg-red-100 transition-colors">
-                  DITOLAK <AlertCircle size={18} />
-                </button>
-              </form>
-            </div>
-          </div>
-
-          <form id="khs-form" action={submitRevisionKhs} className="border border-slate-200 rounded-xl p-6">
-            <h4 className="font-bold text-slate-800 border-b border-slate-100 pb-3 mb-4">Catatan Evaluasi</h4>
-
-            <input type="hidden" name="khsId" value={khsId} />
-
-            <textarea
-              name="catatan"
-              className="w-full border border-slate-200 rounded-lg p-4 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4 resize-none"
-              rows={4}
-              placeholder="Tulis alasan revisi atau catatan di sini..."
-              defaultValue={khs.catatan_evaluasi || ''}
-            ></textarea>
-
-            <div className="flex gap-3">
-              <button type="reset" className="bg-slate-200 text-slate-600 font-bold px-6 py-2.5 rounded-lg hover:bg-slate-300 transition-colors text-sm">
-                Batalkan
-              </button>
-              <button type="submit" className="bg-[#007BFF] text-white font-bold px-6 py-2.5 rounded-lg hover:bg-blue-600 transition-colors text-sm">
-                Kirim Revisi
-              </button>
-            </div>
-          </form>
-
         </div>
 
-        <div className="border border-slate-200 rounded-xl p-6 flex flex-col h-full">
-          <h4 className="font-bold text-slate-800 border-b border-slate-100 pb-3 mb-4">Detail KHS</h4>
-          
-          <div className="flex-1 border border-slate-200 rounded-xl bg-slate-50 flex flex-col items-center justify-center p-8 text-center min-h-[500px] relative overflow-hidden mb-4">
-            {khs.file_khs_path ? (
-              <>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img 
-                  src={khs.file_khs_path} 
-                  alt="Dokumen KHS" 
-                  className="absolute inset-0 w-full h-full object-contain p-2"
-                />
-              </>
-            ) : (
-              <>
-                <FileText size={48} className="text-slate-300 mb-4" />
-                <p className="text-sm font-semibold text-slate-500 mb-1">Dokumen Belum Tersedia</p>
-                <p className="text-xs text-slate-400">Dosen belum mengunggah file KHS.</p>
-              </>
+        <div className="xl:col-span-3 bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden flex flex-col min-h-[500px]">
+          <div className="flex items-center justify-between px-5 py-3.5 bg-slate-800 border-b border-slate-700">
+            <h3 className="text-sm font-semibold text-white flex items-center gap-2">
+              <FileText size={15} className="text-slate-400" />
+              Dokumen KHS
+            </h3>
+            {khs.file_khs_path && (
+              <a
+                href={khs.file_khs_path}
+                target="_blank"
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-white/10 text-white rounded-md text-xs font-medium hover:bg-white/20 transition-colors"
+              >
+                <Download size={13} /> Unduh
+              </a>
             )}
           </div>
 
-          <div>
-            <a
-              href={khs.file_khs_path || '#'}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={`inline-flex items-center gap-2 text-sm font-bold text-blue-600 border border-blue-200 bg-white px-4 py-2.5 rounded-lg hover:bg-blue-50 transition-colors ${!khs.file_khs_path && 'opacity-50 cursor-not-allowed pointer-events-none'}`}
-            >
-              Download Dokumen <Download size={16} />
-            </a>
+          <div className="flex-1 bg-[#525659] p-4 flex items-center justify-center min-h-[500px]">
+            {khs.file_khs_path ? (
+              <iframe
+                src={khs.file_khs_path}
+                className="w-full h-full min-h-[500px] bg-white rounded-lg shadow-lg"
+                title="Preview KHS"
+              />
+            ) : (
+              <div className="text-center text-slate-400 bg-slate-700/50 p-12 rounded-xl">
+                <FileText size={56} className="mx-auto mb-4 opacity-30" strokeWidth={1.5} />
+                <p className="text-sm font-medium text-slate-300">Dokumen Belum Tersedia</p>
+                <p className="text-xs text-slate-500 mt-1">File KHS belum diunggah.</p>
+              </div>
+            )}
           </div>
         </div>
-
       </div>
     </div>
   );

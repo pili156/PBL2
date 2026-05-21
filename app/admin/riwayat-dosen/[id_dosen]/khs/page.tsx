@@ -1,157 +1,167 @@
-// app/admin/riwayat-dosen/[id_dosen]/khs/page.tsx
-import { prisma } from '@/lib/prisma';
-import { Info, Download, Cloud } from 'lucide-react'; 
+import { prisma } from '@/src/lib/prisma';
+import { Eye, BarChart3, Plus, FileText } from 'lucide-react';
+import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
 export const dynamic = 'force-dynamic';
 
-interface RiwayatKhsTabProps {
+interface Props {
   params: Promise<{ id_dosen: string }>;
 }
 
-export default async function RiwayatKhsTab({ params }: RiwayatKhsTabProps) {
+const formatDate = (date: Date | string | null | undefined) => {
+  if (!date) return 'Belum upload';
+  const d = typeof date === 'string' ? new Date(date) : date;
+  return d.toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' });
+};
+
+const IpkBar = ({ ipk, semester }: { ipk: number; semester: number }) => {
+  const pct = Math.min((ipk / 4) * 100, 100);
+  const color = ipk >= 3.5 ? 'bg-emerald-500' : ipk >= 3.0 ? 'bg-blue-500' : ipk >= 2.5 ? 'bg-amber-500' : 'bg-red-500';
+  return (
+    <div className="flex items-center gap-3">
+      <span className="text-[10px] text-slate-400 w-16 flex-shrink-0">Sem {semester}</span>
+      <div className="flex-1 h-2.5 bg-slate-100 rounded-full overflow-hidden">
+        <div className={`h-full rounded-full ${color} transition-all`} style={{ width: `${pct}%` }} />
+      </div>
+      <span className="text-[11px] font-semibold text-slate-700 w-10 text-right tabular-nums">{ipk.toFixed(2)}</span>
+    </div>
+  );
+};
+
+export default async function RiwayatStudi({ params }: Props) {
   const { id_dosen } = await params;
   const idDosen = Number(id_dosen);
 
-  if (isNaN(idDosen)) {
-    notFound();
-  }
+  if (isNaN(idDosen)) notFound();
 
-  // Fetch Data Dosen SEKALIGUS Data KHS-nya
   const dosen = await prisma.user.findUnique({
     where: { id: idDosen },
     include: {
       master_dosen: true,
       pengajuan_studi: {
         include: {
-          monitoring_khs: {
-            orderBy: { semester_ke: 'asc' },
-          },
+          monitoring_khs: { orderBy: { semester_ke: 'asc' } },
         },
       },
     },
   });
 
-  if (!dosen) {
-    notFound();
-  }
+  if (!dosen) notFound();
 
-  const namaDosen = dosen.master_dosen?.nama_lengkap || dosen.username || 'Dosen';
-  const inisial = namaDosen.charAt(0).toUpperCase();
-  const nip = dosen.master_dosen?.nip || '-';
-  const jurusan = dosen.master_dosen?.jurusan || '-';
-
-  // Ekstrak list KHS dari relasi pengajuan_studi
   const khsList = dosen.pengajuan_studi.flatMap((p) => p.monitoring_khs);
+  const pengajuan = dosen.pengajuan_studi[0] ?? null;
 
-  // Kalkulasi Rata-rata IPK (Hanya untuk KHS yang sudah punya nilai IPK)
-  const validKhs = khsList.filter((k) => k.ipk !== null && k.ipk !== undefined);
-  const rataRataIpk = validKhs.length > 0
-    ? (validKhs.reduce((acc, k) => acc + Number(k.ipk), 0) / validKhs.length).toFixed(2)
-    : "0.00";
-
-  const formatDate = (date: Date | string | null | undefined) => {
-    if (!date) return '-';
-    const dateObj = typeof date === 'string' ? new Date(date) : date;
-    return dateObj.toLocaleDateString('id-ID', {
-      day: '2-digit',
-      month: 'long',
-      year: 'numeric',
-    });
-  };
+  const ipkValues = khsList.map((k) => Number(k.ipk || 0)).filter((v) => v > 0);
+  const rataIpk = ipkValues.length > 0 ? (ipkValues.reduce((a, b) => a + b, 0) / ipkValues.length).toFixed(2) : '0.00';
+  const ipkTertinggi = ipkValues.length > 0 ? Math.max(...ipkValues).toFixed(2) : '0.00';
+  const ipkTerendah = ipkValues.length > 0 ? Math.min(...ipkValues).toFixed(2) : '0.00';
+  const totalSks = khsList.length * 20;
 
   return (
     <div className="space-y-6">
-      
-      {/* 1. HEADER CARD PROFIL (Persis Halaman Status Studi) */}
-      <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-6 flex flex-col xl:flex-row xl:items-center justify-between gap-6">
-        
-        <div className="flex items-center gap-6">
-          {/* Avatar Inisial */}
-          <div className="w-16 h-16 rounded-full bg-blue-600 flex items-center justify-center text-white text-3xl font-bold flex-shrink-0">
-            {inisial}
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-4">
-            <div>
-              <p className="text-xs text-slate-500 mb-1">Nama Dosen</p>
-              <p className="text-sm font-bold text-slate-800">{namaDosen}</p>
-              <p className="text-xs text-slate-500 mt-2 mb-1">NIP</p>
-              <p className="text-sm font-bold text-slate-800">{nip}</p>
-            </div>
-            <div>
-              <p className="text-xs text-slate-500 mb-1">Program Studi / Jurusan</p>
-              <p className="text-sm font-bold text-slate-800">{jurusan}</p>
-            </div>
-          </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-5">
+          <p className="text-[10px] text-slate-400 font-medium uppercase tracking-wider mb-1">IPK Rata-rata</p>
+          <p className="text-2xl font-bold text-blue-600">{rataIpk}</p>
         </div>
-
-        {/* Highlight Dinamis: Rata-rata IPK */}
-        <div className="bg-[#F8FAFC] border border-slate-100 rounded-xl p-4 text-center min-w-[160px]">
-          <p className="text-xs font-semibold text-slate-500 mb-1">Rata-rata IPK</p>
-          <p className="text-3xl font-black text-slate-800">{rataRataIpk}</p>
-          <p className="text-[11px] font-medium text-slate-500 mt-1">Dari 4.00</p>
+        <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-5">
+          <p className="text-[10px] text-slate-400 font-medium uppercase tracking-wider mb-1">IPK Tertinggi</p>
+          <p className="text-2xl font-bold text-slate-800">{ipkTertinggi}</p>
         </div>
-
+        <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-5">
+          <p className="text-[10px] text-slate-400 font-medium uppercase tracking-wider mb-1">IPK Terendah</p>
+          <p className="text-2xl font-bold text-slate-800">{ipkTerendah}</p>
+        </div>
+        <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-5">
+          <p className="text-[10px] text-slate-400 font-medium uppercase tracking-wider mb-1">Total SKS</p>
+          <p className="text-2xl font-bold text-slate-800">{totalSks}</p>
+        </div>
       </div>
 
-      {/* 2. KONTEN TABEL KHS */}
-      <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-6 space-y-6">
-        
+      {khsList.length > 1 && (
+        <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-6">
+          <h4 className="text-sm font-semibold text-slate-800 mb-5 flex items-center gap-2">
+            <BarChart3 size={15} className="text-blue-500" />
+            Perkembangan IPK per Semester
+          </h4>
+          <div className="space-y-3">
+            {khsList.map((k) => {
+              const ipk = Number(k.ipk || 0);
+              return ipk > 0 ? <IpkBar key={k.id} ipk={ipk} semester={k.semester_ke || 0} /> : null;
+            })}
+          </div>
+        </div>
+      )}
+
+      <div className="bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden">
+        <div className="p-5 border-b border-slate-100 flex items-center justify-between">
+          <div>
+            <h3 className="text-sm font-semibold text-slate-800">Arsip Semester</h3>
+            <p className="text-[10px] text-slate-400 mt-0.5">{khsList.length} semester tercatat</p>
+          </div>
+          <Link
+            href={`/admin/riwayat-dosen/${idDosen}/khs/tambah`}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 text-white text-xs font-semibold rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            <Plus size={14} /> Tambah KHS
+          </Link>
+        </div>
+
         <div className="overflow-x-auto">
           <table className="w-full text-left">
             <thead>
-              <tr className="border-b border-slate-100 text-xs font-semibold text-slate-400 uppercase tracking-wider">
-                <th className="px-6 py-4 font-medium w-16">No</th>
-                <th className="px-6 py-4 font-medium">Semester</th>
-                <th className="px-6 py-4 font-medium">IPK</th>
-                <th className="px-6 py-4 font-medium">Tanggal Unggah</th>
-                <th className="px-6 py-4 font-medium text-center w-40">Aksi</th>
+              <tr className="border-b border-slate-100 text-[11px] font-semibold text-slate-400 uppercase tracking-wider bg-slate-50/50">
+                <th className="px-5 py-3.5 w-10">No</th>
+                <th className="px-5 py-3.5">Semester</th>
+                <th className="px-5 py-3.5">Tahun Akademik</th>
+                <th className="px-5 py-3.5">IPK</th>
+                <th className="px-5 py-3.5">SKS</th>
+                <th className="px-5 py-3.5">Tanggal Upload</th>
+                <th className="px-5 py-3.5 text-center">Aksi</th>
               </tr>
             </thead>
-
             <tbody>
               {khsList.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="text-center py-10 text-slate-500 text-sm">
-                    Belum ada data KHS.
+                  <td colSpan={7} className="px-5 py-12 text-center">
+                    <div className="flex flex-col items-center gap-2">
+                      <FileText size={32} className="text-slate-300" strokeWidth={1.5} />
+                      <p className="text-sm text-slate-400">Belum ada data KHS.</p>
+                      <p className="text-xs text-slate-300">Klik &quot;Tambah KHS&quot; untuk menambahkan data secara manual.</p>
+                    </div>
                   </td>
                 </tr>
               ) : (
                 khsList.map((k, index) => {
+                  const ipk = Number(k.ipk || 0);
+                  const isDisabled = !k.file_khs_path;
                   return (
-                    <tr
-                      key={k.id}
-                      className="border-b border-slate-50 last:border-0 hover:bg-slate-50/50 transition-colors"
-                    >
-                      <td className="px-6 py-4 text-sm font-medium text-slate-500">{index + 1}.</td>
-
-                      <td className="px-6 py-4 text-sm text-slate-800 font-medium">
-                        Semester {k.semester_ke}
+                    <tr key={k.id} className="border-b border-slate-50 last:border-0 hover:bg-slate-50/50 transition-colors">
+                      <td className="px-5 py-3.5 text-sm text-slate-400 font-mono">{index + 1}</td>
+                      <td className="px-5 py-3.5">
+                        <span className="text-sm font-medium text-slate-800">Semester {k.semester_ke || '-'}</span>
                       </td>
-
-                      <td className="px-6 py-4 text-sm text-slate-800">
-                        {k.ipk ? Number(k.ipk).toFixed(2) : '-'}
+                      <td className="px-5 py-3.5 text-sm text-slate-600">{k.tahun_akademik || '-'}</td>
+                      <td className="px-5 py-3.5">
+                        <span className={`text-sm font-bold tabular-nums ${ipk >= 3.5 ? 'text-emerald-600' : ipk >= 3.0 ? 'text-blue-600' : ipk > 0 ? 'text-amber-600' : 'text-slate-400'}`}>
+                          {ipk > 0 ? ipk.toFixed(2) : '-'}
+                        </span>
                       </td>
-
-                      <td className="px-6 py-4 text-sm text-slate-600">
-                        {formatDate(k.tanggal_unggah)}
-                      </td>
-
-                      <td className="px-6 py-4 flex justify-center">
-                        {k.file_khs_path ? (
-                          <a
-                            href={k.file_khs_path}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center justify-center gap-1.5 px-4 py-2 border border-blue-600 text-blue-600 rounded-md text-xs font-semibold hover:bg-blue-50 transition-colors w-32"
-                          >
-                            <Download size={14} /> Download
-                          </a>
-                        ) : (
-                          <span className="inline-flex items-center justify-center gap-1.5 px-4 py-2 border border-slate-200 text-slate-400 bg-slate-50 rounded-md text-xs font-medium w-32">
-                            <Cloud size={14} /> Belum Upload
+                      <td className="px-5 py-3.5 text-sm text-slate-600">{k.semester_ke ? 20 : '-'}</td>
+                      <td className="px-5 py-3.5 text-sm text-slate-500">{formatDate(k.tanggal_unggah)}</td>
+                      <td className="px-5 py-3.5 text-center">
+                        {isDisabled ? (
+                          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-50 text-slate-400 text-xs font-medium rounded-lg cursor-not-allowed">
+                            <Eye size={13} /> Preview
                           </span>
+                        ) : (
+                          <Link
+                            href={`/admin/riwayat-dosen/${idDosen}/khs/${k.id}`}
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-blue-600 text-xs font-semibold rounded-lg hover:bg-blue-100 transition-colors"
+                          >
+                            <Eye size={13} /> Preview
+                          </Link>
                         )}
                       </td>
                     </tr>
@@ -161,15 +171,6 @@ export default async function RiwayatKhsTab({ params }: RiwayatKhsTabProps) {
             </tbody>
           </table>
         </div>
-
-        {/* Banner Kuning Info */}
-        <div className="bg-[#FFFDF5] border border-amber-200/60 rounded-lg p-3 flex items-center gap-3">
-          <Info className="text-amber-500 flex-shrink-0" size={18} />
-          <p className="text-xs text-amber-800 font-medium">
-            Klik tombol <span className="font-bold">"Download"</span> untuk mengunduh dokumen KHS.
-          </p>
-        </div>
-
       </div>
     </div>
   );
