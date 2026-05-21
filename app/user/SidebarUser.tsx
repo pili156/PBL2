@@ -17,7 +17,7 @@ const menuItems = [
   { href: "/user/pengajuan", label: "Pengajuan", icon: FileText },
   { href: "/user/status", label: "Status", icon: CheckSquare },
   { href: "/user/laporanKHS", label: "Laporan KHS", icon: ListOrdered },
-  { href: "/user/user-reimbursement", label: "Reimbursement", icon: CreditCard },
+  { href: "/user/user-reimbursement", label: "Bantuan Studi", icon: CreditCard },
   { href: "/user/profil", label: "Profil Saya", icon: UserCircle },
 ];
 

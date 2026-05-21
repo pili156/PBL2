@@ -1,47 +1,43 @@
 import Link from "next/link";
 import { headers } from "next/headers";
 import { prisma } from "@/src/lib/prisma";
-import { Clock3, CheckCircle2, CheckCircle, FileText, Plus } from "lucide-react";
+import { Clock3, CheckCircle2, FileText, Plus, AlertCircle, Check, Download, X } from "lucide-react";
 
 function formatRupiah(value: unknown) {
-  if (value === null || value === undefined) {
-    return "-";
-  }
-
+  if (value === null || value === undefined) return "-";
   const numericValue = typeof value === "object" && value !== null && "toNumber" in value
     ? Number((value as { toNumber: () => number }).toNumber())
     : Number(value);
-
-  if (Number.isNaN(numericValue)) {
-    return "-";
-  }
-
-  return `Rp ${numericValue.toLocaleString("id-ID", {
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  })}`;
+  if (Number.isNaN(numericValue)) return "-";
+  return `Rp ${numericValue.toLocaleString("id-ID", { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
 }
 
 function normalizeStatus(status?: string | null) {
-  if (!status) return "Belum Diajukan";
+  if (!status) return "Pending";
   const text = status.toLowerCase();
   if (text.includes("selesai") || text.includes("completed")) return "Selesai";
-  if (text.includes("disetujui") || text.includes("approved")) return "Disetujui";
-  if (text.includes("revisi")) return "Perlu Revisi";
+  if (text.includes("disetujui") || text.includes("approved") || text.includes("diterima")) return "Disetujui";
+  if (text.includes("revisi") || text.includes("ditolak")) return "Perlu Revisi";
   return "Diproses";
 }
 
 function statusClasses(status: string) {
   switch (status) {
-    case "Disetujui":
-      return "text-emerald-600 bg-emerald-50 border-emerald-100";
-    case "Selesai":
-      return "text-sky-600 bg-sky-50 border-sky-100";
-    case "Perlu Revisi":
-      return "text-orange-600 bg-orange-50 border-orange-100";
-    case "Diproses":
+    case "Disetujui": return "text-emerald-600 bg-emerald-50 border-emerald-100";
+    case "Selesai": return "text-sky-600 bg-sky-50 border-sky-100";
+    case "Perlu Revisi": return "text-orange-600 bg-orange-50 border-orange-100";
+    default: return "text-amber-600 bg-amber-50 border-amber-100";
+  }
+}
+
+function docStatusBadge(status: string) {
+  switch (status) {
+    case "terverifikasi":
+      return { icon: Check, color: "text-emerald-600 bg-emerald-50", label: "Terverifikasi" };
+    case "revisi":
+      return { icon: AlertCircle, color: "text-orange-600 bg-orange-50", label: "Revisi" };
     default:
-      return "text-amber-600 bg-amber-50 border-amber-100";
+      return { icon: Clock3, color: "text-amber-600 bg-amber-50", label: "Pending" };
   }
 }
 
@@ -49,72 +45,61 @@ const STATUS_CARDS = [
   { label: "Total Pengajuan", key: "total", icon: FileText },
   { label: "Diproses", key: "diproses", icon: Clock3 },
   { label: "Disetujui", key: "disetujui", icon: CheckCircle2 },
-  { label: "Selesai", key: "selesai", icon: CheckCircle },
+  { label: "Perlu Revisi", key: "revisi", icon: AlertCircle },
 ];
 
-export default async function UserReimbursementPage() {
+export default async function BantuanStudiPage() {
   const headersList = await headers();
   const userId = parseInt(headersList.get('x-user-id') || '0');
 
   if (!userId) {
     return (
       <div className="rounded-3xl bg-white p-10 shadow-sm border border-slate-200">
-        <h1 className="text-2xl font-bold text-slate-900">Reimbursement Saya</h1>
-        <p className="mt-2 text-slate-600">Silakan login untuk melihat data reimbursement Anda.</p>
+        <h1 className="text-2xl font-bold text-slate-900">Bantuan Studi Saya</h1>
+        <p className="mt-2 text-slate-600">Silakan login untuk melihat data bantuan studi Anda.</p>
       </div>
     );
   }
 
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
+  const pengajuan = await prisma.pengajuanStudi.findFirst({
+    where: { user_id: userId },
+    orderBy: { created_at: "desc" },
     include: {
-      pengajuan_studi: {
+      pengajuan_reimbursement: {
+        where: { jenis_pengajuan: "bantuan_studi" },
         orderBy: { created_at: "desc" },
-        take: 1,
-        include: {
-          pengajuan_reimbursement: {
-            orderBy: { semester_ke: "asc" },
-          },
-        },
+      },
+      dokumen_pengajuan: {
+        where: { master_dokumen_id: { in: [21, 22, 23, 24] } },
+        include: { master_dokumen: true },
       },
     },
   });
 
-  const currentPengajuan = user?.pengajuan_studi?.[0] ?? null;
-  const reimbursements = currentPengajuan?.pengajuan_reimbursement ?? [];
+  const bantuanStudiList = pengajuan?.pengajuan_reimbursement ?? [];
+  const dokumenList = pengajuan?.dokumen_pengajuan ?? [];
 
   const counts = {
-    total: reimbursements.length,
-    diproses: reimbursements.filter((item) => {
+    total: bantuanStudiList.length,
+    diproses: bantuanStudiList.filter((item) => {
       const status = item.status_pencairan?.toLowerCase() ?? "";
       return status === "pending" || status === "diproses" || status === "menunggu";
     }).length,
-    disetujui: reimbursements.filter((item) => {
+    disetujui: bantuanStudiList.filter((item) => {
       const status = item.status_pencairan?.toLowerCase() ?? "";
-      return status.includes("disetujui") || status.includes("approved");
+      return status.includes("disetujui") || status.includes("diterima");
     }).length,
-    selesai: reimbursements.filter((item) => {
+    revisi: bantuanStudiList.filter((item) => {
       const status = item.status_pencairan?.toLowerCase() ?? "";
-      return status.includes("selesai") || status.includes("completed");
+      return status.includes("revisi") || status.includes("ditolak");
     }).length,
   };
-
-  const semesters = Array.from({ length: 5 }, (_, index) => {
-    const semesterKe = index + 1;
-    const reimbursement = reimbursements.find((item) => item.semester_ke === semesterKe) ?? null;
-
-    return {
-      semester: semesterKe,
-      reimbursement,
-      status: normalizeStatus(reimbursement?.status_pencairan),
-    };
-  });
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
       <div className="space-y-2">
-        <h1 className="text-3xl font-bold text-slate-900">Reimbursement Saya</h1>
-        <p className="text-sm text-slate-500">Kelola pengajuan reimbursement biaya studi Anda.</p>
+        <h1 className="text-3xl font-bold text-slate-900">Bantuan Studi Saya</h1>
+        <p className="text-sm text-slate-500">Ajukan dan pantau permohonan bantuan studi lanjut Anda.</p>
       </div>
 
       <div className="grid gap-4 xl:grid-cols-4">
@@ -135,16 +120,61 @@ export default async function UserReimbursementPage() {
         })}
       </div>
 
+      {/* Dokumen Status */}
+      {dokumenList.length > 0 && (
+        <div className="bg-white rounded-[28px] border border-slate-200 shadow-sm p-6">
+          <h2 className="text-xl font-semibold text-slate-900 mb-4">Status Dokumen</h2>
+          <div className="grid gap-4 sm:grid-cols-2">
+            {dokumenList.map((doc) => {
+              const badge = docStatusBadge(doc.status_verifikasi?.toLowerCase() ?? "");
+              const Icon = badge.icon;
+              return (
+                <div key={doc.id} className="rounded-2xl border border-slate-200 bg-slate-50 p-4 flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <FileText size={18} className="text-blue-600" />
+                    <div>
+                      <p className="text-sm font-semibold text-slate-900">
+                        {doc.master_dokumen?.nama_dokumen || "Dokumen"}
+                      </p>
+                      <p className={`inline-flex items-center gap-1 mt-1 rounded-full px-2 py-0.5 text-xs font-medium ${badge.color}`}>
+                        <Icon size={12} /> {badge.label}
+                      </p>
+                      {doc.status_verifikasi?.toLowerCase() === "revisi" && doc.catatan_revisi && (
+                        <p className="text-xs text-orange-600 mt-1">Catatan: {doc.catatan_revisi}</p>
+                      )}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {doc.file_path ? (
+                      <a
+                        href={doc.file_path}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="p-2 text-blue-600 hover:bg-blue-100 rounded-lg transition-colors"
+                      >
+                        <Download size={16} />
+                      </a>
+                    ) : (
+                      <span className="text-xs text-slate-400">Belum diupload</span>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       <div className="bg-white rounded-[28px] border border-slate-200 shadow-sm p-6">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h2 className="text-xl font-semibold text-slate-900">Daftar Pengajuan Reimbursement</h2>
+            <h2 className="text-xl font-semibold text-slate-900">Daftar Pengajuan Bantuan Studi</h2>
           </div>
           <Link
             href="/user/user-reimbursement/ajukan"
             className="inline-flex items-center justify-center gap-2 rounded-full bg-blue-600 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700"
           >
-            <Plus size={16} /> Ajukan Pengajuan Baru
+            <Plus size={16} /> Ajukan Baru
           </Link>
         </div>
 
@@ -154,6 +184,7 @@ export default async function UserReimbursementPage() {
               <tr className="text-sm font-semibold text-slate-600">
                 <th className="px-4 py-3">No</th>
                 <th className="px-4 py-3">Semester</th>
+                <th className="px-4 py-3">Tahun Akademik</th>
                 <th className="px-4 py-3">Nominal</th>
                 <th className="px-4 py-3">Tanggal Pengajuan</th>
                 <th className="px-4 py-3">Status</th>
@@ -161,56 +192,48 @@ export default async function UserReimbursementPage() {
               </tr>
             </thead>
             <tbody>
-              {semesters.map((row, index) => {
-                const reimbursement = row.reimbursement;
-                const status = row.status;
-                const statusClass = statusClasses(status);
-                const statusText = reimbursement ? status : "Belum Diajukan";
-                return (
-                  <tr key={row.semester} className="bg-slate-50/80 rounded-[18px] border border-slate-100">
-                    <td className="px-4 py-4 text-sm font-medium text-slate-700">{index + 1}.</td>
-                    <td className="px-4 py-4 text-sm text-slate-700">Semester {row.semester}</td>
-                    <td className="px-4 py-4 text-sm text-slate-700">{formatRupiah(reimbursement?.nominal ?? null)}</td>
-                    <td className="px-4 py-4 text-sm text-slate-600">
-                      {reimbursement?.created_at
-                        ? new Date(reimbursement.created_at).toLocaleDateString("id-ID", {
-                            day: "2-digit",
-                            month: "long",
-                            year: "numeric",
-                          })
-                        : "-"}
-                    </td>
-                    <td className="px-4 py-4">
-                      <span className={`inline-flex rounded-full border px-3 py-1 text-xs font-semibold ${statusClass}`}>
-                        {statusText}
-                      </span>
-                    </td>
-                    <td className="px-4 py-4 text-center">
-                      {reimbursement ? (
+              {bantuanStudiList.length === 0 ? (
+                <tr>
+                  <td colSpan={7} className="text-center py-10 text-slate-500">
+                    Belum ada pengajuan bantuan studi.
+                  </td>
+                </tr>
+              ) : (
+                bantuanStudiList.map((item, index) => {
+                  const status = normalizeStatus(item.status_pencairan);
+                  const statusClass = statusClasses(status);
+                  return (
+                    <tr key={item.id} className="bg-slate-50/80 rounded-[18px] border border-slate-100">
+                      <td className="px-4 py-4 text-sm font-medium text-slate-700">{index + 1}.</td>
+                      <td className="px-4 py-4 text-sm text-slate-700">Semester {item.semester_ke}</td>
+                      <td className="px-4 py-4 text-sm text-slate-700">{item.tahun_akademik || "-"}</td>
+                      <td className="px-4 py-4 text-sm text-slate-700">{formatRupiah(item.nominal)}</td>
+                      <td className="px-4 py-4 text-sm text-slate-600">
+                        {item.created_at
+                          ? new Date(item.created_at).toLocaleDateString("id-ID", {
+                              day: "2-digit", month: "long", year: "numeric",
+                            })
+                          : "-"}
+                      </td>
+                      <td className="px-4 py-4">
+                        <span className={`inline-flex rounded-full border px-3 py-1 text-xs font-semibold ${statusClass}`}>
+                          {status}
+                        </span>
+                      </td>
+                      <td className="px-4 py-4 text-center">
                         <Link
-                          href={`/user/user-reimbursement/${reimbursement.id}`}
+                          href={`/user/user-reimbursement/${item.id}`}
                           className="inline-flex items-center justify-center rounded-full border border-blue-600 bg-white px-4 py-2 text-sm font-semibold text-blue-600 transition hover:bg-blue-50"
                         >
                           Lihat Detail
                         </Link>
-                      ) : (
-                        <Link
-                          href={`/user/user-reimbursement/ajukan?semester=${row.semester}`}
-                          className="inline-flex items-center justify-center rounded-full border border-blue-600 bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700"
-                        >
-                          Ajukan
-                        </Link>
-                      )}
-                    </td>
-                  </tr>
-                );
-              })}
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
             </tbody>
           </table>
-        </div>
-
-        <div className="mt-6 rounded-2xl border border-blue-100 bg-blue-50/80 p-4 text-sm text-blue-700">
-          Pastikan bukti pembayaran jelas dan sesuai dengan nominal yang diajukan.
         </div>
       </div>
     </div>

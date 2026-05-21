@@ -2,84 +2,179 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
-import { ArrowLeft, Upload, Banknote, CalendarDays } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { ArrowLeft, Upload, FileText, Loader2, CheckCircle, AlertCircle } from "lucide-react";
 
-const PAYMENT_METHODS = [
-  { value: "Transfer Bank", label: "Transfer Bank" },
-  { value: "Virtual Account", label: "Virtual Account" },
-  { value: "Tunai", label: "Tunai" },
+type FileUploadState = {
+  file: File | null;
+  uploading: boolean;
+  uploaded: boolean;
+  error: string | null;
+};
+
+const DOKUMEN_LIST = [
+  { key: "formulir", label: "Formulir Bantuan Studi", masterId: 21 },
+  { key: "bukti_spp", label: "Bukti Pembayaran SPP", masterId: 22 },
+  { key: "akreditasi", label: "Bukti Akreditasi Program Studi", masterId: 23 },
+  { key: "loa", label: "Letter of Acceptance (LoA)", masterId: 24 },
 ];
 
-export default function UserReimbursementCreatePage() {
-  const searchParams = useSearchParams();
+export default function BantuanStudiCreatePage() {
   const router = useRouter();
 
-  const querySemester = searchParams?.get("semester") ?? "1";
-  const [semester, setSemester] = useState(querySemester);
-  const [tanggalPembayaran, setTanggalPembayaran] = useState("");
-  const [nominal, setNominal] = useState("");
-  const [metodePembayaran, setMetodePembayaran] = useState(PAYMENT_METHODS[0].value);
-  const [catatan, setCatatan] = useState("");
-  const [file, setFile] = useState<File | null>(null);
+  const [formData, setFormData] = useState({
+    semester: "1",
+    tahunAkademik: "",
+    tahunKe: "1",
+    nominal: "",
+  });
+  const [files, setFiles] = useState<Record<string, FileUploadState>>({
+    formulir: { file: null, uploading: false, uploaded: false, error: null },
+    bukti_spp: { file: null, uploading: false, uploaded: false, error: null },
+    akreditasi: { file: null, uploading: false, uploaded: false, error: null },
+    loa: { file: null, uploading: false, uploaded: false, error: null },
+  });
+  const [pengajuanId, setPengajuanId] = useState<number | null>(null);
+  const [pengajuanStudiId, setPengajuanStudiId] = useState<number | null>(null);
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
-    if (querySemester) {
-      setSemester(querySemester);
+    async function ensurePengajuanStudi() {
+      try {
+        const res = await fetch("/api/user/pengajuan");
+        if (res.ok) {
+          const data = await res.json();
+          if (data.id) {
+            setPengajuanStudiId(data.id);
+            return;
+          }
+        }
+        const createRes = await fetch("/api/pengajuan", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({}),
+        });
+        if (createRes.ok) {
+          const createData = await createRes.json();
+          if (createData.pengajuan?.id) {
+            setPengajuanStudiId(createData.pengajuan.id);
+          }
+        }
+      } catch {}
     }
-  }, [querySemester]);
+    ensurePengajuanStudi();
+  }, []);
 
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const selected = event.target.files?.[0] ?? null;
-    setFile(selected);
+  const handleInputChange = (field: string, value: string) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const handleFileSelect = (key: string, file: File | null) => {
+    if (!file) return;
+    if (file.type !== "application/pdf") {
+      setFiles((prev) => ({ ...prev, [key]: { ...prev[key], file: null, error: "Format file harus PDF" } }));
+      return;
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      setFiles((prev) => ({ ...prev, [key]: { ...prev[key], file: null, error: "Ukuran file maksimal 2MB" } }));
+      return;
+    }
+    setFiles((prev) => ({ ...prev, [key]: { ...prev[key], file, error: null, uploaded: false } }));
+  };
+
+  const uploadDokumen = async (key: string, masterId: number): Promise<boolean> => {
+    const fileEntry = files[key];
+    if (!fileEntry.file || !pengajuanStudiId) return false;
+
+    setFiles((prev) => ({ ...prev, [key]: { ...prev[key], uploading: true, error: null } }));
+
+    try {
+      const formDataFile = new FormData();
+      formDataFile.append("file", fileEntry.file);
+      formDataFile.append("master_dokumen_id", masterId.toString());
+
+      const response = await fetch(`/api/pengajuan/${pengajuanStudiId}/dokumen`, {
+        method: "POST",
+        body: formDataFile,
+      });
+
+      if (!response.ok) {
+        const err = await response.json();
+        throw new Error(err.error || "Upload gagal");
+      }
+
+      setFiles((prev) => ({ ...prev, [key]: { ...prev[key], uploading: false, uploaded: true, error: null } }));
+      return true;
+    } catch (err) {
+      setFiles((prev) => ({
+        ...prev,
+        [key]: { ...prev[key], uploading: false, error: err instanceof Error ? err.message : "Upload gagal" },
+      }));
+      return false;
+    }
   };
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError("");
 
-    if (!tanggalPembayaran || !nominal || !metodePembayaran || !file) {
-      setError("Lengkapi semua kolom yang wajib diisi, termasuk bukti pembayaran.");
+    if (!formData.nominal || !formData.tahunAkademik) {
+      setError("Nominal dan Tahun Akademik wajib diisi.");
       return;
     }
 
-    const cleanedNominal = nominal.replace(/[^0-9]/g, "");
-
-    if (!cleanedNominal) {
-      setError("Nominal harus berisi angka.");
+    const allHaveFiles = DOKUMEN_LIST.every((d) => files[d.key].file);
+    if (!allHaveFiles) {
+      setError("Semua file wajib diupload.");
       return;
     }
 
-    const formData = new FormData();
-    formData.append("semester_ke", semester);
-    formData.append("tanggal_pembayaran", tanggalPembayaran);
-    formData.append("nominal", cleanedNominal);
-    formData.append("metode_pembayaran", metodePembayaran);
-    formData.append("catatan_keuangan", catatan);
-    formData.append("file_bukti_bayar", file);
+    if (!pengajuanStudiId) {
+      setError("Gagal memuat data pengajuan. Silakan muat ulang halaman.");
+      return;
+    }
 
+    setIsSubmitting(true);
+
+    // Upload all 4 files
+    for (const dok of DOKUMEN_LIST) {
+      const success = await uploadDokumen(dok.key, dok.masterId);
+      if (!success) {
+        setIsSubmitting(false);
+        setError(`Gagal mengupload ${dok.label}. Silakan coba lagi.`);
+        return;
+      }
+    }
+
+    // Submit metadata
     try {
-      setIsSubmitting(true);
+      const body = new FormData();
+      body.append("jenis_pengajuan", "bantuan_studi");
+      body.append("semester_ke", formData.semester);
+      body.append("tahun_akademik", formData.tahunAkademik);
+      body.append("tahun_ke", formData.tahunKe);
+      body.append("nominal", formData.nominal);
+
       const response = await fetch("/api/user-reimbursement", {
         method: "POST",
-        body: formData,
+        body,
       });
 
-      const data = await response.json();
+      const result = await response.json();
 
       if (!response.ok) {
-        throw new Error(data?.error || "Terjadi kesalahan saat mengajukan reimbursement.");
+        throw new Error(result?.error || "Gagal mengajukan bantuan studi.");
       }
 
-      router.push(`/user/user-reimbursement/${data.id}`);
+      router.push(`/user/user-reimbursement/${result.id}`);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Terjadi kesalahan tidak terduga.");
-    } finally {
+      setError(err instanceof Error ? err.message : "Terjadi kesalahan.");
       setIsSubmitting(false);
     }
   };
+
+  const allFilesReady = DOKUMEN_LIST.every((d) => files[d.key].file && !files[d.key].uploading);
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
@@ -89,8 +184,8 @@ export default function UserReimbursementCreatePage() {
             <ArrowLeft size={18} /> Kembali
           </Link>
           <div>
-            <h1 className="text-3xl font-bold text-slate-900">Ajukan Reimbursement Baru</h1>
-            <p className="text-sm text-slate-500">Lengkapi data berikut untuk mengajukan reimbursement biaya studi.</p>
+            <h1 className="text-3xl font-bold text-slate-900">Ajukan Bantuan Studi</h1>
+            <p className="text-sm text-slate-500">Lengkapi data berikut untuk mengajukan bantuan studi lanjut.</p>
           </div>
         </div>
       </div>
@@ -107,90 +202,124 @@ export default function UserReimbursementCreatePage() {
             <label htmlFor="semester" className="text-sm font-medium text-slate-700">Semester *</label>
             <select
               id="semester"
-              value={semester}
-              onChange={(event) => setSemester(event.target.value)}
+              value={formData.semester}
+              onChange={(e) => handleInputChange("semester", e.target.value)}
               className="w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
             >
-              {Array.from({ length: 8 }, (_, index) => (
-                <option key={index + 1} value={index + 1}>
-                  Semester {index + 1}
-                </option>
+              {Array.from({ length: 8 }, (_, i) => (
+                <option key={i + 1} value={i + 1}>Semester {i + 1}</option>
               ))}
             </select>
           </div>
 
           <div className="space-y-2">
-            <label htmlFor="tanggalPembayaran" className="text-sm font-medium text-slate-700">Tanggal Pembayaran *</label>
-            <div className="relative">
-              <input
-                id="tanggalPembayaran"
-                type="date"
-                value={tanggalPembayaran}
-                onChange={(event) => setTanggalPembayaran(event.target.value)}
-                className="w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 pr-12 text-sm text-slate-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-              />
-              <CalendarDays className="pointer-events-none absolute right-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
-            </div>
+            <label htmlFor="tahunKe" className="text-sm font-medium text-slate-700">Tahun Ke- *</label>
+            <select
+              id="tahunKe"
+              value={formData.tahunKe}
+              onChange={(e) => handleInputChange("tahunKe", e.target.value)}
+              className="w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+            >
+              {Array.from({ length: 8 }, (_, i) => (
+                <option key={i + 1} value={i + 1}>Tahun ke-{i + 1}</option>
+              ))}
+            </select>
           </div>
 
           <div className="space-y-2 sm:col-span-2">
-            <label htmlFor="nominal" className="text-sm font-medium text-slate-700">Nominal Diajukan *</label>
+            <label htmlFor="tahunAkademik" className="text-sm font-medium text-slate-700">Tahun Akademik *</label>
+            <input
+              id="tahunAkademik"
+              type="text"
+              value={formData.tahunAkademik}
+              onChange={(e) => handleInputChange("tahunAkademik", e.target.value)}
+              placeholder="Contoh: 2025/2026"
+              className="w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+            />
+          </div>
+
+          <div className="space-y-2 sm:col-span-2">
+            <label htmlFor="nominal" className="text-sm font-medium text-slate-700">Bantuan SPP Diajukan *</label>
             <input
               id="nominal"
               type="text"
-              value={nominal}
-              onChange={(event) => setNominal(event.target.value)}
+              value={formData.nominal}
+              onChange={(e) => handleInputChange("nominal", e.target.value)}
               placeholder="5000000"
               className="w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
             />
-            <p className="text-xs text-slate-500">Nominal sesuai bukti pembayaran.</p>
-          </div>
-
-          <div className="space-y-2">
-            <label htmlFor="metodePembayaran" className="text-sm font-medium text-slate-700">Metode Pembayaran *</label>
-            <select
-              id="metodePembayaran"
-              value={metodePembayaran}
-              onChange={(event) => setMetodePembayaran(event.target.value)}
-              className="w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-            >
-              {PAYMENT_METHODS.map((method) => (
-                <option key={method.value} value={method.value}>
-                  {method.label}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="space-y-2">
-            <label htmlFor="file" className="text-sm font-medium text-slate-700">Upload Bukti Pembayaran *</label>
-            <label className="flex min-h-[156px] flex-col items-center justify-center rounded-3xl border border-dashed border-slate-300 bg-slate-50 px-4 py-7 text-center text-sm text-slate-500 transition hover:border-blue-400 hover:bg-slate-100">
-              <Upload className="mb-3 h-8 w-8 text-blue-600" />
-              <span className="font-semibold text-slate-700">Drag & drop file di sini</span>
-              <span className="mt-1 text-xs text-slate-500">atau klik untuk memilih file</span>
-              <span className="mt-2 text-xs text-slate-400">Format: JPG, PNG, PDF (maks. 5MB)</span>
-              <input
-                id="file"
-                type="file"
-                accept="image/jpeg,image/png,application/pdf"
-                onChange={handleFileChange}
-                className="sr-only"
-              />
-            </label>
-            {file && <p className="text-sm text-slate-600">File dipilih: {file.name}</p>}
+            <p className="text-xs text-slate-500">Nominal bantuan SPP yang diajukan (angka saja).</p>
           </div>
         </div>
 
-        <div className="space-y-2">
-          <label htmlFor="catatan" className="text-sm font-medium text-slate-700">Catatan (Opsional)</label>
-          <textarea
-            id="catatan"
-            rows={4}
-            value={catatan}
-            onChange={(event) => setCatatan(event.target.value)}
-            placeholder="Tulis catatan jika diperlukan..."
-            className="w-full rounded-3xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-          />
+        <div className="border-t border-slate-200 pt-6">
+          <h3 className="text-lg font-semibold text-slate-900 mb-4">Upload Dokumen Pendukung</h3>
+
+          <div className="grid gap-6 sm:grid-cols-2">
+            {DOKUMEN_LIST.map((dok) => {
+              const state = files[dok.key];
+              const isUploaded = state.uploaded;
+              const isUploading = state.uploading;
+              const hasFile = !!state.file;
+
+              return (
+                <div key={dok.key} className="space-y-2">
+                  <label className="text-sm font-medium text-slate-700">
+                    {dok.label} *
+                    {dok.key === 'formulir' && (
+                      <a
+                        href="/FORMULIR%20BANTUAN%20STUDI.docx"
+                        download
+                        className="text-xs text-blue-600 hover:text-blue-800 underline ml-2 font-normal"
+                      >
+                        Download template
+                      </a>
+                    )}
+                  </label>
+                  <div className={`rounded-2xl border ${isUploaded ? "border-green-300 bg-green-50" : "border-dashed border-slate-300 bg-slate-50"} p-4 transition`}>
+                    {isUploaded ? (
+                      <div className="flex items-center gap-3">
+                        <CheckCircle size={20} className="text-green-600" />
+                        <span className="text-sm text-green-700 font-medium">Terupload</span>
+                        {state.file && (
+                          <span className="text-xs text-slate-500 truncate ml-2">{state.file.name}</span>
+                        )}
+                      </div>
+                    ) : (
+                      <>
+                        <input
+                          type="file"
+                          accept=".pdf"
+                          hidden
+                          id={`file-${dok.key}`}
+                          onChange={(e) => handleFileSelect(dok.key, e.target.files?.[0] ?? null)}
+                        />
+                        <label
+                          htmlFor={`file-${dok.key}`}
+                          className="flex flex-col items-center justify-center cursor-pointer py-4"
+                        >
+                          <Upload className="mb-2 h-6 w-6 text-blue-600" />
+                          <span className="text-sm font-semibold text-slate-700">
+                            {hasFile ? state.file!.name : "Klik untuk pilih file"}
+                          </span>
+                          <span className="text-xs text-slate-500 mt-1">Format: PDF, maks. 2MB</span>
+                        </label>
+                        {isUploading && (
+                          <div className="flex items-center gap-2 mt-2 text-blue-600 text-sm">
+                            <Loader2 size={14} className="animate-spin" />
+                            Mengupload...
+                          </div>
+                        )}
+                      </>
+                    )}
+                    {state.error && (
+                      <p className="text-xs text-red-600 mt-1">{state.error}</p>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </div>
 
         <div className="flex flex-col gap-3 sm:flex-row sm:justify-end">
@@ -202,15 +331,18 @@ export default function UserReimbursementCreatePage() {
           </Link>
           <button
             type="submit"
-            disabled={isSubmitting}
-            className="inline-flex items-center justify-center rounded-full bg-blue-600 px-6 py-3 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-70"
+            disabled={!allFilesReady || isSubmitting}
+            className="inline-flex items-center justify-center gap-2 rounded-full bg-blue-600 px-6 py-3 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-70"
           >
-            {isSubmitting ? "Mengirim..." : "Kirim Pengajuan"}
+            {isSubmitting ? (
+              <>
+                <Loader2 size={16} className="animate-spin" />
+                Mengirim...
+              </>
+            ) : (
+              "Kirim Pengajuan"
+            )}
           </button>
-        </div>
-
-        <div className="rounded-2xl border border-blue-100 bg-blue-50 p-4 text-sm text-blue-700">
-          Pastikan bukti pembayaran jelas dan sesuai dengan nominal yang diajukan.
         </div>
       </form>
     </div>

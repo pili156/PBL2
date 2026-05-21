@@ -168,7 +168,10 @@ model MonitoringKhs {
 model PengajuanReimbursement {
   id                Int             @id @default(autoincrement())
   pengajuan_id      Int?
+  jenis_pengajuan   String?         @default("reimbursement")
   semester_ke       Int?
+  tahun_akademik    String?
+  tahun_ke          Int?
   file_bukti_bayar  String?
   nominal           Decimal?        @db.Decimal(12, 2)
   status_pencairan  String?         @default("Pending")

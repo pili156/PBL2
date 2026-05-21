@@ -52,6 +52,10 @@ async function main() {
     { id: 18, nama_dokumen: 'Dokumen akreditasi prodi & PT / PTLN', is_mandatory: true, syarat_wilayah: 'Luar Negeri' },
     { id: 19, nama_dokumen: 'Surat Persetujuan Setneg', is_mandatory: true, syarat_wilayah: 'Luar Negeri' },
     { id: 20, nama_dokumen: 'Surat keterangan sehat rohani', is_mandatory: true, syarat_wilayah: 'Semua' },
+    { id: 21, nama_dokumen: 'Formulir Bantuan Studi', is_mandatory: true, syarat_wilayah: 'Semua' },
+    { id: 22, nama_dokumen: 'Bukti Pembayaran SPP', is_mandatory: true, syarat_wilayah: 'Semua' },
+    { id: 23, nama_dokumen: 'Bukti Akreditasi Program Studi', is_mandatory: true, syarat_wilayah: 'Semua' },
+    { id: 24, nama_dokumen: 'Letter of Acceptance (LoA)', is_mandatory: true, syarat_wilayah: 'Semua' },
   ];
   for (const dok of dokumenList) {
     await prisma.masterDokumen.upsert({

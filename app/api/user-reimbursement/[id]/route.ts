@@ -24,6 +24,14 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
           include: {
             user: true,
             jalur_pendanaan: true,
+            jenis_studi: true,
+            wilayah: true,
+            dokumen_pengajuan: {
+              where: {
+                master_dokumen_id: { in: [21, 22, 23, 24] },
+              },
+              include: { master_dokumen: true },
+            },
           },
         },
       },
@@ -35,7 +43,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
 
     return NextResponse.json(reimbursement);
   } catch (error) {
-    console.error("Error fetching reimbursement detail", error);
-    return NextResponse.json({ error: "Gagal memuat detail reimbursement." }, { status: 500 });
+    console.error("Error fetching bantuan studi detail", error);
+    return NextResponse.json({ error: "Gagal memuat detail." }, { status: 500 });
   }
 }

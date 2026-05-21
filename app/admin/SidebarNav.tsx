@@ -16,7 +16,7 @@ const menuItems = [
   { href: "/admin/verifikasi-pengajuan", label: "Pengajuan", icon: FileText },
   { href: "/admin/status", label: "Status", icon: CheckSquare },
   { href: "/admin/riwayat-dosen", label: "Riwayat Dosen", icon: ListOrdered },
-  { href: "/admin/reimbursement", label: "Reimbursement", icon: CreditCard },
+  { href: "/admin/bantuan-studi", label: "Bantuan Studi", icon: CreditCard },
   { href: "/admin/profil", label: "Profil Saya", icon: UserCircle },
 ];
 

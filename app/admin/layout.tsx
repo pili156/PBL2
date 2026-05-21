@@ -8,6 +8,7 @@ function getPageTitle(pathname: string): string {
   if (pathname.includes('/verifikasi-pengajuan')) return 'Verifikasi Pengajuan';
   if (pathname.includes('/status')) return 'Status Pengajuan';
   if (pathname.includes('/riwayat-dosen')) return 'Riwayat Dosen';
+  if (pathname.includes('/bantuan-studi')) return 'Verifikasi Bantuan Studi';
   if (pathname.includes('/reimbursement')) return 'Reimbursement';
   return 'Dashboard';
 }
