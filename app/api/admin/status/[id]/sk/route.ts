@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/src/lib/prisma';
+import { headers } from 'next/headers';
 import { writeFile, mkdir } from 'fs/promises';
 import path from 'path';
 import { existsSync } from 'fs';
@@ -9,6 +10,12 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const headersList = await headers();
+    const role = headersList.get('x-user-role');
+    if (!role || (role !== 'admin_fakultas' && role !== 'master_admin')) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
     const { id } = await params;
     const pengajuanId = parseInt(id);
 

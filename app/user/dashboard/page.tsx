@@ -1,5 +1,5 @@
 import { prisma } from "@/src/lib/prisma";
-import { cookies } from "next/headers";
+import { headers } from "next/headers";
 import {
   Calendar,
   FileBadge,
@@ -28,11 +28,11 @@ function formatMonthYear(date: Date | null | undefined): string {
 }
 
 export default async function DashboardPage() {
-  const cookieStore = await cookies();
-  const userEmail = cookieStore.get("user_email")?.value;
+  const headersList = await headers();
+  const userId = parseInt(headersList.get('x-user-id') || '0');
 
   const user = await prisma.user.findUnique({
-    where: { email: userEmail ?? "" },
+    where: { id: userId },
     include: {
       master_dosen: true,
       pengajuan_studi: {

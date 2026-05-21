@@ -1,13 +1,14 @@
-import { cookies } from "next/headers";
+import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 import { prisma } from "@/src/lib/prisma";
 
 export async function POST(request: Request) {
   try {
-    const cookieStore = await cookies();
-    const userEmail = cookieStore.get("user_email")?.value;
+    const headersList = await headers();
+    const userEmail = headersList.get("x-user-email");
+    const userId = parseInt(headersList.get("x-user-id") || "0");
 
-    if (!userEmail) {
+    if (!userEmail || !userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -23,17 +24,12 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Semua field wajib diisi." }, { status: 400 });
     }
 
-    const user = await prisma.user.findUnique({
-      where: { email: userEmail },
-      include: {
-        pengajuan_studi: {
-          orderBy: { created_at: "desc" },
-          take: 1,
-        },
-      },
+    const pengajuan = await prisma.pengajuanStudi.findFirst({
+      where: { user_id: userId },
+      orderBy: { created_at: "desc" },
     });
 
-    if (!user || !user.pengajuan_studi?.[0]) {
+    if (!pengajuan) {
       return NextResponse.json({ error: "Data pengajuan studi tidak ditemukan untuk user ini." }, { status: 400 });
     }
 
@@ -44,7 +40,7 @@ export async function POST(request: Request) {
 
     const existing = await prisma.pengajuanReimbursement.findFirst({
       where: {
-        pengajuan_id: user.pengajuan_studi[0].id,
+        pengajuan_id: pengajuan.id,
         semester_ke: semesterNumber,
       },
     });
@@ -56,7 +52,7 @@ export async function POST(request: Request) {
     const fileName = file instanceof File ? file.name : String(file);
     const reimbursement = await prisma.pengajuanReimbursement.create({
       data: {
-        pengajuan_id: user.pengajuan_studi[0].id,
+        pengajuan_id: pengajuan.id,
         semester_ke: semesterNumber,
         file_bukti_bayar: fileName,
         nominal: parseFloat(nominalValue),

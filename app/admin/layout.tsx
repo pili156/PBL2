@@ -1,12 +1,8 @@
 import Image from "next/image";
-import { cookies } from "next/headers";
 import { headers } from "next/headers";
-
 
 import ProfileDropdown from "./ProfileDropdown"; 
 import SidebarNav from "./SidebarNav"; 
-
-import { prisma } from "../../src/lib/prisma";
 
 function getPageTitle(pathname: string): string {
   if (pathname.includes('/verifikasi-pengajuan')) return 'Verifikasi Pengajuan';
@@ -21,28 +17,10 @@ export default async function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const cookieStore = await cookies();
   const headersList = await headers();
   const pathname = headersList.get('x-nextjs-pathname') || '';
   
-  const userEmailFromCookie = cookieStore.get("user_email")?.value;
-
-  let currentUserEmail: string = "Guest";
-  
-  if (userEmailFromCookie) {
-    const user = await prisma.user.findUnique({
-      where: {
-        email: userEmailFromCookie,
-      },
-      select: {
-        email: true,
-      }
-    });
-
-    if (user && user.email) {
-      currentUserEmail = user.email;
-    }
-  }
+  const currentUserEmail = headersList.get('x-user-email') || "Guest";
 
   const pageTitle = getPageTitle(pathname);
 

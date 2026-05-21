@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
-// 1. TAMBAHAN: Import cookies dari next/headers
-import { cookies } from 'next/headers'; 
+import { cookies } from 'next/headers';
 import { prisma } from '@/src/lib/prisma';
 import bcrypt from 'bcryptjs';
+import { signToken } from '@/src/lib/jwt';
 
 export async function POST(request: Request) {
   try {
@@ -66,13 +66,20 @@ export async function POST(request: Request) {
 
     console.log(`4. Login SUKSES! Role: ${roleName}, Redirect ke: ${targetUrl}`);
 
-    // 2. TAMBAHAN: Set Cookie "user_email" untuk ditangkap oleh layout.tsx
+    const token = signToken({
+      userId: user.id,
+      email: user.email || '',
+      role: roleName || 'dosen',
+      nama: user.master_dosen?.nama_lengkap || user.username || 'User',
+    });
+
     const cookieStore = await cookies();
-    cookieStore.set("user_email", String(user.email), {
-      httpOnly: true, // Aman dari serangan XSS
-      secure: process.env.NODE_ENV === "production", // Wajib HTTPS jika di production
-      maxAge: 60 * 60 * 24, // Berlaku 1 hari (24 jam)
-      path: "/", // Berlaku di seluruh rute website
+    cookieStore.set("token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 60 * 60,
+      path: "/",
     });
 
     // Kembalikan data sukses beserta redirectUrl

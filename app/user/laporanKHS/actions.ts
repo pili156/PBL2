@@ -18,31 +18,24 @@ export async function uploadKHS(formData: FormData) {
     throw new Error('Semua field wajib diisi dengan benar');
   }
 
-  const { cookies } = await import('next/headers');
-  const cookieStore = await cookies();
-  const userEmail = cookieStore.get('user_email')?.value;
+  const { headers } = await import('next/headers');
+  const headersList = await headers();
+  const userId = parseInt(headersList.get('x-user-id') || '0');
 
-  if (!userEmail) {
+  if (!userId) {
     throw new Error('User belum login');
   }
 
-  const user = await prisma.user.findUnique({
-    where: { email: userEmail },
-    include: {
-      pengajuan_studi: {
-        orderBy: { created_at: 'desc' },
-        take: 1,
-      },
-    },
+  const pengajuan = await prisma.pengajuanStudi.findFirst({
+    where: { user_id: userId },
+    orderBy: { created_at: 'desc' },
   });
 
-  if (!user || !user.pengajuan_studi[0]) {
+  if (!pengajuan) {
     throw new Error('Pengajuan studi tidak ditemukan');
   }
 
-  const userId = user.id;
-
-  const pengajuanId = user.pengajuan_studi[0].id;
+  const pengajuanId = pengajuan.id;
 
   const existingKHS = await prisma.monitoringKhs.findFirst({
     where: {

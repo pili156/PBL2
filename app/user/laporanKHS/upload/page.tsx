@@ -3,7 +3,7 @@ import { ArrowLeft, UploadCloud, Info } from 'lucide-react';
 import Link from 'next/link';
 import { uploadKHS } from '../actions';
 import { getDashboardData } from '../actions';
-import { cookies } from 'next/headers';
+import { headers } from 'next/headers';
 import { prisma } from '@/src/lib/prisma';
 
 export default async function UploadKHSPage({
@@ -14,22 +14,12 @@ export default async function UploadKHSPage({
   const resolvedSearchParams = await searchParams;
   const prefillSemester = resolvedSearchParams.semester || '';
 
-  const cookieStore = await cookies();
-  const userEmail = cookieStore.get('user_email')?.value;
+  const headersList = await headers();
+  const userId = parseInt(headersList.get('x-user-id') || '0');
 
-  if (!userEmail) {
+  if (!userId) {
     return <div>Silakan login terlebih dahulu</div>;
   }
-
-  const user = await prisma.user.findUnique({
-    where: { email: userEmail },
-  });
-
-  if (!user) {
-    return <div>User tidak ditemukan</div>;
-  }
-
-  const userId = user.id;
   const dashboardData = await getDashboardData(userId);
   
   // Get existing semesters to prevent duplicate upload

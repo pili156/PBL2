@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { cookies } from "next/headers";
+import { headers } from "next/headers";
 import { prisma } from "@/src/lib/prisma";
 import { Clock3, CheckCircle2, CheckCircle, FileText, Plus } from "lucide-react";
 
@@ -53,10 +53,10 @@ const STATUS_CARDS = [
 ];
 
 export default async function UserReimbursementPage() {
-  const cookieStore = await cookies();
-  const userEmail = cookieStore.get("user_email")?.value;
+  const headersList = await headers();
+  const userId = parseInt(headersList.get('x-user-id') || '0');
 
-  if (!userEmail) {
+  if (!userId) {
     return (
       <div className="rounded-3xl bg-white p-10 shadow-sm border border-slate-200">
         <h1 className="text-2xl font-bold text-slate-900">Reimbursement Saya</h1>
@@ -66,7 +66,7 @@ export default async function UserReimbursementPage() {
   }
 
   const user = await prisma.user.findUnique({
-    where: { email: userEmail },
+    where: { id: userId },
     include: {
       pengajuan_studi: {
         orderBy: { created_at: "desc" },

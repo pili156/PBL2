@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { cookies } from "next/headers";
+import { headers } from "next/headers";
 import { 
   LayoutDashboard, 
   FileText, 
@@ -13,36 +13,13 @@ import {
 // Import komponen Client ProfileDropdown
 import ProfileDropdown from "./ProfileDropdown"; 
 
-// Menggunakan instance Prisma dari folder src/lib/prisma.ts kamu
-import { prisma } from "../../src/lib/prisma";
-
 export default async function KeuanganLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const cookieStore = await cookies();
-  
-  // Mengambil email dari cookie yang diset saat login
-  const userEmailFromCookie = cookieStore.get("user_email")?.value;
-
-  let currentUserEmail: string = "Guest";
-  
-  // Logic dasar dan aman
-  if (userEmailFromCookie) {
-    const user = await prisma.user.findUnique({
-      where: {
-        email: userEmailFromCookie,
-      },
-      select: {
-        email: true,
-      }
-    });
-
-    if (user && user.email) {
-      currentUserEmail = user.email;
-    }
-  }
+  const headersList = await headers();
+  const currentUserEmail = headersList.get('x-user-email') || "Guest";
 
   return (
     <div className="flex h-screen bg-[#F4F7F6] font-sans">

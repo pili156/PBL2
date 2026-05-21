@@ -1,34 +1,21 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/src/lib/prisma';
-import { cookies } from 'next/headers';
+import { headers } from 'next/headers';
 
 export async function POST(request: Request) {
   try {
-    const cookieStore = await cookies();
-    const userEmail = cookieStore.get('user_email')?.value;
+    const headersList = await headers();
+    const userId = parseInt(headersList.get('x-user-id') || '0');
 
-    console.log('=== DEBUG CREATE PENGajuan ===');
-    console.log('userEmail:', userEmail);
-
-    if (!userEmail) {
-      return NextResponse.json({ error: 'Unauthorized - No cookie' }, { status: 401 });
+    if (!userId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
-
-    const user = await prisma.user.findUnique({
-      where: { email: userEmail },
-    });
-
-    if (!user) {
-      console.log('User not found for email:', userEmail);
-      return NextResponse.json({ error: 'User not found' }, { status: 404 });
-    }
-
-    console.log('User found:', user.id, user.username);
 
     const body = await request.json();
     const { jenis_studi_id, jalur_pendanaan_id, wilayah_studi, alamat_kampus } = body;
 
-    console.log('Input:', { jenis_studi_id, jalur_pendanaan_id, wilayah_studi, alamat_kampus });
+    console.log('[API] Input received:', { jenis_studi_id, jalur_pendanaan_id, wilayah_studi, alamat_kampus });
+    console.log('[API] jalur_pendanaan_id type:', typeof jalur_pendanaan_id, 'value:', jalur_pendanaan_id);
 
     let statusMenunggu = await prisma.masterStatusPengajuan.findFirst({
       where: { nama_status: 'Menunggu Verifikasi (Admin)' },
@@ -50,12 +37,12 @@ export async function POST(request: Request) {
     }
 
     const pengajuanCount = await prisma.pengajuanStudi.count({
-      where: { user_id: user.id },
+      where: { user_id: userId },
     });
 
     if (pengajuanCount > 0) {
       const existingPengajuan = await prisma.pengajuanStudi.findFirst({
-        where: { user_id: user.id },
+        where: { user_id: userId },
         orderBy: { created_at: 'desc' },
       });
       return NextResponse.json({ 
@@ -66,7 +53,7 @@ export async function POST(request: Request) {
 
     const pengajuan = await prisma.pengajuanStudi.create({
       data: {
-        user_id: user.id,
+        user_id: userId,
         jenis_studi_id: jenis_studi_id || null,
         jalur_pendanaan_id: jalur_pendanaan_id || null,
         wilayah_studi: wilayah_studi || null,
