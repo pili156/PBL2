@@ -1,11 +1,20 @@
 import { cookies } from "next/headers";
+import { headers } from "next/headers";
 
 // Import komponen Client
 import SidebarUser from "./SidebarUser";
-import ProfileDropdown from "./ProfileDropdown"; 
+import ProfileDropdown from "../components/ProfileDropdown"; 
 
 // Menggunakan instance Prisma
 import { prisma } from "../../src/lib/prisma";
+
+function getPageTitle(pathname: string): string {
+  if (pathname.includes('/pengajuan')) return 'Pengajuan Studi/Beasiswa';
+  if (pathname.includes('/status')) return 'Riwayat & Monitoring';
+  if (pathname.includes('/laporanKHS')) return 'Laporan KHS';
+  if (pathname.includes('/user-reimbursement')) return 'Reimbursement';
+  return 'Dashboard';
+}
 
 export default async function UserLayout({
   children,
@@ -13,25 +22,52 @@ export default async function UserLayout({
   children: React.ReactNode;
 }) {
   const cookieStore = await cookies();
+  const headersList = await headers();
+  const pathname = headersList.get('x-nextjs-pathname') || '';
+  
   const userEmailFromCookie = cookieStore.get("user_email")?.value;
 
-  let currentUserEmail: string = "Guest";
+  let userData = {
+    email: "Guest",
+    name: "User",
+    nip: undefined as string | undefined,
+    role: "dosen",
+    roleDisplay: "Dosen",
+    unitKerja: undefined as string | undefined,
+    jabatan: undefined as string | undefined,
+  };
   
   if (userEmailFromCookie) {
-    // Query paling aman, tidak akan kena error relasi
     const user = await prisma.user.findUnique({
       where: {
         email: userEmailFromCookie,
       },
-      select: {
-        email: true,
+      include: {
+        master_dosen: {
+          select: {
+            nama_lengkap: true,
+            nip: true,
+            unit_kerja: true,
+            jabatan: true,
+          }
+        }
       }
     });
 
-    if (user && user.email) {
-      currentUserEmail = user.email;
+    if (user) {
+      userData = {
+        email: user.email || "Guest",
+        name: user.master_dosen?.nama_lengkap || user.username || "User",
+        nip: user.master_dosen?.nip || undefined,
+        role: "dosen",
+        roleDisplay: "Dosen",
+        unitKerja: user.master_dosen?.unit_kerja || undefined,
+        jabatan: user.master_dosen?.jabatan || undefined,
+      };
     }
   }
+
+  const pageTitle = getPageTitle(pathname);
 
   return (
     <div className="flex h-screen bg-[#F4F7F6] font-sans">
@@ -42,10 +78,9 @@ export default async function UserLayout({
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Topbar */}
         <header className="h-[80px] bg-[#0A192F] text-white flex items-center justify-between px-8 flex-shrink-0">
-          <h2 className="text-2xl font-bold tracking-wide">Dashboard</h2>
+          <h2 className="text-2xl font-bold tracking-wide">{pageTitle}</h2>
           
-          {/* Memanggil Komponen Dropdown */}
-          <ProfileDropdown email={currentUserEmail} />
+          <ProfileDropdown user={userData} />
 
         </header>
 

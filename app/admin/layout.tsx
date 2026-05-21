@@ -3,16 +3,15 @@ import { cookies } from "next/headers";
 import { headers } from "next/headers";
 
 
-import ProfileDropdown from "./ProfileDropdown"; 
+import ProfileDropdown from "../components/ProfileDropdown"; 
 import SidebarNav from "./SidebarNav"; 
 
 import { prisma } from "../../src/lib/prisma";
 
 function getPageTitle(pathname: string): string {
   if (pathname.includes('/verifikasi-pengajuan')) return 'Verifikasi Pengajuan';
-  if (pathname.includes('/status')) return 'Status Pengajuan';
-  if (pathname.includes('/riwayat-dosen')) return 'Riwayat Dosen';
-  if (pathname.includes('/reimbursement')) return 'Reimbursement';
+  if (pathname.includes('/riwayat-dosen')) return 'Monitoring Dosen';
+  if (pathname.includes('/buku-induk')) return 'Buku Induk';
   return 'Dashboard';
 }
 
@@ -27,20 +26,43 @@ export default async function AdminLayout({
   
   const userEmailFromCookie = cookieStore.get("user_email")?.value;
 
-  let currentUserEmail: string = "Guest";
+  let userData = {
+    email: "Guest",
+    name: "User",
+    nip: undefined as string | undefined,
+    role: "admin_fakultas",
+    roleDisplay: "Admin",
+    unitKerja: undefined as string | undefined,
+    jabatan: undefined as string | undefined,
+  };
   
   if (userEmailFromCookie) {
     const user = await prisma.user.findUnique({
       where: {
         email: userEmailFromCookie,
       },
-      select: {
-        email: true,
+      include: {
+        master_dosen: {
+          select: {
+            nama_lengkap: true,
+            nip: true,
+            unit_kerja: true,
+            jabatan: true,
+          }
+        }
       }
     });
 
-    if (user && user.email) {
-      currentUserEmail = user.email;
+    if (user) {
+      userData = {
+        email: user.email || "Guest",
+        name: user.master_dosen?.nama_lengkap || user.username || "User",
+        nip: user.master_dosen?.nip || undefined,
+        role: "admin_fakultas",
+        roleDisplay: "Admin",
+        unitKerja: user.master_dosen?.unit_kerja || undefined,
+        jabatan: user.master_dosen?.jabatan || undefined,
+      };
     }
   }
 
@@ -73,8 +95,7 @@ export default async function AdminLayout({
         <header className="h-[80px] bg-[#0A192F] text-white flex items-center justify-between px-8 flex-shrink-0">
           <h2 className="text-2xl font-bold tracking-wide">{pageTitle}</h2>
           
-          {/* Menggunakan komponen Client untuk Dropdown */}
-          <ProfileDropdown email={currentUserEmail} />
+          <ProfileDropdown user={userData} />
 
         </header>
 

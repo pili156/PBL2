@@ -1,55 +1,135 @@
-// app/admin/riwayat-dosen/[id_dosen]/layout.tsx
-
-import { Download, ArrowLeft } from 'lucide-react';
+import { prisma } from '@/src/lib/prisma';
+import { ArrowLeft, Download, GraduationCap, BookOpen, Wallet } from 'lucide-react';
 import Link from 'next/link';
+import { notFound } from 'next/navigation';
 import TabNavigation from './TabNavigation';
 
 export const dynamic = 'force-dynamic';
 
-export default async function DetailDosenLayout({
-  children,
-  params,
-}: {
+interface LayoutProps {
   children: React.ReactNode;
   params: Promise<{ id_dosen: string }>;
-}) {
+}
+
+export default async function DetailDosenLayout({ children, params }: LayoutProps) {
   const { id_dosen } = await params;
   const idDosen = Number(id_dosen);
 
-  return (
-    <div className="w-full min-h-screen p-6 lg:p-8 bg-sigap-bg space-y-6">
+  if (isNaN(idDosen)) notFound();
 
-      {/* HEADER UTAMA */}
-      <div className="space-y-2">
-        <p className="text-sm text-slate-500">
-          Dashboard {'>'} Data Dosen {'>'} <span className="text-slate-700 font-medium">Riwayat Dosen</span>
-        </p>
-        <div className="flex justify-between items-center">
-          <h2 className="text-3xl font-bold text-slate-800">Riwayat Studi Dosen</h2>
-          <button className="flex items-center gap-2 bg-sigap-primary text-white text-sm font-medium px-4 py-2 rounded-lg hover:opacity-90 transition">
-            <Download size={16} /> Export Excel
-          </button>
+  const dosen = await prisma.user.findUnique({
+    where: { id: idDosen },
+    include: {
+      master_dosen: true,
+      pengajuan_studi: {
+        include: {
+          monitoring_khs: { orderBy: { semester_ke: 'asc' } },
+          pengajuan_reimbursement: true,
+        },
+        orderBy: { created_at: 'desc' },
+        take: 1,
+      },
+    },
+  });
+
+  if (!dosen) notFound();
+
+  const namaDosen = dosen.master_dosen?.nama_lengkap || dosen.username || 'Dosen';
+  const inisial = namaDosen.charAt(0).toUpperCase();
+  const nip = dosen.master_dosen?.nip || '-';
+  const jurusan = dosen.master_dosen?.jurusan || '-';
+  const programStudi = dosen.master_dosen?.program_studi;
+
+  const latestPengajuan = dosen.pengajuan_studi[0] ?? null;
+  const khsList = latestPengajuan?.monitoring_khs || [];
+  const ipkValues = khsList.map((k) => Number(k.ipk || 0)).filter((v) => v > 0);
+  const rataIpk = ipkValues.length > 0
+    ? (ipkValues.reduce((a, b) => a + b, 0) / ipkValues.length).toFixed(2)
+    : '-';
+  const semesterAktif = khsList.length;
+
+  const totalCair = latestPengajuan?.pengajuan_reimbursement
+    ?.filter((r) => r.status_pencairan === 'DICAIRKAN')
+    .reduce((sum, r) => sum + Number(r.nominal || 0), 0) || 0;
+
+  const formatRupiah = (angka: number) =>
+    new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(angka);
+
+  return (
+    <div className="space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <nav className="flex items-center gap-2 text-sm text-slate-400 mb-1">
+            <Link href="/admin/riwayat-dosen" className="hover:text-slate-600 transition-colors">Dashboard</Link>
+            <span>/</span>
+            <span className="text-slate-600">Data Dosen</span>
+            <span>/</span>
+            <span className="text-slate-800 font-medium">Monitoring Dosen</span>
+          </nav>
+          <h2 className="text-2xl font-bold text-slate-900 tracking-tight">Monitoring Dosen</h2>
+        </div>
+        <a
+          href={`/api/export/studi/${idDosen}`}
+          className="inline-flex items-center gap-2 bg-white border border-slate-200 text-slate-600 text-sm font-medium px-4 py-2 rounded-lg hover:bg-slate-50 transition-colors"
+        >
+          <Download size={16} /> Export Excel
+        </a>
+      </div>
+
+      <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-5">
+        <div className="flex flex-col lg:flex-row lg:items-center gap-5">
+          <div className="flex items-center gap-4 flex-1 min-w-0">
+            <div className="w-14 h-14 rounded-full bg-blue-600 flex items-center justify-center text-white text-2xl font-bold flex-shrink-0">
+              {inisial}
+            </div>
+            <div className="min-w-0">
+              <h3 className="text-lg font-semibold text-slate-900 truncate">{namaDosen}</h3>
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-1 text-sm text-slate-500">
+                <span className="font-mono text-xs">{nip}</span>
+                <span className="hidden sm:inline w-1 h-1 rounded-full bg-slate-300" />
+                <span>{jurusan}{programStudi ? ` — ${programStudi}` : ''}</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2.5 px-4 py-2 bg-slate-50 rounded-lg">
+              <GraduationCap size={16} className="text-blue-500" />
+              <div className="text-right">
+                <p className="text-[10px] text-slate-400 font-medium leading-tight">IPK Rata-rata</p>
+                <p className="text-sm font-bold text-slate-800">{rataIpk}</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2.5 px-4 py-2 bg-slate-50 rounded-lg">
+              <BookOpen size={16} className="text-emerald-500" />
+              <div className="text-right">
+                <p className="text-[10px] text-slate-400 font-medium leading-tight">Semester</p>
+                <p className="text-sm font-bold text-slate-800">{semesterAktif > 0 ? `${semesterAktif}` : '-'}</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2.5 px-4 py-2 bg-slate-50 rounded-lg">
+              <Wallet size={16} className="text-violet-500" />
+              <div className="text-right">
+                <p className="text-[10px] text-slate-400 font-medium leading-tight">Bantuan Cair</p>
+                <p className="text-sm font-bold text-slate-800">{totalCair > 0 ? formatRupiah(totalCair) : '-'}</p>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* TABS & KONTEN DINAMIS */}
-      <div>
-        {/* Tab Menu */}
-        <TabNavigation idDosen={idDosen.toString()} />
-        
-        {/* Konten Page (Status/KHS/Keuangan) yang udah ada profil eksklusifnya akan muncul di sini */}
-        <div className="mt-6">
-          {children}
-        </div> 
-      </div>
+      <TabNavigation idDosen={idDosen.toString()} />
 
-      {/* TOMBOL KEMBALI */}
+      <div>{children}</div>
+
       <div className="pt-2">
-        <Link href="/admin/riwayat-dosen" className="inline-flex items-center gap-2 text-sm font-medium text-slate-600 hover:text-slate-900 transition">
-          <ArrowLeft size={18} /> Kembali
+        <Link
+          href="/admin/riwayat-dosen"
+          className="inline-flex items-center gap-2 text-sm font-medium text-slate-500 hover:text-slate-800 transition-colors"
+        >
+          <ArrowLeft size={16} /> Kembali ke daftar dosen
         </Link>
       </div>
-      
     </div>
   );
 }
