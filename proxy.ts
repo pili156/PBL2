@@ -20,7 +20,7 @@ const PATH_ROLE_MAP: Record<string, string[]> = {
   '/keuangan': ['keuangan'],
 };
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   if (
