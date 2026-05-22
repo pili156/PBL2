@@ -8,6 +8,9 @@ import { useRouter } from "next/navigation";
 export default function Register() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState("");
+  const [successMsg, setSuccessMsg] = useState("");
+  
   const [formData, setFormData] = useState({
     email: "",
     nama_lengkap: "",
@@ -20,9 +23,17 @@ export default function Register() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setErrorMsg(""); // Reset pesan error
+    setSuccessMsg(""); // Reset pesan sukses
     
+    // Pengecekan domain polines di sisi frontend
+    if (!formData.email.endsWith('@polines.ac.id')) {
+      setErrorMsg("Hanya akun @polines.ac.id yang diizinkan untuk mendaftar!");
+      return;
+    }
+
     if (formData.password !== formData.konfirmasi_password) {
-      alert("Password dan Konfirmasi Password tidak cocok!");
+      setErrorMsg("Password dan Konfirmasi Password tidak cocok!");
       return;
     }
 
@@ -37,13 +48,16 @@ export default function Register() {
       const data = await res.json();
 
       if (res.ok) {
-        alert("Berhasil mendaftar!");
-        router.push("/login"); 
+        setSuccessMsg("Berhasil mendaftar! Mengalihkan ke halaman login...");
+        // Beri jeda 1.5 detik agar user bisa membaca pesan sukses sebelum pindah halaman
+        setTimeout(() => {
+          router.push("/login");
+        }, 1500);
       } else {
-        alert(data.error || "Gagal mendaftar");
+        setErrorMsg(data.error || "Gagal mendaftar");
       }
     } catch (error) {
-      alert("Terjadi kesalahan jaringan.");
+      setErrorMsg("Terjadi kesalahan jaringan.");
     } finally {
       setLoading(false);
     }
@@ -51,13 +65,13 @@ export default function Register() {
 
   return (
     <div className="flex min-h-screen w-full relative font-sans bg-[#005B9F]">
-      {/* Layer Background Gambar - Diatur ke absolute agar ter-overlap mulus oleh panel putih */}
+      {/* Layer Background Gambar */}
       <div className="absolute inset-0 lg:w-[60%] z-0">
         <div
           className="absolute inset-0 bg-cover bg-center fixed lg:absolute"
           style={{ backgroundImage: "url('/auth/background2.jpeg')" }}
         />
-        {/* Overlay Biru - Opacity 70% */}
+        {/* Overlay Biru */}
         <div className="absolute inset-0 bg-[#005B9F] opacity-70 fixed lg:absolute" />
       </div>
 
@@ -84,20 +98,29 @@ export default function Register() {
         </div>
       </div>
 
-      {/* Sisi Kanan - Panel Form Putih Edge-to-Edge */}
+      {/* Sisi Kanan - Panel Form */}
       <div className="relative z-10 flex w-full lg:w-[45%] flex-col justify-center items-center bg-white lg:rounded-l-2xl shadow-[-10px_0_20px_rgba(0,0,0,0.05)] ml-auto min-h-screen py-10 lg:py-0">
-        
-        {/* Container pembatas lebar form */}
         <div className="w-full max-w-md p-8 lg:p-12">
-          <div className="text-center mb-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">
-              Buat Akun
-            </h2>
+          <div className="text-center mb-6">
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">Buat Akun</h2>
             <p className="text-sm text-gray-500">Daftar untuk mengakses sistem</p>
           </div>
 
+          {/* MENAMPILKAN PESAN ERROR */}
+          {errorMsg && (
+            <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-600 text-sm rounded-lg text-center">
+              {errorMsg}
+            </div>
+          )}
+
+          {/* MENAMPILKAN PESAN SUKSES */}
+          {successMsg && (
+            <div className="mb-4 p-3 bg-green-50 border border-green-200 text-green-600 text-sm rounded-lg text-center">
+              {successMsg}
+            </div>
+          )}
+
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-            
             {/* Input Email */}
             <div className="relative">
               <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
@@ -112,10 +135,10 @@ export default function Register() {
                 autoComplete="email"
                 type="email" 
                 required
-                placeholder="Email Polines" 
+                placeholder="Email Polines (@polines.ac.id)" 
                 value={formData.email}
                 onChange={(e) => setFormData({...formData, email: e.target.value})}
-                className="w-full border border-gray-200 rounded-full pl-12 pr-4 py-3 text-sm text-gray-700 outline-none focus:border-blue-500 transition-colors bg-gray-50/50"
+                className={`w-full border rounded-full pl-12 pr-4 py-3 text-sm text-gray-700 outline-none transition-colors bg-gray-50/50 ${errorMsg.includes("Email") || errorMsg.includes("@polines") ? "border-red-400 focus:border-red-500" : "border-gray-200 focus:border-blue-500"}`}
               />
             </div>
 
@@ -251,7 +274,7 @@ export default function Register() {
                 placeholder="Konfirmasi Password" 
                 value={formData.konfirmasi_password}
                 onChange={(e) => setFormData({...formData, konfirmasi_password: e.target.value})}
-                className="w-full border border-gray-200 rounded-full pl-12 pr-4 py-3 text-sm text-gray-700 outline-none focus:border-blue-500 transition-colors bg-gray-50/50"
+                className={`w-full border rounded-full pl-12 pr-4 py-3 text-sm text-gray-700 outline-none transition-colors bg-gray-50/50 ${errorMsg.includes("cocok") ? "border-red-400 focus:border-red-500" : "border-gray-200 focus:border-blue-500"}`}
               />
             </div>
 
