@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
-// 1. TAMBAHAN: Import cookies dari next/headers
-import { cookies } from 'next/headers'; 
+import { cookies } from 'next/headers';
 import { prisma } from '@/src/lib/prisma';
 import bcrypt from 'bcryptjs';
+import { signToken } from '@/src/lib/jwt';
 
 export async function POST(request: Request) {
   try {
@@ -56,21 +56,34 @@ export async function POST(request: Request) {
     // --- LOGIC REDIRECT DITENTUKAN DI BACKEND ---
     let targetUrl = "/user/dashboard"; // Default folder untuk dosen
 
-    if (roleName === "admin_fakultas" || roleName === "master_admin") {
-      targetUrl = "/admin/dashboard"; // Mengarah ke dashboard admin
+    if (roleName === "master_admin") {
+      targetUrl = "/master_admin/dashboard";
+    } else if (roleName === "admin_fakultas") {
+      targetUrl = "/admin/dashboard";
     } else if (roleName === "keuangan") {
-      targetUrl = "/keuangan/dashboard"; // Tambahan redirect untuk role keuangan
+      targetUrl = "/keuangan/dashboard";
     }
 
     console.log(`4. Login SUKSES! Role: ${roleName}, Redirect ke: ${targetUrl}`);
 
-    // 2. TAMBAHAN: Set Cookie "user_email" untuk ditangkap oleh layout.tsx
+    const token = signToken({
+      userId: user.id,
+      email: user.email || '',
+      role: roleName || 'dosen',
+      nama: user.master_dosen?.nama_lengkap || user.username || 'User',
+    });
+
+    const cookieName = `token_${roleName}`;
+
     const cookieStore = await cookies();
-    cookieStore.set("user_email", String(user.email), {
-      httpOnly: true, // Aman dari serangan XSS
-      secure: process.env.NODE_ENV === "production", // Wajib HTTPS jika di production
-      maxAge: 60 * 60 * 24, // Berlaku 1 hari (24 jam)
-      path: "/", // Berlaku di seluruh rute website
+    cookieStore.delete("token");
+    cookieStore.delete("user_email");
+    cookieStore.set(cookieName, token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 60 * 60,
+      path: "/",
     });
 
     // Kembalikan data sukses beserta redirectUrl

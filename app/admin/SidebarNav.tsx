@@ -4,16 +4,20 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { 
   LayoutDashboard, 
-  ShieldCheck, 
-  Users, 
-  BookOpen 
+  FileText, 
+  CheckSquare, 
+  ListOrdered, 
+  CreditCard, 
+  UserCircle 
 } from "lucide-react";
 
 const menuItems = [
   { href: "/admin/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/admin/verifikasi-pengajuan", label: "Verifikasi Pengajuan", icon: ShieldCheck },
-  { href: "/admin/riwayat-dosen", label: "Monitoring Dosen", icon: Users },
-  { href: "/admin/buku-induk", label: "Buku Induk", icon: BookOpen },
+  { href: "/admin/verifikasi-pengajuan", label: "Pengajuan", icon: FileText },
+  { href: "/admin/status", label: "Status", icon: CheckSquare },
+  { href: "/admin/riwayat-dosen", label: "Riwayat Dosen", icon: ListOrdered },
+  { href: "/admin/bantuan-studi", label: "Bantuan Studi", icon: CreditCard },
+  { href: "/admin/profil", label: "Profil Saya", icon: UserCircle },
 ];
 
 export default function SidebarNav() {

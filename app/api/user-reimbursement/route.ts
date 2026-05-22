@@ -1,0 +1,122 @@
+import { headers } from "next/headers";
+import { NextResponse } from "next/server";
+import { prisma } from "@/src/lib/prisma";
+
+export async function GET() {
+  try {
+    const headersList = await headers();
+    const userEmail = headersList.get("x-user-email");
+    const userId = parseInt(headersList.get("x-user-id") || "0");
+
+    if (!userEmail || !userId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const pengajuan = await prisma.pengajuanStudi.findFirst({
+      where: { user_id: userId },
+      orderBy: { created_at: "desc" },
+    });
+
+    if (!pengajuan) {
+      return NextResponse.json({ data: [], exists: false });
+    }
+
+    const bantuanStudiList = await prisma.pengajuanReimbursement.findMany({
+      where: {
+        pengajuan_id: pengajuan.id,
+        jenis_pengajuan: "bantuan_studi",
+      },
+      orderBy: { semester_ke: "asc" },
+      include: {
+        pengajuan_studi: {
+          include: {
+            dokumen_pengajuan: {
+              where: {
+                master_dokumen_id: { in: [21, 22, 23, 24] },
+              },
+              include: { master_dokumen: true },
+            },
+          },
+        },
+      },
+    });
+
+    return NextResponse.json({ data: bantuanStudiList, exists: true });
+  } catch (error) {
+    console.error("Error fetching bantuan studi", error);
+    return NextResponse.json({ error: "Gagal memuat data." }, { status: 500 });
+  }
+}
+
+export async function POST(request: Request) {
+  try {
+    const headersList = await headers();
+    const userEmail = headersList.get("x-user-email");
+    const userId = parseInt(headersList.get("x-user-id") || "0");
+
+    if (!userEmail || !userId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const formData = await request.formData();
+    const jenisPengajuan = formData.get("jenis_pengajuan")?.toString() || "reimbursement";
+    const semesterKe = formData.get("semester_ke")?.toString();
+    const tahunAkademik = formData.get("tahun_akademik")?.toString();
+    const tahunKe = formData.get("tahun_ke")?.toString();
+    const nominalValue = formData.get("nominal")?.toString();
+    const catatan = formData.get("catatan_keuangan")?.toString();
+
+    if (!semesterKe || !nominalValue) {
+      return NextResponse.json({ error: "Semester dan nominal wajib diisi." }, { status: 400 });
+    }
+
+    const pengajuan = await prisma.pengajuanStudi.findFirst({
+      where: { user_id: userId },
+      orderBy: { created_at: "desc" },
+    });
+
+    if (!pengajuan) {
+      return NextResponse.json({ error: "Data pengajuan studi tidak ditemukan untuk user ini." }, { status: 400 });
+    }
+
+    const semesterNumber = Number(semesterKe);
+    if (Number.isNaN(semesterNumber) || semesterNumber < 1) {
+      return NextResponse.json({ error: "Semester tidak valid." }, { status: 400 });
+    }
+
+    const nominalNumber = parseFloat(nominalValue.replace(/[^0-9]/g, ""));
+    if (Number.isNaN(nominalNumber) || nominalNumber <= 0) {
+      return NextResponse.json({ error: "Nominal tidak valid." }, { status: 400 });
+    }
+
+    const existing = await prisma.pengajuanReimbursement.findFirst({
+      where: {
+        pengajuan_id: pengajuan.id,
+        jenis_pengajuan: jenisPengajuan,
+        semester_ke: semesterNumber,
+      },
+    });
+
+    if (existing) {
+      return NextResponse.json({ error: "Pengajuan untuk semester ini sudah ada." }, { status: 409 });
+    }
+
+    const reimbursement = await prisma.pengajuanReimbursement.create({
+      data: {
+        pengajuan_id: pengajuan.id,
+        jenis_pengajuan: jenisPengajuan,
+        semester_ke: semesterNumber,
+        tahun_akademik: tahunAkademik || null,
+        tahun_ke: tahunKe ? parseInt(tahunKe) : null,
+        nominal: nominalNumber,
+        status_pencairan: "Pending",
+        catatan_keuangan: catatan || null,
+      },
+    });
+
+    return NextResponse.json(reimbursement);
+  } catch (error) {
+    console.error("Error creating bantuan studi", error);
+    return NextResponse.json({ error: "Gagal membuat pengajuan." }, { status: 500 });
+  }
+}

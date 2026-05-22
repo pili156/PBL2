@@ -1,6 +1,6 @@
 'use server';
 
-import { prisma } from '@/lib/prisma';
+import { prisma } from '@/src/lib/prisma';
 import { revalidatePath } from 'next/cache';
 import { uploadFile, UploadError } from '@/src/lib/file-upload';
 import { logActivity } from '@/src/lib/activity-log';

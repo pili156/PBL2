@@ -1,22 +1,22 @@
 // app/user/laporanKHS/page.tsx
 
-import { prisma } from '@/lib/prisma';
+import { prisma } from '@/src/lib/prisma';
 import { Plus, Eye, Pencil, Upload, Info } from 'lucide-react';
 import Link from 'next/link';
-import { cookies } from 'next/headers';
+import { headers } from 'next/headers';
 
 export const dynamic = 'force-dynamic';
 
 export default async function LaporanKHSUserPage() {
-  const cookieStore = await cookies();
-  const userEmail = cookieStore.get('user_email')?.value;
+  const headersList = await headers();
+  const userId = parseInt(headersList.get('x-user-id') || '0');
 
-  if (!userEmail) {
+  if (!userId) {
     return <div>Silakan login terlebih dahulu</div>;
   }
 
   const dosen = await prisma.user.findUnique({
-    where: { email: userEmail },
+    where: { id: userId },
     include: {
       master_dosen: true,
       pengajuan_studi: {

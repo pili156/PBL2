@@ -1,208 +1,171 @@
+// app/admin/riwayat-dosen/[id_dosen]/keuangan/[id]/page.tsx
 import { prisma } from '@/src/lib/prisma';
-import { ArrowLeft, Download, FileText, Check, Send, Star, Info, XCircle, CheckSquare, Banknote, Calendar, Building, User } from 'lucide-react';
+import { ArrowLeft, Download, FileText, Check, Send, Star, Info, XCircle, CheckSquare } from 'lucide-react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { acceptKeuangan, rejectKeuangan } from '../../../actions';
+import { evaluateKeuangan, acceptKeuangan, rejectKeuangan } from '../../../actions';
 
 export const dynamic = 'force-dynamic';
 
-interface Props {
-  params: Promise<{ id_dosen: string; id: string }>;
-}
-
-const formatRupiah = (angka: number) =>
-  new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(angka);
-
-const formatDate = (date: Date | null | undefined) => {
-  if (!date) return '-';
-  return date.toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' });
-};
-
-const formatDateTime = (date: Date | null | undefined) => {
-  if (!date) return '';
-  return date.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) + ' WIB';
-};
-
-const statusStyle = (status: string | null | undefined) => {
-  const s = status?.toUpperCase() || 'PENDING';
-  if (s === 'DICAIRKAN' || s === 'SELESAI') return { label: 'Dicairkan', color: 'bg-emerald-100 text-emerald-700' };
-  if (s === 'DITOLAK') return { label: 'Ditolak', color: 'bg-red-100 text-red-700' };
-  if (s === 'DIPROSES') return { label: 'Diproses', color: 'bg-blue-100 text-blue-700' };
-  return { label: 'Menunggu', color: 'bg-amber-100 text-amber-700' };
-};
-
-const TrackingStep = ({
-  icon: Icon, label, sub, date, active, done,
+export default async function DetailKeuanganPage({
+  params,
 }: {
-  icon: React.ComponentType<{ size?: number; strokeWidth?: number }>;
-  label: string; sub: string; date: Date | null | undefined; active: boolean; done: boolean;
-}) => {
-  const fd = date ? formatDateTime(date instanceof Date ? date : new Date(date)) : '';
-  return (
-    <div className="relative flex gap-4 items-start group">
-      <div className="relative z-10 flex-shrink-0">
-        <div className={`w-9 h-9 rounded-full flex items-center justify-center shadow-sm border-4 border-white transition-all ${
-          done ? 'bg-emerald-500 text-white' : active ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-300'
-        }`}>
-          <Icon size={15} strokeWidth={3} />
-        </div>
-      </div>
-      <div className="flex-1 min-w-0 pb-8">
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <p className={`text-sm font-semibold ${done || active ? 'text-slate-800' : 'text-slate-400'}`}>{label}</p>
-            <p className="text-xs text-slate-400 mt-0.5">{sub}</p>
-          </div>
-          {fd && <span className="text-[10px] text-slate-400 font-medium flex-shrink-0 text-right">{fd}</span>}
-        </div>
-      </div>
-    </div>
-  );
-};
-
-export default async function DetailKeuanganPage({ params }: Props) {
+  params: Promise<{ id_dosen: string; id: string }>;
+}) {
   const { id_dosen, id } = await params;
   const keuanganId = Number(id);
   const idDosen = Number(id_dosen);
 
-  if (isNaN(keuanganId) || isNaN(idDosen)) notFound();
+  if (isNaN(keuanganId)) notFound();
 
   const keuangan = await prisma.pengajuanReimbursement.findUnique({
     where: { id: keuanganId },
-    include: { pengajuan_studi: { include: { user: { include: { master_dosen: true } } } } },
+    include: {
+      pengajuan_studi: {
+        include: {
+          user: { include: { master_dosen: true } },
+        },
+      },
+    },
   });
 
   if (!keuangan) notFound();
 
   const status = keuangan.status_pencairan?.toUpperCase() || 'PENDING';
   const isSelesai = status === 'DICAIRKAN' || status === 'SELESAI';
-  const isVerifikasi = status === 'DICAIRKAN' || status === 'DIPROSES' || status === 'SELESAI';
-  const bank = keuangan.nama_bank || '-';
-  const norek = keuangan.nomor_rekening || '-';
-  const s = statusStyle(status);
+  const isDitolak = status === 'DITOLAK';
+  const isVerifikasi = status !== 'PENDING' && status !== 'DRAFT'; 
 
-  const steps = [
-    { icon: Check, label: 'Upload Bukti', sub: 'Dokumen pembayaran diunggah', date: keuangan.created_at, active: true, done: true },
-    { icon: Check, label: 'Verifikasi Admin', sub: 'Berkas dan nominal diverifikasi', date: isVerifikasi ? keuangan.updated_at : null, active: isVerifikasi, done: isVerifikasi },
-    { icon: Send, label: 'Dana Ditransfer', sub: 'Transfer ke rekening tujuan', date: isSelesai ? keuangan.tanggal_pencairan : null, active: isSelesai, done: isSelesai },
-    { icon: Star, label: 'Selesai', sub: isSelesai ? 'Pencairan berhasil' : 'Menunggu', date: isSelesai ? keuangan.tanggal_pencairan : null, active: isSelesai, done: isSelesai },
-  ];
+  const formatRupiah = (angka: number) => {
+    return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(angka);
+  };
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between bg-white rounded-xl border border-slate-100 shadow-sm px-5 py-4">
+    <div className="w-full space-y-6">
+      
+      {/* 1. HEADER & STATUS (Full Width) */}
+      <div className="flex justify-between items-center bg-white p-4 rounded-xl border border-slate-100 shadow-sm">
         <div className="flex items-center gap-4">
-          <div>
-            <h2 className="text-lg font-bold text-slate-900">Detail Pencairan</h2>
-            <p className="text-sm text-slate-400 mt-0.5">Semester {keuangan.semester_ke || '-'}</p>
-          </div>
-          <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold ${s.color}`}>
-            <span className="w-1.5 h-1.5 rounded-full bg-current" />{s.label}
+          <h2 className="text-lg font-bold text-slate-800">Detail Pengajuan Keuangan</h2>
+          <span className={`px-3 py-1 text-[10px] font-bold rounded-full uppercase tracking-wider ${isSelesai ? 'bg-emerald-100 text-emerald-600' : 'bg-amber-100 text-amber-600'}`}>
+            {status}
           </span>
         </div>
-        <Link href={`/admin/riwayat-dosen/${idDosen}/keuangan`}
-          className="inline-flex items-center gap-2 text-xs font-semibold text-slate-500 hover:text-blue-600 transition-colors">
-          <ArrowLeft size={16} /> Kembali
+        <Link href={`/admin/riwayat-dosen/${idDosen}/keuangan`} className="flex items-center gap-2 text-xs font-bold text-slate-500 hover:text-blue-600 transition-all group">
+          <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" /> Kembali
         </Link>
       </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-5 gap-6 items-start">
-        <div className="xl:col-span-2 space-y-6">
+      {/* 2. TOP SUMMARY CARDS (3 Columns Berjajar) */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="bg-white p-5 rounded-xl border border-slate-100 shadow-sm">
+          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Semester</p>
+          <p className="text-lg font-bold text-slate-800 font-mono">Semester {keuangan.semester_ke}</p>
+        </div>
+        <div className="bg-white p-5 rounded-xl border border-slate-100 shadow-sm">
+          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Nominal</p>
+          <p className="text-lg font-bold text-blue-600">{keuangan.nominal ? formatRupiah(Number(keuangan.nominal)) : '-'}</p>
+        </div>
+        <div className="bg-white p-5 rounded-xl border border-slate-100 shadow-sm">
+          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Tanggal Pengajuan</p>
+          <p className="text-lg font-bold text-slate-800">
+            {keuangan.created_at ? keuangan.created_at.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) : '-'}
+          </p>
+        </div>
+      </div>
+
+      {/* 3. MAIN CONTENT (Split View) */}
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+        
+        {/* LEFT SIDE: Tracking & Catatan */}
+        <div className="space-y-6">
+          
+          {/* Tracking Section */}
           <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-6">
-            <h4 className="text-sm font-semibold text-slate-800 mb-5">Informasi Pencairan</h4>
-            <div className="space-y-3">
-              <InfoItem icon={Banknote} label="Nominal" value={keuangan.nominal ? formatRupiah(Number(keuangan.nominal)) : '-'} valueClass="text-blue-600 font-bold" />
-              <InfoItem icon={Calendar} label="Tanggal Pengajuan" value={formatDate(keuangan.created_at)} />
-              <InfoItem icon={Calendar} label="Tanggal Transfer" value={keuangan.tanggal_pencairan ? formatDate(keuangan.tanggal_pencairan) : '-'} />
-              <InfoItem icon={Building} label="Bank Tujuan" value={bank} />
-              <InfoItem icon={User} label="Nomor Rekening" value={norek} valueClass="font-mono" />
-              <InfoItem icon={FileText} label="Semester" value={`Semester ${keuangan.semester_ke || '-'}`} />
+            <h4 className="text-sm font-bold text-slate-800 mb-8 pb-4 border-b border-slate-50">Tracking Pengajuan</h4>
+            <div className="space-y-8 relative">
+              <div className="absolute left-[15px] top-2 bottom-2 w-0.5 bg-slate-100"></div>
+
+              {[
+                { label: 'Upload Bukti Pembayaran', sub: 'Oleh Dosen', date: keuangan.created_at, icon: Check, color: 'bg-emerald-500', active: true },
+                { label: 'Diverifikasi Admin', sub: 'Oleh Admin', date: isVerifikasi ? keuangan.updated_at : null, icon: Check, color: isVerifikasi ? 'bg-emerald-500' : 'bg-slate-200', active: isVerifikasi },
+                { label: 'Disetujui', sub: 'Oleh Admin', date: isVerifikasi ? keuangan.updated_at : null, icon: Check, color: isVerifikasi ? 'bg-emerald-500' : 'bg-slate-200', active: isVerifikasi },
+                { label: 'Dana Ditransfer', sub: 'Oleh Keuangan', date: isSelesai ? keuangan.tanggal_pencairan : null, icon: Send, color: isSelesai ? 'bg-blue-600' : 'bg-slate-200', active: isSelesai },
+                { label: 'Selesai', sub: isSelesai ? 'Proses Selesai' : 'Menunggu konfirmasi', date: isSelesai ? keuangan.tanggal_pencairan : null, icon: Star, color: isSelesai ? 'bg-emerald-500' : 'bg-slate-200', active: isSelesai },
+              ].map((step, i) => (
+                <div key={i} className="relative flex gap-6 items-start">
+                  <div className={`relative z-10 w-8 h-8 rounded-full flex items-center justify-center text-white shadow-sm border-4 border-white ${step.color}`}>
+                    <step.icon size={14} strokeWidth={3} />
+                  </div>
+                  <div className="flex-1 flex justify-between items-start">
+                    <div>
+                      <p className={`text-sm font-bold ${step.active ? 'text-slate-800' : 'text-slate-400'}`}>{step.label}</p>
+                      <p className="text-[11px] text-slate-400 mt-0.5">{step.sub}</p>
+                    </div>
+                    {step.date && <p className="text-[10px] text-slate-400 font-medium">
+                      {step.date.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })} WIB
+                    </p>}
+                  </div>
+                </div>
+              ))}
             </div>
-            {keuangan.catatan_keuangan && (
-              <div className="mt-4 p-3 bg-slate-50 rounded-lg">
-                <p className="text-[10px] text-slate-400 font-medium mb-1">Catatan Keuangan</p>
-                <p className="text-xs text-slate-700">{keuangan.catatan_keuangan}</p>
-              </div>
-            )}
           </div>
 
-          <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-6">
-            <h4 className="text-sm font-semibold text-slate-800 mb-4">Tracking Proses</h4>
-            <div className="relative">
-              <div className="absolute left-[17px] top-2 bottom-2 w-0.5 bg-slate-100" />
-              <div className="space-y-1">
-                {steps.map((step, i) => <TrackingStep key={i} {...step} />)}
-              </div>
+          {/* Admin Evaluation Form */}
+          <form className="bg-white rounded-xl border border-slate-100 shadow-sm p-6 space-y-5">
+            <h4 className="text-sm font-bold text-slate-800">Tindakan & Catatan Admin</h4>
+            <input type="hidden" name="keuanganId" value={keuanganId} />
+            <textarea
+              name="catatan"
+              className="w-full text-sm p-4 bg-slate-50 border border-slate-100 rounded-xl focus:ring-2 focus:ring-blue-100 outline-none min-h-[120px] transition-all"
+              placeholder="Tambahkan catatan audit dana di sini..."
+              defaultValue={keuangan.catatan_keuangan || ''}
+            ></textarea>
+            <div className="grid grid-cols-2 gap-4">
+              <button type="submit" formAction={acceptKeuangan}
+                className="py-3 bg-emerald-500 text-white rounded-xl text-xs font-bold hover:bg-emerald-600 shadow-md shadow-emerald-100 transition-all flex items-center justify-center gap-2 uppercase tracking-widest">
+                DITERIMA <CheckSquare size={16} />
+              </button>
+              <button type="submit" formAction={rejectKeuangan}
+                className="py-3 bg-white text-red-600 border border-red-100 rounded-xl text-xs font-bold hover:bg-red-50 transition-all flex items-center justify-center gap-2 uppercase tracking-widest">
+                DITOLAK <XCircle size={16} />
+              </button>
             </div>
-          </div>
-
-          <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-6">
-            <h4 className="text-sm font-semibold text-slate-800 mb-4">Verifikasi Admin</h4>
-            <form className="space-y-4">
-              <input type="hidden" name="keuanganId" value={keuanganId} />
-              <textarea name="catatan"
-                className="w-full text-sm p-3 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 min-h-[80px] transition-all"
-                placeholder="Catatan verifikasi..."
-                defaultValue={keuangan.catatan_keuangan || ''} />
-              <div className="grid grid-cols-2 gap-3">
-                <button type="submit" formAction={acceptKeuangan}
-                  className="py-2.5 bg-emerald-500 text-white rounded-lg text-xs font-bold hover:bg-emerald-600 transition-all flex items-center justify-center gap-2">
-                  <CheckSquare size={15} /> Terima
-                </button>
-                <button type="submit" formAction={rejectKeuangan}
-                  className="py-2.5 bg-white text-red-600 border border-red-200 rounded-lg text-xs font-bold hover:bg-red-50 transition-all flex items-center justify-center gap-2">
-                  <XCircle size={15} /> Tolak
-                </button>
-              </div>
-            </form>
-          </div>
+          </form>
         </div>
 
-        <div className="xl:col-span-3 bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden flex flex-col min-h-[500px]">
-          <div className="flex items-center justify-between px-5 py-3.5 border-b border-slate-100">
-            <h4 className="text-sm font-semibold text-slate-800 flex items-center gap-2">
-              <FileText size={15} className="text-slate-400" />
-              Bukti Transfer
-            </h4>
-            <a href={keuangan.file_bukti_bayar || '#'} target="_blank"
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-blue-600 rounded-lg text-xs font-semibold hover:bg-blue-100 transition-colors">
-              <Download size={13} /> Download
+        {/* RIGHT SIDE: Bukti Pembayaran (Full Height Preview) */}
+        <div className="bg-white rounded-xl border border-slate-100 shadow-sm flex flex-col min-h-[600px]">
+          <div className="p-5 border-b border-slate-50 flex justify-between items-center">
+            <h4 className="text-sm font-bold text-slate-800">Bukti Pembayaran</h4>
+            <a href={keuangan.file_bukti_bayar || '#'} target="_blank" className="flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-600 rounded-lg text-xs font-bold hover:bg-blue-600 hover:text-white transition-all">
+              <Download size={14} /> Download File
             </a>
           </div>
-          <div className="flex-1 bg-slate-50 p-6 flex items-center justify-center">
-            {keuangan.file_bukti_bayar ? (
-              <div className="w-full h-full bg-white rounded-xl shadow-inner border border-slate-200 overflow-hidden">
-                <iframe src={keuangan.file_bukti_bayar} className="w-full h-full min-h-[500px]" title="Bukti Transfer" />
-              </div>
-            ) : (
-              <div className="text-center text-slate-400">
-                <FileText size={64} className="mx-auto mb-4 opacity-20" strokeWidth={1.5} />
-                <p className="text-sm font-medium text-slate-400">File bukti belum diunggah</p>
-              </div>
-            )}
+          <div className="flex-1 p-6 bg-slate-50 flex items-center justify-center overflow-hidden">
+            <div className="w-full h-full bg-white rounded-xl shadow-inner relative flex items-center justify-center border border-slate-200 group">
+              {keuangan.file_bukti_bayar ? (
+                <img src={keuangan.file_bukti_bayar} alt="Bukti Transfer" className="max-w-full max-h-full object-contain p-4 group-hover:scale-[1.02] transition-transform duration-500" />
+              ) : (
+                <div className="text-center text-slate-300">
+                  <FileText size={64} className="mx-auto mb-4 opacity-20" />
+                  <p className="text-sm italic font-medium">File bukti pembayaran belum diunggah atau tidak dapat ditampilkan.</p>
+                </div>
+              )}
+            </div>
           </div>
         </div>
+
       </div>
 
-      <div className="bg-blue-50 border border-blue-100 rounded-xl px-5 py-3.5 flex items-start gap-3">
-        <Info size={16} className="text-blue-500 flex-shrink-0 mt-0.5" />
+      {/* 4. FOOTER INFO BANNER */}
+      <div className="bg-blue-50 border border-blue-100 rounded-xl p-4 flex items-center gap-4">
+        <Info className="text-blue-500 flex-shrink-0" size={20} />
         <p className="text-xs text-blue-800 font-medium">
-          Pastikan nominal dan data rekening sesuai sebelum melakukan verifikasi.
+          Sistem mendeteksi pengajuan ini sebagai <strong>Reimbursement Biaya Studi</strong>. Pastikan nominal dan bukti transfer sudah sesuai dengan SK yang berlaku sebelum melakukan verifikasi.
         </p>
       </div>
+
     </div>
   );
 }
-
-const InfoItem = ({ icon: Icon, label, value, valueClass }: {
-  icon: React.ComponentType<{ size?: number; className?: string }>;
-  label: string; value: string; valueClass?: string;
-}) => (
-  <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-lg">
-    <div className="p-2 bg-white rounded-lg shadow-sm"><Icon size={15} className="text-slate-400" /></div>
-    <div>
-      <p className="text-[10px] text-slate-400 font-medium">{label}</p>
-      <p className={`text-sm text-slate-800 ${valueClass || 'font-medium'}`}>{value}</p>
-    </div>
-  </div>
-);

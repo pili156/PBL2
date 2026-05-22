@@ -83,7 +83,7 @@ export default function UploadCard({
     }
     return (
       <span className="inline-flex items-center gap-1 text-xs font-semibold text-amber-600 bg-amber-100 px-2 py-1 rounded">
-        opsional
+        OPSIONAL
       </span>
     );
   };
@@ -108,19 +108,23 @@ export default function UploadCard({
         <div className="flex-1">
           <div className="flex items-center gap-2 mb-1">
             <h3 className="font-semibold text-gray-900">{title}</h3>
-            {getStatusBadge()}
+            
+            {/* PERBAIKAN: Conditional rendering untuk Badge */}
+            {file ? (
+              <span className="inline-flex items-center gap-1 text-xs font-semibold text-green-600 bg-green-100 px-2 py-1 rounded">
+                <CheckCircle size={14} /> DIUNGGAH
+              </span>
+            ) : (
+              getStatusBadge()
+            )}
+
           </div>
           {description && (
             <p className="text-sm text-gray-600">{description}</p>
           )}
         </div>
-
-        {file && (
-          <div className="flex items-center gap-1 text-green-600">
-            <CheckCircle size={16} />
-            <span className="text-xs font-medium">Uploaded</span>
-          </div>
-        )}
+        
+        {/* Kode {file && ... Uploaded} yang sebelumnya ada di sebelah kanan sudah dihapus agar rapi */}
       </div>
 
       {!file ? (

@@ -6,13 +6,19 @@ import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
   FileText,
-  ClipboardList,
+  CheckSquare,
+  ListOrdered,
+  CreditCard,
+  UserCircle
 } from "lucide-react";
 
 const menuItems = [
   { href: "/user/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/user/pengajuan", label: "Pengajuan Studi/Beasiswa", icon: FileText },
-  { href: "/user/status", label: "Riwayat &amp; Monitoring", icon: ClipboardList },
+  { href: "/user/pengajuan", label: "Pengajuan", icon: FileText },
+  { href: "/user/status", label: "Status", icon: CheckSquare },
+  { href: "/user/laporanKHS", label: "Laporan KHS", icon: ListOrdered },
+  { href: "/user/user-reimbursement", label: "Bantuan Studi", icon: CreditCard },
+  { href: "/user/profil", label: "Profil Saya", icon: UserCircle },
 ];
 
 export default function SidebarUser() {
