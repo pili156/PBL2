@@ -111,14 +111,13 @@ export async function addManualKhs(formData: FormData) {
     data: {
       pengajuan_id: pengajuanId,
       semester_ke: semesterKe,
-      tahun_akademik: tahunAkademik,
       ipk: ipk || undefined,
       file_khs_path: filePath,
       tanggal_unggah: new Date(),
       status_evaluasi: 'DITERIMA',
     },
     include: { pengajuan_studi: { select: { user_id: true } } },
-  });
+  }) as any;
 
   await logActivity(idDosen, pengajuanId, `Upload KHS manual Semester ${semesterKe}`, 'upload_khs');
   await addLog(pengajuanId, `Upload KHS manual Semester ${semesterKe}`, 'manual');

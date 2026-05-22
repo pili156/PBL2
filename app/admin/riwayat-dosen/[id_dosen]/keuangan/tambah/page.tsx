@@ -1,5 +1,6 @@
+// app/admin/riwayat-dosen/[id_dosen]/keuangan/tambah/page.tsx
 import { prisma } from '@/src/lib/prisma';
-import { ArrowLeft, Upload } from 'lucide-react';
+import { ArrowLeft, UploadCloud, Info } from 'lucide-react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { addManualKeuangan } from '../../../actions';
@@ -30,73 +31,77 @@ export default async function TambahKeuanganPage({ params }: Props) {
   const nama = dosen.master_dosen?.nama_lengkap || dosen.username || 'Dosen';
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="max-w-3xl mx-auto space-y-6 pt-4">
+      
+      {/* HEADER TULISAN */}
+      <div className="flex items-center justify-between pb-2 border-b border-slate-100">
         <div>
-          <h2 className="text-xl font-bold text-slate-900">Tambah Pencairan Manual</h2>
-          <p className="text-sm text-slate-400 mt-0.5">Input data pencairan dana untuk {nama}</p>
+          <h2 className="text-xl font-bold text-slate-800">Tambah Pencairan Manual</h2>
+          <p className="text-sm text-slate-500 mt-1">Input data pencairan dana untuk {nama}</p>
         </div>
-        <Link href={`/admin/riwayat-dosen/${idDosen}/keuangan`}
-          className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 text-slate-600 rounded-lg text-sm font-medium hover:bg-slate-50 transition-colors">
+        <Link href={`/admin/riwayat-dosen/${idDosen}/keuangan`} className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 text-slate-600 rounded-lg text-sm font-bold hover:bg-slate-50 transition-colors shadow-sm">
           <ArrowLeft size={16} /> Kembali
         </Link>
       </div>
 
-      <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-6">
-        <form action={addManualKeuangan} className="space-y-5" encType="multipart/form-data">
-          <input type="hidden" name="pengajuanId" value={pengajuanId} />
-          <input type="hidden" name="idDosen" value={idDosen} />
+      <div className="bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden">
+        
+        {/* INFO BANNER */}
+        <div className="bg-amber-50/50 p-4 border-b border-slate-100 flex gap-3 items-start">
+          <Info size={16} className="text-amber-500 mt-0.5" />
+          <p className="text-xs text-amber-800 leading-relaxed">
+            Data yang diinputkan melalui form ini akan otomatis dicatat ke aktivitas log sebagai input manual oleh Admin.
+          </p>
+        </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs font-medium text-slate-500 mb-1.5">Semester Ke</label>
-              <input type="number" name="semesterKe" required min="1"
-                className="w-full px-4 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500" />
-            </div>
-            <div>
-              <label className="block text-xs font-medium text-slate-500 mb-1.5">Nominal (Rp)</label>
-              <input type="number" name="nominal" required min="0" placeholder="1000000"
-                className="w-full px-4 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500" />
-            </div>
-          </div>
+        {/* FORM AREA */}
+        <div className="p-6 md:p-8">
+          <form action={addManualKeuangan} className="space-y-6" encType="multipart/form-data">
+            <input type="hidden" name="pengajuanId" value={pengajuanId} />
+            <input type="hidden" name="idDosen" value={idDosen} />
 
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs font-medium text-slate-500 mb-1.5">Bank Tujuan</label>
-              <input type="text" name="bank" placeholder="Bank Mandiri"
-                className="w-full px-4 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500" />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">Semester Ke <span className="text-red-500">*</span></label>
+                <input type="number" name="semesterKe" required min="1" className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all" />
+              </div>
+              <div className="space-y-2">
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">Nominal (Rp) <span className="text-red-500">*</span></label>
+                <input type="number" name="nominal" required min="0" placeholder="Contoh: 10000000" className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all" />
+              </div>
             </div>
-            <div>
-              <label className="block text-xs font-medium text-slate-500 mb-1.5">Nomor Rekening</label>
-              <input type="text" name="norek" placeholder="1234567890"
-                className="w-full px-4 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500" />
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">Bank Tujuan</label>
+                <input type="text" name="bank" placeholder="Contoh: Bank Mandiri" className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all" />
+              </div>
+              <div className="space-y-2">
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">Nomor Rekening</label>
+                <input type="text" name="norek" placeholder="Contoh: 1234567890" className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all" />
+              </div>
             </div>
-          </div>
 
-          <div>
-            <label className="block text-xs font-medium text-slate-500 mb-1.5">File Bukti Transfer (PDF/JPG/PNG, maks 5MB)</label>
-            <div className="relative">
-              <input
-                type="file"
-                name="fileBukti"
-                accept=".pdf,.jpg,.jpeg,.png"
-                className="w-full px-4 py-2.5 border border-slate-200 rounded-lg text-sm file:mr-3 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-600 hover:file:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
-              />
+            <div className="space-y-2">
+              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">File Bukti Transfer <span className="text-red-500">*</span></label>
+              <div className="relative w-full">
+                <input type="file" name="fileBukti" accept=".pdf,.jpg,.jpeg,.png" className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
+                <div className="w-full border-2 border-dashed border-slate-200 rounded-xl p-6 flex flex-col items-center justify-center text-center bg-slate-50 hover:bg-blue-50 hover:border-blue-300 transition-all">
+                  <UploadCloud size={24} className="text-blue-500 mb-2" />
+                  <p className="text-sm font-bold text-slate-800">Klik atau Drag file bukti transfer</p>
+                  <p className="text-[10px] text-slate-500 mt-1">PDF, JPG, PNG (Maks 5MB)</p>
+                </div>
+              </div>
             </div>
-            <p className="text-[10px] text-slate-400 mt-1">Upload bukti transfer. Format: PDF, JPG, PNG. Maksimal 5MB.</p>
-          </div>
 
-          <div className="bg-amber-50 border border-amber-200/60 rounded-lg px-4 py-3">
-            <p className="text-xs text-amber-700 font-medium">
-              Data akan otomatis dicatat ke aktivitas log sebagai input manual.
-            </p>
-          </div>
+            <div className="pt-4 flex justify-end">
+              <button type="submit" className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-xl text-sm font-bold hover:bg-blue-700 transition-colors shadow-sm">
+                <UploadCloud size={16} /> Simpan Pencairan
+              </button>
+            </div>
+          </form>
+        </div>
 
-          <button type="submit"
-            className="w-full flex items-center justify-center gap-2 py-2.5 bg-blue-600 text-white rounded-lg text-sm font-semibold hover:bg-blue-700 transition-colors shadow-sm">
-            <Upload size={16} /> Upload & Simpan Pencairan
-          </button>
-        </form>
       </div>
     </div>
   );
