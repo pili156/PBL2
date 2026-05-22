@@ -8,99 +8,53 @@ async function main() {
   // --- 1. HASH PASSWORD DEFAULT (rahasia123) ---
   const hashedPassword = await bcrypt.hash('rahasia123', 10);
 
+  // --- 1b. Bersihkan data lama (urutan berdasarkan dependensi) ---
+  console.log('Membersihkan data lama...');
+  const cleanUp = async (fn: () => Promise<any>) => { try { await fn(); } catch {} };
+  await cleanUp(() => prisma.activityLog.deleteMany());
+  await cleanUp(() => prisma.pesanKomunikasi.deleteMany());
+  await cleanUp(() => prisma.pengajuanReimbursement.deleteMany());
+  await cleanUp(() => prisma.monitoringKhs.deleteMany());
+  await cleanUp(() => prisma.skKementerian.deleteMany());
+  await cleanUp(() => prisma.dokumenPengajuan.deleteMany());
+  await cleanUp(() => prisma.pengajuanStudi.deleteMany());
+  await cleanUp(() => prisma.masterDokumen.deleteMany());
+  await cleanUp(() => prisma.masterDosen.deleteMany());
+  await cleanUp(() => prisma.user.deleteMany());
+  await cleanUp(() => prisma.masterStatusPengajuan.deleteMany());
+  await cleanUp(() => prisma.masterJalurPendanaan.deleteMany());
+  await cleanUp(() => prisma.masterJenisStudi.deleteMany());
+  await cleanUp(() => prisma.masterRole.deleteMany());
+
   // ===============================================================
   // === 2. MASTER DATA (Deterministic IDs) ===
   // ===============================================================
 
   // --- 2.1 Master Role ---
-  const roleMaster = await prisma.masterRole.upsert({
-    where: { id: 1 },
-    update: { nama_role: 'master_admin' },
-    create: { id: 1, nama_role: 'master_admin' },
-  });
-  const roleAdmin = await prisma.masterRole.upsert({
-    where: { id: 2 },
-    update: { nama_role: 'admin_fakultas' },
-    create: { id: 2, nama_role: 'admin_fakultas' },
-  });
-  const roleDosen = await prisma.masterRole.upsert({
-    where: { id: 3 },
-    update: { nama_role: 'dosen' },
-    create: { id: 3, nama_role: 'dosen' },
-  });
-  const roleKeuangan = await prisma.masterRole.upsert({
-    where: { id: 4 },
-    update: { nama_role: 'keuangan' },
-    create: { id: 4, nama_role: 'keuangan' },
-  });
+  const roleMaster = await prisma.masterRole.create({ data: { id: 1, nama_role: 'master_admin' } });
+  const roleAdmin = await prisma.masterRole.create({ data: { id: 2, nama_role: 'admin_fakultas' } });
+  const roleDosen = await prisma.masterRole.create({ data: { id: 3, nama_role: 'dosen' } });
+  const roleKeuangan = await prisma.masterRole.create({ data: { id: 4, nama_role: 'keuangan' } });
 
   // --- 2.2 Master Jenis Studi ---
-  const jenisTugasBelajar = await prisma.masterJenisStudi.upsert({
-    where: { id: 1 },
-    update: { nama_jenis: 'Tugas Belajar' },
-    create: { id: 1, nama_jenis: 'Tugas Belajar' },
-  });
-  await prisma.masterJenisStudi.upsert({
-    where: { id: 2 },
-    update: { nama_jenis: 'Izin Belajar' },
-    create: { id: 2, nama_jenis: 'Izin Belajar' },
-  });
+  const jenisTugasBelajar = await prisma.masterJenisStudi.create({ data: { id: 1, nama_jenis: 'Tugas Belajar' } });
+  await prisma.masterJenisStudi.create({ data: { id: 2, nama_jenis: 'Izin Belajar' } });
 
   // --- 2.3 Master Jalur Pendanaan ---
-  const jalurMandiri = await prisma.masterJalurPendanaan.upsert({
-    where: { id: 1 },
-    update: { nama_pendanaan: 'Mandiri' },
-    create: { id: 1, nama_pendanaan: 'Mandiri' },
-  });
-  const jalurLPDP = await prisma.masterJalurPendanaan.upsert({
-    where: { id: 2 },
-    update: { nama_pendanaan: 'Beasiswa LPDP' },
-    create: { id: 2, nama_pendanaan: 'Beasiswa LPDP' },
-  });
+  const jalurMandiri = await prisma.masterJalurPendanaan.create({ data: { id: 1, nama_pendanaan: 'Mandiri' } });
+  const jalurLPDP = await prisma.masterJalurPendanaan.create({ data: { id: 2, nama_pendanaan: 'Beasiswa LPDP' } });
 
   // --- 2.4 Master Status Pengajuan Studi ---
-  await prisma.masterStatusPengajuan.upsert({
-    where: { id: 1 },
-    update: { nama_status: 'Draft' },
-    create: { id: 1, nama_status: 'Draft' },
-  });
-  const statusMenunggu = await prisma.masterStatusPengajuan.upsert({
-    where: { id: 2 },
-    update: { nama_status: 'Menunggu Verifikasi (Admin)' },
-    create: { id: 2, nama_status: 'Menunggu Verifikasi (Admin)' },
-  });
-  const statusRevisi = await prisma.masterStatusPengajuan.upsert({
-    where: { id: 3 },
-    update: { nama_status: 'Perlu Revisi (Dosen)' },
-    create: { id: 3, nama_status: 'Perlu Revisi (Dosen)' },
-  });
-  const statusLulus = await prisma.masterStatusPengajuan.upsert({
-    where: { id: 6 }, // Gunakan ID 6 untuk status akhir agar ada celah
-    update: { nama_status: 'Studi Selesai (Lulus)' },
-    create: { id: 6, nama_status: 'Studi Selesai (Lulus)' },
-  });
+  await prisma.masterStatusPengajuan.create({ data: { id: 1, nama_status: 'Draft' } });
+  const statusMenunggu = await prisma.masterStatusPengajuan.create({ data: { id: 2, nama_status: 'Menunggu Verifikasi (Admin)' } });
+  const statusRevisi = await prisma.masterStatusPengajuan.create({ data: { id: 3, nama_status: 'Perlu Revisi (Dosen)' } });
+  const statusLulus = await prisma.masterStatusPengajuan.create({ data: { id: 6, nama_status: 'Studi Selesai (Lulus)' } });
 
   // --- 2.5 Master Dokumen (Untuk Syarat Awal) ---
-  await prisma.masterDokumen.upsert({
-    where: { id: 1 },
-    update: { nama_dokumen: 'SK CPNS', is_mandatory: true, syarat_wilayah: 'Semua' },
-    create: { id: 1, nama_dokumen: 'SK CPNS', is_mandatory: true, syarat_wilayah: 'Semua' },
-  });
-  await prisma.masterDokumen.upsert({
-    where: { id: 2 },
-    update: { nama_dokumen: 'LoA (Letter of Acceptance) Universitas', is_mandatory: true, syarat_wilayah: 'Semua' },
-    create: { id: 2, nama_dokumen: 'LoA (Letter of Acceptance) Universitas', is_mandatory: true, syarat_wilayah: 'Semua' },
-  });
-  await prisma.masterDokumen.upsert({
-    where: { id: 3 },
-    update: { nama_dokumen: 'Surat Izin Studi (Dari Kampus)', is_mandatory: true, syarat_wilayah: 'Semua' },
-    create: { id: 3, nama_dokumen: 'Surat Izin Studi (Dari Kampus)', is_mandatory: true, syarat_wilayah: 'Semua' },
-  });
-  await prisma.masterDokumen.upsert({
-    where: { id: 4 },
-    update: { nama_dokumen: 'SK Tugas Belajar (Kementerian)', is_mandatory: true, syarat_wilayah: 'Semua' },
-    create: { id: 4, nama_dokumen: 'SK Tugas Belajar (Kementerian)', is_mandatory: true, syarat_wilayah: 'Semua' },
-  });
+  await prisma.masterDokumen.create({ data: { id: 1, nama_dokumen: 'SK CPNS', is_mandatory: true, syarat_wilayah: 'Semua' } });
+  await prisma.masterDokumen.create({ data: { id: 2, nama_dokumen: 'LoA (Letter of Acceptance) Universitas', is_mandatory: true, syarat_wilayah: 'Semua' } });
+  await prisma.masterDokumen.create({ data: { id: 3, nama_dokumen: 'Surat Izin Studi (Dari Kampus)', is_mandatory: true, syarat_wilayah: 'Semua' } });
+  await prisma.masterDokumen.create({ data: { id: 4, nama_dokumen: 'SK Tugas Belajar (Kementerian)', is_mandatory: true, syarat_wilayah: 'Semua' } });
 
   console.log('Data Master (Role, Jenis Studi, Pendanaan, Status, Dokumen) telah siap.');
 
@@ -109,10 +63,9 @@ async function main() {
   // ===============================================================
 
   // --- 3.1 Buat Akun Master Admin ---
-  await prisma.user.upsert({
-    where: { email: 'master_admin@gmail.com' },
-    update: { role_id: roleMaster.id },
-    create: {
+  const userMasterAdmin = await prisma.user.create({
+    data: {
+      id: 1,
       username: 'Master Admin',
       email: 'master_admin@gmail.com',
       password_hash: hashedPassword,
@@ -122,10 +75,9 @@ async function main() {
   });
 
   // --- 3.2 Buat Akun Admin Fakultas ---
-  await prisma.user.upsert({
-    where: { email: 'admin@gmail.com' },
-    update: { role_id: roleAdmin.id },
-    create: {
+  const userAdmin = await prisma.user.create({
+    data: {
+      id: 2,
       username: 'Mbak Ayu (Admin)',
       email: 'admin@gmail.com',
       password_hash: hashedPassword,
@@ -135,10 +87,9 @@ async function main() {
   });
 
   // --- 3.3 Buat Akun Keuangan ---
-  await prisma.user.upsert({
-    where: { email: 'keuangan@gmail.com' },
-    update: { role_id: roleKeuangan.id },
-    create: {
+  const userKeuangan = await prisma.user.create({
+    data: {
+      id: 3,
       username: 'Admin Keuangan',
       email: 'keuangan@gmail.com',
       password_hash: hashedPassword,
@@ -148,10 +99,9 @@ async function main() {
   });
 
   // --- 3.4 Buat Akun Dosen PBL (Budi Doremi) ---
-  const userDosenBudi = await prisma.user.upsert({
-    where: { email: 'dosen@gmail.com' },
-    update: { role_id: roleDosen.id, username: 'Budi Doremi' },
-    create: {
+  const userDosenBudi = await prisma.user.create({
+    data: {
+      id: 4,
       username: 'Budi Doremi',
       email: 'dosen@gmail.com',
       password_hash: hashedPassword,
@@ -161,12 +111,10 @@ async function main() {
   });
 
   // --- 3.5 Buat Profil Dosen Lengkap Budi (Tabel MasterDosen) ---
-  const profilDosenBudi = await prisma.masterDosen.upsert({
-    where: { user_id: userDosenBudi.id },
-    update: { nama_lengkap: 'Budi Doremi, S.Kom., M.T.' },
-    create: {
+  await prisma.masterDosen.create({
+    data: {
       user_id: userDosenBudi.id,
-      nip: '198273645', // Wajib UNIK
+      nip: '198273645',
       nama_lengkap: 'Budi Doremi, S.Kom., M.T.',
       pangkat_golongan: 'Penata Muda Tk I (III/b)',
       jabatan: 'Asisten Ahli',
@@ -185,10 +133,8 @@ async function main() {
   // ===============================================================
 
   // --- 4.1 Buat Skenario Pengajuan Studi Aktif (Budi) ---
-  const pengajuanStudiBudi = await prisma.pengajuanStudi.upsert({
-    where: { id: 1 }, 
-    update: {},
-    create: {
+  const pengajuanStudiBudi = await prisma.pengajuanStudi.create({
+    data: {
       id: 1,
       user_id: userDosenBudi.id,
       jenis_studi_id: jenisTugasBelajar.id,
@@ -205,10 +151,8 @@ async function main() {
 
   // --- 4.2 Buat Histori Monitoring KHS per Semester ---
   // ID 1: Semester 1 (Valid)
-  await prisma.monitoringKhs.upsert({
-    where: { id: 1 },
-    update: {},
-    create: {
+  await prisma.monitoringKhs.create({
+    data: {
       id: 1,
       pengajuan_id: pengajuanStudiBudi.id,
       semester_ke: 1,
@@ -224,10 +168,8 @@ async function main() {
   });
 
   // ID 2: Semester 2 (Valid)
-  await prisma.monitoringKhs.upsert({
-    where: { id: 2 },
-    update: {},
-    create: {
+  await prisma.monitoringKhs.create({
+    data: {
       id: 2,
       pengajuan_id: pengajuanStudiBudi.id,
       semester_ke: 2,
@@ -243,10 +185,8 @@ async function main() {
   });
 
   // ID 3: Semester 3 (Revisi)
-  await prisma.monitoringKhs.upsert({
-    where: { id: 3 },
-    update: {},
-    create: {
+  await prisma.monitoringKhs.create({
+    data: {
       id: 3,
       pengajuan_id: pengajuanStudiBudi.id,
       semester_ke: 3,
@@ -262,10 +202,8 @@ async function main() {
   });
 
   // ID 4: Semester 4 (Belum Unggah)
-  await prisma.monitoringKhs.upsert({
-    where: { id: 4 },
-    update: {},
-    create: {
+  await prisma.monitoringKhs.create({
+    data: {
       id: 4,
       pengajuan_id: pengajuanStudiBudi.id,
       semester_ke: 4,
@@ -284,10 +222,8 @@ async function main() {
 
   // --- 4.3 Buat Histori Monitoring Keuangan per Semester ---
   // ID 1: Semester 1 (Dicairkan)
-  await prisma.pengajuanReimbursement.upsert({
-    where: { id: 1 },
-    update: {},
-    create: {
+  await prisma.pengajuanReimbursement.create({
+    data: {
       id: 1,
       pengajuan_id: pengajuanStudiBudi.id,
       semester_ke: 1,
@@ -302,10 +238,8 @@ async function main() {
   });
 
   // ID 2: Semester 2 (Dicairkan)
-  await prisma.pengajuanReimbursement.upsert({
-    where: { id: 2 },
-    update: {},
-    create: {
+  await prisma.pengajuanReimbursement.create({
+    data: {
       id: 2,
       pengajuan_id: pengajuanStudiBudi.id,
       semester_ke: 2,
@@ -320,10 +254,8 @@ async function main() {
   });
 
   // ID 3: Semester 3 (Pending)
-  await prisma.pengajuanReimbursement.upsert({
-    where: { id: 3 },
-    update: {},
-    create: {
+  await prisma.pengajuanReimbursement.create({
+    data: {
       id: 3,
       pengajuan_id: pengajuanStudiBudi.id,
       semester_ke: 3,
@@ -340,10 +272,8 @@ async function main() {
   console.log('Histori Monitoring Keuangan (Semester 1-3) telah siap.');
 
   // --- 4.4 Buat Pesan Komunikasi Contoh ---
-  await prisma.pesanKomunikasi.upsert({
-    where: { id: 1 },
-    update: {},
-    create: {
+  await prisma.pesanKomunikasi.create({
+    data: {
       id: 1,
       pengajuan_id: pengajuanStudiBudi.id,
       pengirim_id: userDosenBudi.id,
