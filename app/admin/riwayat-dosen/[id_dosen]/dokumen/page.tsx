@@ -158,7 +158,7 @@ export default async function DokumenSuratPage({ params }: Props) {
                         <td className="py-3 px-2 flex justify-center items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                           {doc.path ? (
                             <>
-                              <a href={doc.path} target="_blank" className="flex items-center gap-1 px-3 py-1 bg-blue-50 text-blue-600 rounded text-[10px] font-bold hover:bg-blue-600 hover:text-white transition-colors">
+                              <a href={doc.path} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 px-3 py-1 bg-blue-50 text-blue-600 rounded text-[10px] font-bold hover:bg-blue-600 hover:text-white transition-colors">
                                 Preview
                               </a>
                               <a href={doc.path} download className="p-1.5 text-slate-400 hover:text-blue-600 bg-slate-50 rounded hover:bg-blue-50 transition-colors">

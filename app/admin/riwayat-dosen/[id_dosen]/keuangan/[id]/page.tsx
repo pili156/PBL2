@@ -68,12 +68,12 @@ export default async function DetailKeuanganPage({ params }: { params: Promise<{
               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Tujuan Rekening</p>
               <div className="bg-slate-50 p-3 rounded-lg border border-slate-100">
                 <p className="text-xs font-bold text-slate-800">
-                  {keuangan.pengajuan_studi.user.master_dosen?.nama_bank || 'Bank Belum Diatur'}
+                  {keuangan.nama_bank || 'Bank Belum Diatur'}
                 </p>
                 <p className="text-sm font-mono font-semibold text-blue-600 mt-1">
-                  {keuangan.pengajuan_studi.user.master_dosen?.nomor_rekening || '-'}
+                  {keuangan.nomor_rekening || '-'}
                 </p>
-                <p className="text-[10px] text-slate-500 mt-1">a.n. {keuangan.pengajuan_studi.user.master_dosen?.nama_lengkap}</p>
+                <p className="text-[10px] text-slate-500 mt-1">a.n. {keuangan.pengajuan_studi?.user?.master_dosen?.nama_lengkap}</p>
               </div>
             </div>
 
@@ -118,8 +118,16 @@ export default async function DetailKeuanganPage({ params }: { params: Promise<{
           </div>
           <div className="flex-1 p-6 bg-[#525659] flex items-center justify-center rounded-b-xl">
             {keuangan.file_bukti_bayar ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={keuangan.file_bukti_bayar} alt="Bukti Transfer" className="max-w-full max-h-[600px] object-contain bg-white shadow-lg" />
+              keuangan.file_bukti_bayar.toLowerCase().endsWith('.pdf') ? (
+                <iframe 
+                  src={keuangan.file_bukti_bayar} 
+                  className="w-full h-full min-h-[500px]" 
+                  title="PDF Preview"
+                />
+              ) : (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={keuangan.file_bukti_bayar} alt="Bukti Transfer" className="max-w-full max-h-[600px] object-contain bg-white shadow-lg" />
+              )
             ) : (
               <div className="text-center text-slate-300">
                 <FileText size={48} className="mx-auto mb-3 opacity-50" />

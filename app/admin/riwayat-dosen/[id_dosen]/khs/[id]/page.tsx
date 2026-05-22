@@ -145,22 +145,29 @@ export default async function DetailKhsPage({ params }: DetailKhsPageProps) {
           
           <div className="flex-1 p-6 bg-[#525659] flex items-center justify-center overflow-hidden rounded-b-xl relative">
             {khs.file_khs_path ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img 
-                src={khs.file_khs_path} 
-                alt="Dokumen KHS" 
-                className="max-w-full h-auto max-h-[800px] object-contain bg-white shadow-lg"
-              />
+              khs.file_khs_path.toLowerCase().endsWith('.pdf') ? (
+                // Jika PDF, gunakan iframe
+                <iframe 
+                  src={khs.file_khs_path} 
+                  className="w-full h-full min-h-[600px]" 
+                  title="PDF Preview"
+                />
+              ) : (
+                // Jika Gambar, gunakan img
+                <img 
+                  src={khs.file_khs_path} 
+                  alt="Dokumen KHS" 
+                  className="max-w-full h-auto max-h-[800px] object-contain bg-white shadow-lg"
+                />
+              )
             ) : (
               <div className="text-center text-slate-300 bg-slate-800/50 p-10 rounded-xl">
                 <FileText size={48} className="mx-auto mb-3 opacity-50" />
                 <p className="text-sm font-medium">Dokumen Belum Tersedia</p>
-                <p className="text-xs mt-1 text-slate-400">File KHS belum diunggah.</p>
               </div>
             )}
           </div>
         </div>
-
       </div>
     </div>
   );

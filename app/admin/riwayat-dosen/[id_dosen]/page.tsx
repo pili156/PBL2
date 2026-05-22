@@ -185,7 +185,7 @@ export default async function StatusStudiTab({ params }: StatusStudiTabProps) {
                            <p className="text-[10px] text-slate-500 mt-0.5">{formatDate(sk.tanggal_terbit)}</p>
                          </div>
                        </div>
-                       <a href={sk.file_sk_path || '#'} target="_blank" className="p-1.5 text-slate-400 hover:text-blue-600 rounded">
+                       <a href={sk.file_sk_path || '#'} target="_blank" rel="noopener noreferrer" className="p-1.5 text-slate-400 hover:text-blue-600 rounded">
                          <Download size={14} />
                        </a>
                      </div>
@@ -203,7 +203,7 @@ export default async function StatusStudiTab({ params }: StatusStudiTabProps) {
                           <p className="text-[10px] text-slate-500 mt-0.5">{formatDate(doc.created_at)}</p>
                         </div>
                       </div>
-                      <a href={doc.file_path || '#'} target="_blank" className="p-1.5 text-slate-400 hover:text-blue-600 rounded">
+                      <a href={doc.file_path || '#'} target="_blank" rel="noopener noreferrer" className="p-1.5 text-slate-400 hover:text-blue-600 rounded">
                         <Download size={14} />
                       </a>
                     </div>

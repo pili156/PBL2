@@ -76,9 +76,12 @@ export default async function DetailDosenLayout({ children, params }: LayoutProp
           <Link href="/admin/riwayat-dosen" className="inline-flex items-center gap-2 bg-white border border-slate-200 text-slate-600 text-sm font-medium px-4 py-2 rounded-lg hover:bg-slate-50 transition-colors shadow-sm">
             <ArrowLeft size={16} /> Kembali ke Daftar Dosen
           </Link>
-          <button className="inline-flex items-center gap-2 bg-white border border-slate-200 text-slate-600 text-sm font-medium px-4 py-2 rounded-lg hover:bg-slate-50 transition-colors shadow-sm">
-            <Download size={16} /> Export Data
-          </button>
+          <Link href={`/api/admin/riwayat-dosen/export?type=khs&id_dosen=${idDosen}`} className="inline-flex items-center gap-2 bg-white border border-slate-200 text-slate-600 text-sm font-medium px-4 py-2 rounded-lg hover:bg-slate-50 transition-colors shadow-sm">
+            <Download size={16} /> Export KHS
+          </Link>
+          <Link href={`/api/admin/riwayat-dosen/export?type=keuangan&id_dosen=${idDosen}`} className="inline-flex items-center gap-2 bg-white border border-slate-200 text-slate-600 text-sm font-medium px-4 py-2 rounded-lg hover:bg-slate-50 transition-colors shadow-sm">
+            <Download size={16} /> Export Keuangan
+          </Link>
         </div>
       </div>
 
