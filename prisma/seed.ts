@@ -67,7 +67,7 @@ async function main() {
     data: {
       id: 1,
       username: 'Master Admin',
-      email: 'master_admin@gmail.com',
+      email: 'master_admin@polines.ac.id',
       password_hash: hashedPassword,
       role_id: roleMaster.id,
       status_akun: 'aktif',
@@ -79,7 +79,7 @@ async function main() {
     data: {
       id: 2,
       username: 'Mbak Ayu (Admin)',
-      email: 'admin@gmail.com',
+      email: 'admin@polines.ac.id',
       password_hash: hashedPassword,
       role_id: roleAdmin.id,
       status_akun: 'aktif',
@@ -91,7 +91,7 @@ async function main() {
     data: {
       id: 3,
       username: 'Admin Keuangan',
-      email: 'keuangan@gmail.com',
+      email: 'keuangan@polines.ac.id',
       password_hash: hashedPassword,
       role_id: roleKeuangan.id,
       status_akun: 'aktif',
@@ -103,7 +103,7 @@ async function main() {
     data: {
       id: 4,
       username: 'Budi Doremi',
-      email: 'dosen@gmail.com',
+      email: 'dosen@polines.ac.id',
       password_hash: hashedPassword,
       role_id: roleDosen.id,
       status_akun: 'aktif',
@@ -285,8 +285,8 @@ async function main() {
   console.log('Proses Seeding (SIGAP PBL2) Berhasil!');
   console.log('-----------------------------------');
   console.log('Skenario Data Hidup:');
-  console.log('- Akun Admin:   admin@gmail.com');
-  console.log('- Akun Dosen:   dosen@gmail.com (Budi Doremi)');
+  console.log('- Akun Admin:   admin@polines.ac.id');
+  console.log('- Akun Dosen:   dosen@polines.ac.id (Budi Doremi)');
   console.log('- Password Semuanya: rahasia123');
   console.log('-----------------------------------');
   console.log('Histori Studi per Semester Budi telah siap di database.');
