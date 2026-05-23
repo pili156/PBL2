@@ -10,7 +10,7 @@ import { prisma } from "../../src/lib/prisma";
 
 function getPageTitle(pathname: string): string {
   if (pathname.includes('/pengajuan')) return 'Pengajuan Studi/Beasiswa';
-  if (pathname.includes('/status')) return 'Riwayat & Monitoring';
+  if (pathname.includes('/riwayat') || pathname.includes('/status')) return 'Riwayat & Monitoring';
   if (pathname.includes('/laporanKHS')) return 'Laporan KHS';
   if (pathname.includes('/user-reimbursement')) return 'Reimbursement';
   return 'Dashboard';

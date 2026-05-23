@@ -12,7 +12,7 @@ import {
 const menuItems = [
   { href: "/user/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/user/pengajuan", label: "Pengajuan Studi/Beasiswa", icon: FileText },
-  { href: "/user/status", label: "Riwayat &amp; Monitoring", icon: ClipboardList },
+  { href: "/user/riwayat", label: "Riwayat & Monitoring", icon: ClipboardList },
 ];
 
 export default function SidebarUser() {
