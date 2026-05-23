@@ -73,6 +73,14 @@ model MasterStatusPengajuan {
   @@map("master_status_pengajuan")
 }
 
+model MasterWilayah {
+  id          Int              @id @default(autoincrement())
+  nama_wilayah String?
+  pengajuan   PengajuanStudi[]
+
+  @@map("master_wilayah")
+}
+
 model MasterDokumen {
   id             Int                @id @default(autoincrement())
   nama_dokumen   String?
@@ -94,7 +102,7 @@ model PengajuanStudi {
   jalur_pendanaan_id      Int?
   jenis_studi_id          Int?
   status_id               Int?
-  wilayah_studi           String?
+  wilayah_studi           Int?
   perguruan_tinggi        String?
   dokumen_pengajuan       DokumenPengajuan[]
   monitoring_khs          MonitoringKhs[]
@@ -103,6 +111,7 @@ model PengajuanStudi {
   jenis_studi             MasterJenisStudi?        @relation(fields: [jenis_studi_id], references: [id])
   status                  MasterStatusPengajuan?   @relation(fields: [status_id], references: [id])
   user                    User?                    @relation(fields: [user_id], references: [id])
+  wilayah                 MasterWilayah?           @relation(fields: [wilayah_studi], references: [id])
   pesan_komunikasi        PesanKomunikasi[]
   activity_logs           ActivityLog[]
   sk_kementerian          SkKementerian[]

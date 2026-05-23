@@ -13,6 +13,8 @@ function getPageTitle(pathname: string): string {
   if (pathname.includes('/status')) return 'Riwayat & Monitoring';
   if (pathname.includes('/laporanKHS')) return 'Laporan KHS';
   if (pathname.includes('/user-reimbursement')) return 'Reimbursement';
+  if (pathname.includes('/profile')) return 'Edit Profil';
+  if (pathname.includes('/change-password')) return 'Ubah Password';
   return 'Dashboard';
 }
 

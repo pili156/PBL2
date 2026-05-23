@@ -60,11 +60,18 @@ export function proxy(request: NextRequest) {
   let allowedRoles: string[] = [];
   let matchedPrefix = '';
 
-  for (const [prefix, roles] of Object.entries(PATH_ROLE_MAP)) {
-    if (pathname === prefix || pathname.startsWith(`${prefix}/`) || pathname.startsWith(`/api${prefix}`)) {
-      allowedRoles = roles;
-      matchedPrefix = prefix;
-      break;
+  // Allow all authenticated roles to access profile fetch/update endpoint
+  // because /api/user/profile is used by all role pages for profile editing.
+  if (pathname === '/api/user/profile') {
+    allowedRoles = Object.keys(ROLE_TO_COOKIE);
+    matchedPrefix = '/user';
+  } else {
+    for (const [prefix, roles] of Object.entries(PATH_ROLE_MAP)) {
+      if (pathname === prefix || pathname.startsWith(`${prefix}/`) || pathname.startsWith(`/api${prefix}`)) {
+        allowedRoles = roles;
+        matchedPrefix = prefix;
+        break;
+      }
     }
   }
 

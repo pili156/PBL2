@@ -21,6 +21,7 @@ async function main() {
   await cleanUp(() => prisma.masterDokumen.deleteMany());
   await cleanUp(() => prisma.masterDosen.deleteMany());
   await cleanUp(() => prisma.user.deleteMany());
+  await cleanUp(() => prisma.masterWilayah.deleteMany());
   await cleanUp(() => prisma.masterStatusPengajuan.deleteMany());
   await cleanUp(() => prisma.masterJalurPendanaan.deleteMany());
   await cleanUp(() => prisma.masterJenisStudi.deleteMany());
@@ -55,8 +56,10 @@ async function main() {
   await prisma.masterDokumen.create({ data: { id: 2, nama_dokumen: 'LoA (Letter of Acceptance) Universitas', is_mandatory: true, syarat_wilayah: 'Semua' } });
   await prisma.masterDokumen.create({ data: { id: 3, nama_dokumen: 'Surat Izin Studi (Dari Kampus)', is_mandatory: true, syarat_wilayah: 'Semua' } });
   await prisma.masterDokumen.create({ data: { id: 4, nama_dokumen: 'SK Tugas Belajar (Kementerian)', is_mandatory: true, syarat_wilayah: 'Semua' } });
+  const wilayahDalamNegeri = await prisma.masterWilayah.create({ data: { id: 1, nama_wilayah: 'Dalam Negeri' } });
+  const wilayahLuarNegeri = await prisma.masterWilayah.create({ data: { id: 2, nama_wilayah: 'Luar Negeri' } });
 
-  console.log('Data Master (Role, Jenis Studi, Pendanaan, Status, Dokumen) telah siap.');
+  console.log('Data Master (Role, Jenis Studi, Pendanaan, Status, Dokumen, Wilayah) telah siap.');
 
   // ===============================================================
   // === 3. SEED USERS & DOSEN PROFILE (Budi Doremi) ===
@@ -139,7 +142,7 @@ async function main() {
       user_id: userDosenBudi.id,
       jenis_studi_id: jenisTugasBelajar.id,
       jalur_pendanaan_id: jalurLPDP.id,
-      wilayah_studi: 'Dalam Negeri',
+      wilayah_studi: wilayahDalamNegeri.id,
       status_id: statusMenunggu.id,
       tanggal_pengajuan: new Date('2023-08-10'),
       created_at: new Date('2023-08-10'),
