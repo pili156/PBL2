@@ -19,15 +19,17 @@ export default async function AdminLayout({
   role,
   menuItems,
   children,
+  fallbackRoles,
 }: {
   role: string;
   menuItems: MenuItem[];
   children: React.ReactNode;
+  fallbackRoles?: string[];
 }) {
   const headersList = await headers();
   const pathname = headersList.get('x-nextjs-pathname') || '';
 
-  const userData = await getUserFromToken(role);
+  const userData = await getUserFromToken(role, fallbackRoles);
   const pageTitle = getPageTitle(pathname, role);
 
   return (
@@ -49,7 +51,7 @@ export default async function AdminLayout({
             </p>
           </div>
         </div>
-        <AdminSidebar menuItems={menuItems} currentRole={role} />
+        <AdminSidebar menuItems={menuItems} currentRole={userData.role} />
       </aside>
 
       <div className="flex-1 flex flex-col overflow-hidden">

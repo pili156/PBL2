@@ -15,7 +15,7 @@ function getRedirectUrl(role: string): string {
 
 const PATH_ROLE_MAP: Record<string, string[]> = {
   '/user': ['dosen'],
-  '/admin': ['admin_fakultas'],
+  '/admin': ['admin_fakultas', 'master_admin'],
   '/master_admin': ['master_admin'],
   '/keuangan': ['keuangan'],
 };
@@ -30,12 +30,13 @@ const ROLE_TO_COOKIE: Record<string, string> = {
 const ALL_TOKEN_COOKIES = Object.values(ROLE_TO_COOKIE);
 
 function findToken(request: NextRequest, allowedRoles: string[]): { token: string; payload: JwtPayload } | null {
-  for (const role of allowedRoles) {
-    const cookieName = ROLE_TO_COOKIE[role];
+  for (const [role, cookieName] of Object.entries(ROLE_TO_COOKIE)) {
     const token = request.cookies.get(cookieName)?.value;
-    if (token) {
-      const payload = verifyToken(token);
-      if (payload) return { token, payload };
+    if (!token) continue;
+    const payload = verifyToken(token);
+    if (!payload) continue;
+    if (allowedRoles.includes(payload.role)) {
+      return { token, payload };
     }
   }
   return null;

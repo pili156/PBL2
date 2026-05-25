@@ -8,7 +8,7 @@ export default function AdminLayoutWrapper({
   children: React.ReactNode;
 }) {
   return (
-    <AdminLayout role={ROLES.ADMIN_FAKULTAS} menuItems={menuItems}>
+    <AdminLayout role={ROLES.ADMIN_FAKULTAS} menuItems={menuItems} fallbackRoles={[ROLES.MASTER_ADMIN]}>
       {children}
     </AdminLayout>
   );

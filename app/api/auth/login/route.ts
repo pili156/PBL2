@@ -77,6 +77,14 @@ export async function POST(request: Request) {
 
     const cookieStore = await cookies();
 
+    // Hapus cookie token dari role lain biar gak konflik
+    const allTokenCookies = ['token_dosen', 'token_admin_fakultas', 'token_master_admin', 'token_keuangan'];
+    for (const name of allTokenCookies) {
+      if (name !== cookieName) {
+        cookieStore.set(name, '', { maxAge: 0, path: '/' });
+      }
+    }
+
     cookieStore.set(cookieName, token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
