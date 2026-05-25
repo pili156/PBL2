@@ -4,7 +4,7 @@ import ProfileDropdown from "./ProfileDropdown";
 import AdminSidebar from "./AdminSidebar";
 import { getUserFromToken } from "@/src/lib/auth-user";
 import { ROLES } from "@/src/lib/constants/roles";
-import type { MenuItem } from "./AdminSidebar";
+import type { MenuItem } from "../configs/menu";
 
 function getPageTitle(pathname: string, role: string): string {
   if (pathname.includes('/verifikasi-pengajuan')) return 'Verifikasi Pengajuan';
@@ -48,7 +48,7 @@ export default async function AdminLayout({
             </p>
           </div>
         </div>
-        <AdminSidebar menuItems={menuItems} />
+        <AdminSidebar menuItems={menuItems} currentRole={role} />
       </aside>
 
       <div className="flex-1 flex flex-col overflow-hidden">

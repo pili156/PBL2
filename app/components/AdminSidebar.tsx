@@ -7,8 +7,12 @@ import {
   Users,
   BookOpen,
   UserCheck,
+  UserCog,
+  Shield,
+  ClipboardList,
   type LucideIcon,
 } from "lucide-react";
+import type { MenuItem } from "../configs/menu";
 
 const iconMap: Record<string, LucideIcon> = {
   LayoutDashboard,
@@ -16,19 +20,26 @@ const iconMap: Record<string, LucideIcon> = {
   Users,
   BookOpen,
   UserCheck,
+  UserCog,
+  Shield,
+  ClipboardList,
 };
 
-export type MenuItem = {
-  href: string;
-  label: string;
-  icon: string;
-};
-
-export default function AdminSidebar({ menuItems }: { menuItems: MenuItem[] }) {
+export default function AdminSidebar({
+  menuItems,
+  currentRole,
+}: {
+  menuItems: MenuItem[];
+  currentRole: string;
+}) {
   const pathname = usePathname();
+  const filteredItems = menuItems.filter((item) =>
+    item.allowedRoles.includes(currentRole)
+  );
+
   return (
     <nav className="flex-1 py-4 flex flex-col">
-      {menuItems.map((item) => {
+      {filteredItems.map((item) => {
         const isActive = pathname.startsWith(item.href);
         const Icon = iconMap[item.icon];
         if (!Icon) return null;
