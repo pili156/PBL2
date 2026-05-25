@@ -5,7 +5,7 @@ import AdminSidebar from "./AdminSidebar";
 import { getUserFromToken } from "@/src/lib/auth-user";
 import { ROLES } from "@/src/lib/constants/roles";
 import { hasRole } from "@/src/lib/auth/permissions";
-import type { MenuItem } from "../configs/menu";
+import type { MenuItem } from "@/src/types";
 
 function getPageTitle(pathname: string, role: string): string {
   if (pathname.includes('/verifikasi-pengajuan')) return 'Verifikasi Pengajuan';

@@ -12,10 +12,10 @@ import {
   ClipboardList,
   type LucideIcon,
 } from "lucide-react";
-import type { MenuItem } from "../configs/menu";
+import type { MenuItem, IconName } from "@/src/types";
 import { canAccess } from "@/src/lib/auth/permissions";
 
-const iconMap: Record<string, LucideIcon> = {
+const iconMap: Record<IconName, LucideIcon> = {
   LayoutDashboard,
   ShieldCheck,
   Users,

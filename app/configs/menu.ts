@@ -1,11 +1,5 @@
 import { ROLES } from "@/src/lib/constants/roles";
-
-export type MenuItem = {
-  href: string;
-  label: string;
-  icon: string;
-  allowedRoles: string[];
-};
+import type { MenuItem } from "@/src/types";
 
 export const menuItems: MenuItem[] = [
   { href: "/admin/dashboard", label: "Dashboard", icon: "LayoutDashboard", allowedRoles: [ROLES.ADMIN_FAKULTAS] },
