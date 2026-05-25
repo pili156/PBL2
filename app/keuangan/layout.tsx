@@ -13,21 +13,23 @@ import {
 // Import komponen Client ProfileDropdown
 import ProfileDropdown from "./ProfileDropdown"; 
 
-// Menggunakan instance Prisma
+// Menggunakan instance Prisma dari folder src/lib/prisma.ts kamu
 import { prisma } from "../../src/lib/prisma";
 
-export default async function MasterAdminLayout({
+export default async function KeuanganLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   const cookieStore = await cookies();
+  
+  // Mengambil email dari cookie yang diset saat login
   const userEmailFromCookie = cookieStore.get("user_email")?.value;
 
   let currentUserEmail: string = "Guest";
   
+  // Logic dasar dan aman
   if (userEmailFromCookie) {
-    // Query paling aman, tidak akan kena error relasi
     const user = await prisma.user.findUnique({
       where: {
         email: userEmailFromCookie,
@@ -64,8 +66,8 @@ export default async function MasterAdminLayout({
         </div>
 
         <nav className="flex-1 py-4 flex flex-col">
-          {/* Link disesuaikan ke rute /master_admin/dashboard */}
-          <Link href="/master_admin/dashboard" className="flex items-center gap-3 px-8 py-3.5 bg-[#1A56DB] text-white">
+          {/* Link disesuaikan ke rute /keuangan/dashboard */}
+          <Link href="/keuangan/dashboard" className="flex items-center gap-3 px-8 py-3.5 bg-[#1A56DB] text-white">
             <LayoutDashboard size={20} strokeWidth={2} />
             <span className="text-sm font-medium">Dashboard</span>
           </Link>
@@ -98,7 +100,7 @@ export default async function MasterAdminLayout({
         <header className="h-[80px] bg-[#0A192F] text-white flex items-center justify-between px-8 flex-shrink-0">
           <h2 className="text-2xl font-bold tracking-wide">Dashboard</h2>
           
-          {/* Memanggil Komponen Dropdown */}
+          {/* Menggunakan komponen Client untuk Dropdown */}
           <ProfileDropdown email={currentUserEmail} />
 
         </header>
