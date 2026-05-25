@@ -9,12 +9,10 @@ import ProfileDropdown from "../components/ProfileDropdown";
 import { prisma } from "../../src/lib/prisma";
 
 function getPageTitle(pathname: string): string {
-  if (pathname.includes('/pengajuan')) return 'Pengajuan Studi/Beasiswa';
-  if (pathname.includes('/status')) return 'Riwayat & Monitoring';
+  if (pathname.includes('/pengajuan')) return 'Pengajuan Studi';
+  if (pathname.includes('/riwayat') || pathname.includes('/status')) return 'Riwayat & Monitoring';
   if (pathname.includes('/laporanKHS')) return 'Laporan KHS';
-  if (pathname.includes('/user-reimbursement')) return 'Reimbursement';
-  if (pathname.includes('/profile')) return 'Edit Profil';
-  if (pathname.includes('/change-password')) return 'Ubah Password';
+  if (pathname.includes('/user-reimbursement')) return 'Pengajuan Beasiswa';
   return 'Dashboard';
 }
 

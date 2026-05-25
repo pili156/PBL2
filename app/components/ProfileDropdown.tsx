@@ -128,45 +128,27 @@ export default function ProfileDropdown({ user }: { user: UserData }) {
                 </div>
               </div>
 
-               <button
-                 onClick={() => {
-                   setIsOpen(false);
-                   const pathMap: Record<string, string> = {
-                     dosen: "/user/profile",
-                     admin_fakultas: "/admin/profile",
-                     master_admin: "/master_admin/profile",
-                     keuangan: "/keuangan/profile",
-                   };
-                   router.push(pathMap[user.role] || "/user/profile");
-                 }}
-                 className="mt-5 w-full flex items-center justify-center gap-2 py-2 px-4 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors"
-               >
-                 <Edit3 size={14} />
-                 Edit Profil
-               </button>
-             </div>
+              <button
+                onClick={() => {}}
+                className="mt-5 w-full flex items-center justify-center gap-2 py-2 px-4 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors"
+              >
+                <Edit3 size={14} />
+                Edit Profil
+              </button>
+            </div>
 
-             {/* Vertical Divider */}
-             <div className="w-px bg-slate-200 flex-shrink-0" />
+            {/* Vertical Divider */}
+            <div className="w-px bg-slate-200 flex-shrink-0" />
 
-             {/* Right Column - Menu Actions */}
-             <div className="w-[45%] p-6 flex flex-col gap-1">
-               <button
-                 onClick={() => {
-                   setIsOpen(false);
-                   const pathMap: Record<string, string> = {
-                     dosen: "/user/change-password",
-                     admin_fakultas: "/admin/change-password",
-                     master_admin: "/master_admin/change-password",
-                     keuangan: "/keuangan/change-password",
-                   };
-                   router.push(pathMap[user.role] || "/user/change-password");
-                 }}
-                 className="flex items-center gap-3 px-3 py-2.5 text-sm text-slate-700 hover:bg-slate-100 rounded-lg transition-colors w-full text-left"
-               >
-                 <Lock size={16} className="text-slate-400" />
-                 <span>Ubah Password</span>
-               </button>
+            {/* Right Column - Menu Actions */}
+            <div className="w-[45%] p-6 flex flex-col gap-1">
+              <button
+                onClick={() => {}}
+                className="flex items-center gap-3 px-3 py-2.5 text-sm text-slate-700 hover:bg-slate-100 rounded-lg transition-colors w-full text-left"
+              >
+                <Lock size={16} className="text-slate-400" />
+                <span>Ubah Password</span>
+              </button>
               <button
                 onClick={() => {}}
                 className="flex items-center gap-3 px-3 py-2.5 text-sm text-slate-700 hover:bg-slate-100 rounded-lg transition-colors w-full text-left"

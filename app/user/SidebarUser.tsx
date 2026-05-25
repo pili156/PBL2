@@ -7,12 +7,14 @@ import {
   LayoutDashboard,
   FileText,
   ClipboardList,
+  HandCoins,
 } from "lucide-react";
 
 const menuItems = [
   { href: "/user/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/user/pengajuan", label: "Pengajuan Studi/Beasiswa", icon: FileText },
-  { href: "/user/status", label: "Riwayat & Monitoring", icon: ClipboardList },
+  { href: "/user/pengajuan", label: "Pengajuan Studi", icon: FileText },
+  { href: "/user/riwayat", label: "Riwayat & Monitoring", icon: ClipboardList },
+  { href: "/user/user-reimbursement", label: "Pengajuan Beasiswa", icon: HandCoins },
 ];
 
 export default function SidebarUser() {

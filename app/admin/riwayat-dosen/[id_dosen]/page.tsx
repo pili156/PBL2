@@ -1,22 +1,38 @@
-// app/admin/riwayat-dosen/[id_dosen]/page.tsx
 import { prisma } from '@/src/lib/prisma';
-import { AlertTriangle, Download, FileText, CheckCircle2, Clock, MapPin, Info } from 'lucide-react';
-import Link from 'next/link';
+import {
+  Check, GraduationCap, Target, BookOpen, Wallet,
+  Calendar, ChevronRight,
+} from 'lucide-react';
 import { notFound } from 'next/navigation';
 
 export const dynamic = 'force-dynamic';
 
-interface StatusStudiTabProps {
+interface Props {
   params: Promise<{ id_dosen: string }>;
 }
 
-export default async function StatusStudiTab({ params }: StatusStudiTabProps) {
+const formatDate = (date: Date | string | null | undefined) => {
+  if (!date) return '-';
+  const d = typeof date === 'string' ? new Date(date) : date;
+  return d.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
+};
+
+const StatCard = ({ icon: Icon, label, value, color }: { icon: React.ComponentType<{ size?: number; className?: string }>; label: string; value: string; color: string }) => (
+  <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-5">
+    <div className="flex items-start justify-between mb-3">
+      <p className="text-[10px] text-slate-400 font-medium uppercase tracking-wider">{label}</p>
+      <div className="p-2 bg-slate-50 rounded-lg"><Icon size={16} className={color} /></div>
+    </div>
+    <p className="text-2xl font-bold text-slate-800">{value}</p>
+  </div>
+);
+
+export default async function DashboardDosen({ params }: Props) {
   const { id_dosen } = await params;
   const idDosen = Number(id_dosen);
 
   if (isNaN(idDosen)) notFound();
 
-  // --- LOGIKA FETCH DATA ASLI KAMU (TIDAK ADA YANG DIBUANG) ---
   const dosen = await prisma.user.findUnique({
     where: { id: idDosen },
     include: {
@@ -26,13 +42,10 @@ export default async function StatusStudiTab({ params }: StatusStudiTabProps) {
           jenis_studi: true,
           jalur_pendanaan: true,
           status: true,
-          dokumen_pengajuan: {
-            include: { master_dokumen: true },
-          },
+          wilayah: true,
           sk_kementerian: true,
-          monitoring_khs: {
-            orderBy: { semester_ke: 'asc' },
-          },
+          monitoring_khs: { orderBy: { semester_ke: 'asc' } },
+          pengajuan_reimbursement: true,
         },
         orderBy: { created_at: 'desc' },
       },
@@ -41,185 +54,170 @@ export default async function StatusStudiTab({ params }: StatusStudiTabProps) {
 
   if (!dosen) notFound();
 
-  const pengajuanList = dosen.pengajuan_studi;
-  const latestPengajuan = pengajuanList[0];
+  const namaDosen = dosen.master_dosen?.nama_lengkap || dosen.username || 'Dosen';
+  const nip = dosen.master_dosen?.nip || '-';
+  const jurusan = dosen.master_dosen?.jurusan || '-';
 
-  const formatDate = (date: Date | string | null | undefined) => {
-    if (!date) return '-';
-    const dateObj = typeof date === 'string' ? new Date(date) : date;
-    return dateObj.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
-  };
-
-  // --- LOGIKA TRACKER PROGRESS (DINAMIS DARI DATABASE) ---
-  const renderProgressTimeline = () => {
-    if (!latestPengajuan) return null;
-
-    const statusNama = latestPengajuan.status?.nama_status?.toLowerCase() ?? '';
-    const isDisetujui = statusNama === 'disetujui' || statusNama === 'diterima' || statusNama === 'aktif';
-    const skKementerian = latestPengajuan.sk_kementerian?.[0] ?? null;
-    const semesterAktif = latestPengajuan.monitoring_khs.length > 0;
-    const isSelesai = statusNama === 'lulus' || statusNama === 'selesai';
-    const lastKhs = semesterAktif ? latestPengajuan.monitoring_khs[latestPengajuan.monitoring_khs.length - 1] : null;
-
-    // Perhitungan bar warna hijau
-    const progressWidth = isSelesai ? '100%' : semesterAktif ? '75%' : skKementerian ? '50%' : isDisetujui ? '25%' : '0%';
-
-    const steps = [
-      { label: 'Pengajuan', sub: formatDate(latestPengajuan.tanggal_pengajuan), active: true, done: true },
-      { label: 'Internal', sub: isDisetujui ? 'Disetujui' : 'Proses', active: isDisetujui, done: isDisetujui },
-      { label: 'SK Tugas Belajar', sub: skKementerian ? 'Terbit' : 'Proses', active: !!skKementerian, done: !!skKementerian },
-      { label: 'Studi Aktif', sub: semesterAktif ? `Sem ${lastKhs?.semester_ke ?? '-'}` : 'Belum', active: semesterAktif, done: semesterAktif },
-      { label: 'Selesai', sub: isSelesai ? 'Lulus' : 'Belum', active: isSelesai, done: isSelesai }
-    ];
-
+  if (dosen.pengajuan_studi.length === 0) {
     return (
-      <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-6 mb-6">
-        <h3 className="text-sm font-bold text-slate-800 mb-8">Progress Studi Terbaru</h3>
-        <div className="relative flex justify-between items-start w-full max-w-4xl mx-auto px-4 overflow-x-auto pb-4">
-          <div className="absolute top-4 left-10 right-10 h-[2px] bg-slate-100 -z-10 min-w-[500px]"></div>
-          <div className="absolute top-4 left-10 h-[2px] bg-emerald-500 -z-10 transition-all duration-500 min-w-[500px]" style={{ width: progressWidth, maxWidth: 'calc(100% - 5rem)' }}></div>
-          
-          {steps.map((step, i) => (
-            <div key={i} className="flex flex-col items-center w-28 bg-white min-w-[100px]">
-              <div className={`w-8 h-8 rounded-full flex items-center justify-center mb-3 border-4 border-white shadow-sm ${step.done ? 'bg-emerald-500 text-white' : step.active ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-400'}`}>
-                {step.done ? <CheckCircle2 size={16} /> : step.active ? <Clock size={16} /> : <MapPin size={16} />}
-              </div>
-              <p className={`text-[11px] font-bold text-center leading-tight ${step.active || step.done ? 'text-slate-800' : 'text-slate-400'}`}>{step.label}</p>
-              <p className="text-[10px] text-slate-400 text-center mt-1">{step.sub}</p>
-            </div>
-          ))}
-        </div>
+      <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-12 text-center">
+        <GraduationCap size={48} className="mx-auto text-slate-300 mb-4" strokeWidth={1.5} />
+        <p className="text-slate-500 font-medium">Belum ada data studi</p>
+        <p className="text-slate-400 text-sm mt-1">Dosen ini belum memiliki pengajuan studi.</p>
       </div>
     );
-  };
+  }
+
+  const pengajuan = dosen.pengajuan_studi[0];
+  const skKementerian = pengajuan.sk_kementerian?.[0] ?? null;
+  const khsList = pengajuan.monitoring_khs;
+  const semesterAktif = khsList.length;
+  const isSelesai = ['lulus', 'selesai', 'completed'].includes(pengajuan.status?.nama_status?.toLowerCase() ?? '');
+  const lastKhs = semesterAktif > 0 ? khsList[khsList.length - 1] : null;
+  const isDisetujui = ['disetujui', 'diterima', 'aktif', 'sedang berjalan'].includes(pengajuan.status?.nama_status?.toLowerCase() ?? '');
+
+  const ipkValues = khsList.map((k) => Number(k.ipk || 0)).filter((v) => v > 0);
+  const rataIpk = ipkValues.length > 0 ? (ipkValues.reduce((a, b) => a + b, 0) / ipkValues.length).toFixed(2) : '-';
+  const maxIpk = ipkValues.length > 0 ? Math.max(...ipkValues).toFixed(2) : '-';
+  const totalSks = semesterAktif * 20;
+
+  const totalBantuan = pengajuan.pengajuan_reimbursement.reduce((s, r) => s + Number(r.nominal || 0), 0);
+  const totalCair = pengajuan.pengajuan_reimbursement
+    .filter((r) => r.status_pencairan === 'DICAIRKAN')
+    .reduce((s, r) => s + Number(r.nominal || 0), 0);
+
+  const formatRupiah = (angka: number) =>
+    new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(angka);
+
+  const steps = [
+    { label: 'Pengajuan', sub: formatDate(pengajuan.tanggal_pengajuan), done: true },
+    { label: 'Persetujuan', sub: isDisetujui ? 'Disetujui' : 'Proses', done: isDisetujui },
+    { label: 'SK Tugas', sub: skKementerian ? 'Terbit' : 'Proses', done: !!skKementerian },
+    { label: 'Studi Aktif', sub: semesterAktif > 0 ? `Sem ${lastKhs?.semester_ke ?? '-'}` : 'Belum', done: semesterAktif > 0 },
+    { label: 'Selesai', sub: isSelesai ? 'Lulus' : 'Belum', done: isSelesai },
+  ];
 
   return (
-    <div>
-      {/* 1. TIMELINE PROGRESS DARI DATA TERBARU */}
-      {renderProgressTimeline()}
+    <div className="space-y-6">
+      <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-6">
+        <div className="flex items-center justify-between mb-6">
+          <h3 className="text-base font-semibold text-slate-800">Progress Studi</h3>
+          <span className="bg-blue-50 text-blue-600 text-[11px] font-semibold px-3 py-1 rounded-full">
+            {pengajuan.jenis_studi?.nama_jenis || 'Studi'}
+          </span>
+        </div>
+        <div className="relative">
+          <div className="absolute top-6 left-0 right-0 h-0.5 bg-slate-100" />
+          <div
+            className="absolute top-6 left-0 h-0.5 bg-emerald-500 transition-all duration-700"
+            style={{
+              width: isSelesai ? '100%' : semesterAktif > 0 ? '75%' : skKementerian ? '50%' : isDisetujui ? '25%' : '0%',
+            }}
+          />
+          <div className="grid grid-cols-5 gap-2">
+            {steps.map((step, i) => (
+              <div key={i} className="flex flex-col items-center text-center">
+                <div className={`w-11 h-11 rounded-full flex items-center justify-center mb-3 border-4 border-white shadow-sm transition-all ${
+                  step.done ? 'bg-emerald-500 text-white' : 'bg-slate-100 text-slate-300'
+                }`}>
+                  {step.done ? <Check size={18} strokeWidth={3} /> : <GraduationCap size={18} />}
+                </div>
+                <p className="text-[11px] font-semibold text-slate-700 leading-tight">{step.label}</p>
+                <p className="text-[10px] text-slate-400 mt-0.5">{step.sub}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
 
-      {/* 2. GRID KONTEN (3 KOLOM SEPERTI DESAIN BARU) */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
-        
-        {/* KOLOM KIRI: Informasi Studi (Mengambil dari latestPengajuan) */}
-        <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-6 space-y-6 lg:col-span-1">
-          <h3 className="text-sm font-bold text-slate-800">Detail Informasi Studi</h3>
-          
-          {latestPengajuan ? (
-            <>
-              <div className="space-y-4">
-                {[
-                  { label: 'Jenis Studi', value: latestPengajuan.jenis_studi?.nama_jenis || '-' },
-                  { label: 'Wilayah Studi', value: latestPengajuan.wilayah_studi || '-' },
-                  { label: 'Jalur Pendanaan', value: latestPengajuan.jalur_pendanaan?.nama_pendanaan || '-' },
-                  { label: 'Tgl Pengajuan', value: formatDate(latestPengajuan.tanggal_pengajuan) },
-                  { label: 'Status', value: latestPengajuan.status?.nama_status || '-', highlight: true }
-                ].map((item, i) => (
-                  <div key={i} className="flex justify-between items-center text-sm border-b border-slate-50 pb-2 last:border-0">
-                    <span className="text-slate-500">{item.label}</span>
-                    {item.highlight ? (
-                      <span className="inline-block px-2 py-0.5 bg-emerald-100 text-emerald-700 rounded text-[10px] font-bold uppercase tracking-wider">{item.value}</span>
-                    ) : (
-                      <span className="font-bold text-slate-800 text-right">{item.value}</span>
-                    )}
-                  </div>
-                ))}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2 space-y-6">
+          <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-6">
+            <h4 className="text-sm font-semibold text-slate-800 mb-5">Detail Informasi Studi</h4>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-1">
+              {[
+                { label: 'Nama Dosen', value: namaDosen },
+                { label: 'NIP', value: nip },
+                { label: 'Jurusan', value: jurusan },
+                { label: 'Jenis Studi', value: pengajuan.jenis_studi?.nama_jenis || '-' },
+                { label: 'Wilayah Studi', value: pengajuan.wilayah?.nama_wilayah || '-' },
+                { label: 'Jalur Pendanaan', value: pengajuan.jalur_pendanaan?.nama_pendanaan || '-' },
+                { label: 'Tanggal Mulai', value: formatDate(pengajuan.tanggal_pengajuan) },
+                { label: 'Perguruan Tinggi', value: pengajuan.perguruan_tinggi || '-' },
+              ].map((item) => (
+                <div key={item.label} className="flex justify-between py-2 border-b border-slate-50">
+                  <span className="text-xs text-slate-500">{item.label}</span>
+                  <span className="text-xs font-medium text-slate-800 text-right">{item.value}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {skKementerian && (
+            <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-6">
+              <h4 className="text-sm font-semibold text-slate-800 mb-4">SK Tugas Belajar</h4>
+              <div className="flex items-center justify-between p-4 bg-slate-50 rounded-lg">
+                <div>
+                  <p className="text-sm font-medium text-slate-800">{skKementerian.nomor_sk || 'SK Tugas Belajar'}</p>
+                  <p className="text-xs text-slate-400 mt-0.5">Terbit: {formatDate(skKementerian.tanggal_terbit)}</p>
+                </div>
+                <a href={skKementerian.file_sk_path || '#'} target="_blank"
+                  className="text-xs font-semibold text-blue-600 hover:text-blue-800 transition-colors">
+                  Lihat SK
+                </a>
               </div>
-              <div className="bg-blue-50/50 border border-blue-100 rounded-lg p-3 flex items-center gap-3">
-                <Info className="text-blue-500 flex-shrink-0" size={16} />
-                <p className="text-[11px] text-blue-800 font-medium leading-relaxed">
-                  Data diambil dari pengajuan terbaru. Status diperbarui oleh tim admin pusat.
-                </p>
-              </div>
-            </>
-          ) : (
-            <p className="text-sm text-slate-500 text-center py-4">Belum ada data pengajuan studi.</p>
+            </div>
           )}
         </div>
 
-        {/* KOLOM TENGAH: Grafik / Area KHS */}
-        <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-6 lg:col-span-1 flex flex-col h-full">
-          <div className="flex justify-between items-center mb-6">
-            <h3 className="text-sm font-bold text-slate-800">Grafik Perkembangan IPK</h3>
-          </div>
-          {/* Area Grafik */}
-          <div className="flex-1 w-full bg-slate-50 rounded-xl border border-dashed border-slate-200 flex flex-col items-center justify-center p-6 text-center min-h-[250px]">
-            <p className="text-sm font-bold text-slate-800 mb-1">Area Grafik</p>
-            <p className="text-xs text-slate-500">Pasang komponen LineChart di sini untuk visualisasi trend IPK KHS yang ada di database.</p>
-          </div>
-        </div>
-
-        {/* KOLOM KANAN: Alert & Dokumen */}
-        <div className="space-y-6 lg:col-span-1">
-          
-          {/* Perhatian (Contoh Alert Dinamis, bisa disesuaikan DB) */}
-          <div className="bg-[#FFFDF5] border border-amber-200 rounded-xl p-5 shadow-sm">
-            <div className="flex items-center gap-2 mb-2">
-              <AlertTriangle size={16} className="text-amber-500" />
-              <h4 className="text-sm font-bold text-amber-900">Perhatian</h4>
-            </div>
-            <p className="text-xs text-amber-800 mb-2">Pastikan semua dokumen SK telah terunggah dengan benar.</p>
-          </div>
-
-          {/* Dokumen Terbaru (Ditarik dari DB pengajuan_studi) */}
+        <div className="space-y-6">
           <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-6">
-            <h3 className="text-sm font-bold text-slate-800 mb-4 flex justify-between items-center">
-              Dokumen Terbaru
-              <span className="text-[10px] text-slate-400 font-normal">
-                {latestPengajuan ? (latestPengajuan.dokumen_pengajuan.length + (latestPengajuan.sk_kementerian?.length ? 1 : 0)) : 0} File
-              </span>
-            </h3>
-            
-            <div className="space-y-3">
-              {!latestPengajuan || (latestPengajuan.dokumen_pengajuan.length === 0 && !latestPengajuan.sk_kementerian?.length) ? (
-                <p className="text-xs text-slate-500 text-center py-4">Belum ada dokumen.</p>
-              ) : (
-                <>
-                  {/* Render SK jika ada */}
-                  {latestPengajuan.sk_kementerian?.map((sk: any, i: number) => (
-                     <div key={`sk-${i}`} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg border border-slate-100 hover:border-blue-200 transition-colors">
-                       <div className="flex items-center gap-3">
-                         <FileText size={16} className="text-blue-500" />
-                         <div>
-                           <p className="text-xs font-bold text-slate-800 truncate max-w-[120px]">SK Tugas Belajar</p>
-                           <p className="text-[10px] text-slate-500 mt-0.5">{formatDate(sk.tanggal_terbit)}</p>
-                         </div>
-                       </div>
-                       <a href={sk.file_sk_path || '#'} target="_blank" rel="noopener noreferrer" className="p-1.5 text-slate-400 hover:text-blue-600 rounded">
-                         <Download size={14} />
-                       </a>
-                     </div>
-                  ))}
-
-                  {/* Render Dokumen Pengajuan */}
-                  {latestPengajuan.dokumen_pengajuan.slice(0, 3).map((doc: any) => (
-                    <div key={doc.id} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg border border-slate-100 hover:border-blue-200 transition-colors">
-                      <div className="flex items-center gap-3">
-                        <FileText size={16} className="text-slate-400" />
-                        <div>
-                          <p className="text-xs font-bold text-slate-800 truncate max-w-[120px]" title={doc.master_dokumen?.nama_dokumen || 'Dokumen'}>
-                            {doc.master_dokumen?.nama_dokumen || 'Dokumen'}
-                          </p>
-                          <p className="text-[10px] text-slate-500 mt-0.5">{formatDate(doc.created_at)}</p>
-                        </div>
-                      </div>
-                      <a href={doc.file_path || '#'} target="_blank" rel="noopener noreferrer" className="p-1.5 text-slate-400 hover:text-blue-600 rounded">
-                        <Download size={14} />
-                      </a>
-                    </div>
-                  ))}
-                </>
-              )}
+            <h4 className="text-sm font-semibold text-slate-800 mb-5 flex items-center gap-2">
+              <Target size={15} className="text-slate-400" />
+              Capaian Studi
+            </h4>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="text-center p-4 bg-slate-50 rounded-xl">
+                <p className="text-2xl font-bold text-blue-600">{rataIpk}</p>
+                <p className="text-[10px] text-slate-400 font-medium mt-1">IPK Rata-rata</p>
+              </div>
+              <div className="text-center p-4 bg-slate-50 rounded-xl">
+                <p className="text-2xl font-bold text-slate-800">{maxIpk}</p>
+                <p className="text-[10px] text-slate-400 font-medium mt-1">IPK Tertinggi</p>
+              </div>
+              <div className="text-center p-4 bg-slate-50 rounded-xl">
+                <p className="text-2xl font-bold text-slate-800">{totalSks}</p>
+                <p className="text-[10px] text-slate-400 font-medium mt-1">SKS Lulus</p>
+              </div>
+              <div className="text-center p-4 bg-slate-50 rounded-xl">
+                <p className="text-2xl font-bold text-slate-800">{semesterAktif}</p>
+                <p className="text-[10px] text-slate-400 font-medium mt-1">Semester Aktif</p>
+              </div>
             </div>
-            
-            <Link href={`/admin/riwayat-dosen/${idDosen}/dokumen`} className="block w-full text-center mt-4 text-[11px] font-bold text-blue-600 hover:underline">
-              Lihat Semua Dokumen
-            </Link>
           </div>
 
+          <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-6">
+            <h4 className="text-sm font-semibold text-slate-800 mb-5 flex items-center gap-2">
+              <Wallet size={15} className="text-slate-400" />
+              Bantuan Pendidikan
+            </h4>
+            <div className="space-y-3">
+              <div className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
+                <span className="text-xs text-slate-500">Total Bantuan</span>
+                <span className="text-sm font-bold text-slate-800">{formatRupiah(totalBantuan)}</span>
+              </div>
+              <div className="flex items-center justify-between p-3 bg-emerald-50 rounded-lg">
+                <span className="text-xs text-emerald-600 font-medium">Sudah Cair</span>
+                <span className="text-sm font-bold text-emerald-600">{formatRupiah(totalCair)}</span>
+              </div>
+              <div className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
+                <span className="text-xs text-slate-500">Sisa</span>
+                <span className="text-sm font-bold text-slate-800">{formatRupiah(totalBantuan - totalCair)}</span>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
-      
     </div>
   );
 }

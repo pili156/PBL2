@@ -1,6 +1,5 @@
-// app/admin/riwayat-dosen/[id_dosen]/dokumen/page.tsx
 import { prisma } from '@/src/lib/prisma';
-import { FileText, Download, Eye, File, FileSpreadsheet, FileImage, UploadCloud, Plus } from 'lucide-react';
+import { FileText, Download, Landmark, Eye, File, FileSpreadsheet, FileImage, Plus } from 'lucide-react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
@@ -13,10 +12,9 @@ interface Props {
 const formatDate = (date: Date | string | null | undefined) => {
   if (!date) return '-';
   const d = typeof date === 'string' ? new Date(date) : date;
-  return d.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
+  return d.toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' });
 };
 
-// ... (Fungsi fileIcon dan fileColor tetap sama seperti kodinganmu) ...
 const fileIcon = (path: string | null | undefined) => {
   if (!path) return File;
   const ext = path.split('.').pop()?.toLowerCase();
@@ -41,7 +39,6 @@ export default async function DokumenSuratPage({ params }: Props) {
 
   if (isNaN(idDosen)) notFound();
 
-  // Logika Fetch DB tidak diubah
   const dosen = await prisma.user.findUnique({
     where: { id: idDosen },
     include: {
@@ -60,141 +57,140 @@ export default async function DokumenSuratPage({ params }: Props) {
 
   if (!dosen) notFound();
 
+  const namaDosen = dosen.master_dosen?.nama_lengkap || dosen.username || 'Dosen';
   const pengajuan = dosen.pengajuan_studi[0] ?? null;
 
-  // Persiapan List Dokumen untuk ditampilkan di tabel
-  let allDokumen: any[] = [];
-  
-  if (pengajuan) {
-    const pengajuanRaw = pengajuan as Record<string, unknown>;
-    const skKementerian = (pengajuanRaw.sk_kementerian || []) as Record<string, unknown>[];
-    const dokPengajuan = (pengajuanRaw.dokumen_pengajuan || []) as Record<string, unknown>[];
+  interface DokumenCategory {
+    category: string;
+    icon: React.ComponentType<{ size?: number; className?: string }>;
+    items: { id: string | number; name: string; date: Date | null | undefined; path: string | null | undefined; meta: string }[];
+  }
+  const dokumenAwal: DokumenCategory[] = [];
 
-    // Masukkan SK ke list (kalau ada)
-    skKementerian.forEach(sk => {
-      allDokumen.push({
-        id: `sk-${sk.id}`,
-        name: (sk.nomor_sk as string) || 'SK Tugas Belajar (Pusat)',
+  if (!pengajuan) {
+    return (
+      <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-12 text-center">
+        <FileText size={48} className="mx-auto text-slate-300 mb-4" strokeWidth={1.5} />
+        <p className="text-sm text-slate-500 font-medium">Belum ada dokumen</p>
+        <p className="text-xs text-slate-400 mt-1">Dosen belum memiliki pengajuan studi.</p>
+      </div>
+    );
+  }
+
+  const pengajuanRaw = pengajuan as Record<string, unknown>;
+  const skKementerian = (pengajuanRaw.sk_kementerian || []) as Record<string, unknown>[];
+  const dokPengajuan = (pengajuanRaw.dokumen_pengajuan || []) as Record<string, unknown>[];
+
+  if (skKementerian.length > 0) {
+    dokumenAwal.push({
+      category: 'SK Tugas Belajar',
+      icon: Landmark,
+      items: skKementerian.map((sk: Record<string, unknown>) => ({
+        id: sk.id as number,
+        name: (sk.nomor_sk as string) || 'SK Tugas Belajar',
         date: sk.tanggal_terbit ? new Date(sk.tanggal_terbit as string) : null,
         path: sk.file_sk_path as string | null,
-        jenis: 'SK Kementerian'
-      });
-    });
-
-    // Masukkan dokumen pendaftaran ke list
-    dokPengajuan.forEach(doc => {
-      allDokumen.push({
-        id: `doc-${doc.id}`,
-        name: ((doc.master_dokumen as Record<string, unknown> | null)?.nama_dokumen as string) || 'Dokumen Lainnya',
-        date: doc.created_at ? new Date(doc.created_at as string) : null,
-        path: doc.file_path as string | null,
-        jenis: 'Dokumen Awal'
-      });
+        meta: `Terbit: ${formatDate(sk.tanggal_terbit ? new Date(sk.tanggal_terbit as string) : null)}`,
+      })),
     });
   }
 
+  if (dokPengajuan.length > 0) {
+    dokumenAwal.push({
+      category: 'Dokumen Awal Studi',
+      icon: FileText,
+      items: dokPengajuan.map((doc: Record<string, unknown>) => ({
+        id: doc.id as number,
+        name: ((doc.master_dokumen as Record<string, unknown> | null)?.nama_dokumen as string) || 'Dokumen',
+        date: doc.created_at ? new Date(doc.created_at as string) : null,
+        path: doc.file_path as string | null,
+        meta: `Upload: ${formatDate(doc.created_at ? new Date(doc.created_at as string) : null)}`,
+      })),
+    });
+  }
+
+  const totalDocs = dokumenAwal.reduce((a: number, c: { items: unknown[] }) => a + c.items.length, 0);
+
   return (
     <div className="space-y-6">
-      
-      {/* HEADER TAB DOKUMEN (Style seperti UI baru) */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white rounded-xl border border-slate-100 shadow-sm p-4 sm:px-6">
+      <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-base font-bold text-slate-800">Dokumen & Surat</h3>
-          <p className="text-xs text-slate-500 mt-1">Dokumen administrasi dan surat-surat terkait studi dosen</p>
+          <h3 className="text-base font-semibold text-slate-800">Dokumen & Surat</h3>
+          <p className="text-sm text-slate-400 mt-0.5">{totalDocs} dokumen awal studi</p>
         </div>
-        <div className="flex gap-2 w-full sm:w-auto">
-          <Link href={`/admin/riwayat-dosen/${idDosen}/dokumen/tambah`} className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-blue-600 text-white text-xs font-bold px-4 py-2.5 rounded-lg hover:bg-blue-700 transition-colors shadow-sm">
-            <UploadCloud size={14} /> Upload Dokumen
+        <div className="flex items-center gap-3">
+          <Link href={`/admin/riwayat-dosen/${idDosen}/dokumen/tambah`}
+            className="inline-flex items-center gap-2 px-4 py-2 border border-slate-200 text-slate-600 text-sm font-medium rounded-lg hover:bg-slate-50 transition-colors">
+            <Plus size={15} /> Upload Dokumen
           </Link>
+          <button className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors shadow-sm">
+            <FileText size={15} /> Generate Surat
+          </button>
         </div>
       </div>
 
-      {/* 2 KOLOM: TABEL KIRI & GENERATE SURAT KANAN */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        
-        {/* KOLOM KIRI (Tabel List Dokumen) */}
-        <div className="lg:col-span-2 bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden">
-          
-          {/* Sub-Tab Navigation Sesuai UI Baru */}
-          <div className="flex border-b border-slate-100 px-4 bg-slate-50/50">
-            {['Dokumen Pendaftaran', 'Surat Administrasi', 'Surat Keputusan', 'Lainnya'].map((tab, i) => (
-              <button key={i} className={`px-4 py-3 text-xs font-bold transition-all border-b-2 ${i === 0 ? 'text-blue-600 border-blue-600' : 'text-slate-400 border-transparent hover:text-slate-600'}`}>
-                {tab}
-              </button>
-            ))}
-          </div>
-
-          {/* Tabel Dokumen */}
-          <div className="p-5">
-            <h4 className="text-sm font-bold text-slate-800 mb-4">Dokumen Pendaftaran</h4>
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
-                <thead>
-                  <tr className="border-b border-slate-100 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
-                    <th className="py-3 px-2 w-12 text-center">No</th>
-                    <th className="py-3 px-2">Nama Dokumen</th>
-                    <th className="py-3 px-2">Tanggal Upload</th>
-                    <th className="py-3 px-2 text-center w-32">Aksi</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {allDokumen.length === 0 ? (
-                    <tr>
-                      <td colSpan={4} className="text-center py-10 text-slate-500 text-xs">Belum ada dokumen yang diunggah.</td>
-                    </tr>
-                  ) : (
-                    allDokumen.map((doc, index) => (
-                      <tr key={doc.id} className="border-b border-slate-50 last:border-0 hover:bg-slate-50/50 transition-colors group">
-                        <td className="py-3 px-2 text-xs font-medium text-slate-500 text-center">{index + 1}</td>
-                        <td className="py-3 px-2">
-                          <div className="flex items-center gap-3">
-                            <div className={`p-1.5 rounded-lg ${fileColor(doc.path)}`}>
-                              {(() => { const Icon = fileIcon(doc.path); return <Icon size={14} />; })()}
-                            </div>
-                            <span className="text-xs font-bold text-slate-800">{doc.name}</span>
-                          </div>
-                        </td>
-                        <td className="py-3 px-2 text-xs text-slate-500">{formatDate(doc.date)}</td>
-                        <td className="py-3 px-2 flex justify-center items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                          {doc.path ? (
+      {dokumenAwal.length === 0 ? (
+        <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-12 text-center">
+          <FileText size={48} className="mx-auto text-slate-300 mb-4" strokeWidth={1.5} />
+          <p className="text-sm text-slate-500 font-medium">Belum ada dokumen awal studi</p>
+          <p className="text-xs text-slate-400 mt-1">SK Tugas Belajar, surat rekomendasi, LoA, dan dokumen lainnya akan muncul di sini.</p>
+        </div>
+      ) : (
+        <div className="space-y-6">
+          {dokumenAwal.map((category) => {
+            const CatIcon = category.icon;
+            return (
+              <div key={category.category} className="bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden">
+                <div className="px-5 py-4 border-b border-slate-100 flex items-center gap-2.5">
+                  <div className="p-1.5 bg-slate-50 rounded-lg"><CatIcon size={16} className="text-slate-500" /></div>
+                  <div>
+                    <h4 className="text-sm font-semibold text-slate-800">{category.category}</h4>
+                    <p className="text-[10px] text-slate-400">{category.items.length} dokumen</p>
+                  </div>
+                </div>
+                <div className="divide-y divide-slate-50">
+                  {category.items.map((item) => {
+                    const Icon = item.path ? fileIcon(item.path) : File;
+                    const colorClass = item.path ? fileColor(item.path) : 'text-slate-400 bg-slate-100';
+                    const isAvailable = !!item.path;
+                    return (
+                      <div key={item.id} className="flex items-center gap-4 px-5 py-4 hover:bg-slate-50/50 transition-colors">
+                        <div className={`p-2.5 rounded-lg ${colorClass} flex-shrink-0`}><Icon size={18} /></div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-slate-800 truncate">{item.name}</p>
+                          <p className="text-[10px] text-slate-400 mt-0.5">{item.meta}</p>
+                        </div>
+                        <div className="flex items-center gap-2 flex-shrink-0">
+                          {isAvailable ? (
                             <>
-                              <a href={doc.path} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 px-3 py-1 bg-blue-50 text-blue-600 rounded text-[10px] font-bold hover:bg-blue-600 hover:text-white transition-colors">
-                                Preview
-                              </a>
-                              <a href={doc.path} download className="p-1.5 text-slate-400 hover:text-blue-600 bg-slate-50 rounded hover:bg-blue-50 transition-colors">
-                                <Download size={14} />
-                              </a>
+                              <a href={item.path || '#'} target="_blank" className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all" title="Lihat"><Eye size={16} /></a>
+                              <a href={item.path || '#'} download className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all" title="Download"><Download size={16} /></a>
                             </>
                           ) : (
-                            <span className="text-[10px] text-slate-400 italic">File Kosong</span>
+                            <span className="text-[10px] text-slate-400 italic">Belum tersedia</span>
                           )}
-                        </td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })}
         </div>
+      )}
 
-        {/* KOLOM KANAN (Generate Surat) */}
-        <div className="lg:col-span-1 space-y-6">
-          <div className="bg-[#F8FAFC] rounded-xl border border-blue-100 shadow-sm p-6">
-            <h4 className="text-sm font-bold text-slate-800 mb-2">Generate Surat</h4>
-            <p className="text-xs text-slate-500 mb-6 leading-relaxed">Admin dapat membuat surat secara otomatis berdasarkan data dokumen dosen yang telah diverifikasi.</p>
-            
-            <div className="space-y-3">
-              {['Surat Keterangan Aktif', 'Surat Pengantar Beasiswa', 'SK Bebas Tugas'].map((surat, idx) => (
-                <button key={idx} className="w-full flex items-center justify-between px-4 py-3 bg-white border border-slate-200 rounded-lg text-xs font-bold text-slate-600 hover:border-blue-300 hover:shadow-sm hover:text-blue-600 transition-all group">
-                  <span className="flex items-center gap-2"><FileText size={14} className="text-slate-400 group-hover:text-blue-500" /> {surat}</span>
-                  <Plus size={14} className="text-slate-300 group-hover:text-blue-500" />
-                </button>
-              ))}
-            </div>
-          </div>
+      <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-6">
+        <h4 className="text-sm font-semibold text-slate-800 mb-4">Generate Surat Otomatis</h4>
+        <p className="text-xs text-slate-500 mb-5">Buat surat berdasarkan data studi {namaDosen}.</p>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          {['Surat Aktif Studi', 'Surat Rekomendasi', 'SK Bantuan Studi'].map((surat) => (
+            <button key={surat}
+              className="flex items-center justify-center gap-2 px-4 py-3 border border-slate-200 rounded-xl text-xs font-semibold text-slate-600 hover:bg-blue-50 hover:border-blue-200 hover:text-blue-600 transition-all">
+              <FileText size={15} /> {surat}
+            </button>
+          ))}
         </div>
-
       </div>
     </div>
   );

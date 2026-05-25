@@ -1,169 +1,141 @@
-// app/admin/riwayat-dosen/[id_dosen]/khs/[id]/page.tsx
 import { prisma } from '@/src/lib/prisma';
-import { ArrowLeft, Download, FileText, CheckSquare, XCircle, AlertCircle } from 'lucide-react';
+import { ArrowLeft, Download, FileText, Calendar, BookOpen, Target, User } from 'lucide-react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { acceptKhs, rejectKhs, submitRevisionKhs } from '../../../actions';
 
 export const dynamic = 'force-dynamic';
 
-interface DetailKhsPageProps {
+interface Props {
   params: Promise<{ id_dosen: string; id: string }>;
 }
 
-export default async function DetailKhsPage({ params }: DetailKhsPageProps) {
+const formatDate = (date: Date | null | undefined) => {
+  if (!date) return '-';
+  return date.toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' });
+};
+
+export default async function DetailKhsPage({ params }: Props) {
   const { id_dosen, id } = await params;
   const khsId = Number(id);
   const idDosen = Number(id_dosen);
 
-  if (isNaN(khsId) || isNaN(idDosen)) {
-    notFound();
-  }
+  if (isNaN(khsId) || isNaN(idDosen)) notFound();
 
   const khs = await prisma.monitoringKhs.findUnique({
     where: { id: khsId },
     include: {
       pengajuan_studi: {
         include: {
-          user: {
-            include: { master_dosen: true },
-          },
+          user: { include: { master_dosen: true } },
         },
       },
     },
   });
 
-  if (!khs) {
-    notFound();
-  }
+  if (!khs) notFound();
 
   const ipkValue = khs.ipk ? Number(khs.ipk).toFixed(2) : '-';
+  const isDisabled = !khs.file_khs_path;
+  const namaDosen = khs.pengajuan_studi?.user?.master_dosen?.nama_lengkap || 'Dosen';
 
-  const formatDate = (date: Date | null) => {
-    if (!date) return '-';
-    return date.toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' });
-  };
+  const infoItems = [
+    { icon: BookOpen, label: 'Semester', value: `Semester ${khs.semester_ke || '-'}` },
+    { icon: Calendar, label: 'Tahun Akademik', value: khs.tahun_akademik || '-' },
+    { icon: User, label: 'Dosen', value: namaDosen },
+    { icon: Calendar, label: 'Tanggal Upload', value: formatDate(khs.tanggal_unggah) },
+    { icon: Target, label: 'IPK', value: `${ipkValue} / 4.00`, highlight: true },
+  ];
 
   return (
-    <div className="w-full space-y-6 pt-4">
-      
-      {/* HEADER DETAIL KHS */}
-      <div className="flex justify-between items-center pb-2 border-b border-slate-100">
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-xl font-bold text-slate-800">Detail KHS (Preview)</h2>
-          <p className="text-sm text-slate-500 mt-1">Semester {khs.semester_ke}</p>
+          <h2 className="text-xl font-bold text-slate-900 tracking-tight">Preview KHS</h2>
+          <p className="text-sm text-slate-400 mt-0.5">Semester {khs.semester_ke || '-'} — {khs.tahun_akademik || 'Tahun tidak tersedia'}</p>
         </div>
-        <Link 
-          href={`/admin/riwayat-dosen/${idDosen}/khs`} 
-          className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 text-slate-600 rounded-lg text-sm font-medium hover:bg-slate-50 transition-colors shadow-sm"
+        <Link
+          href={`/admin/riwayat-dosen/${idDosen}/khs`}
+          className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 text-slate-600 rounded-lg text-sm font-medium hover:bg-slate-50 transition-colors shadow-sm"
         >
-          <ArrowLeft size={16} /> Kembali ke Riwayat Studi
+          <ArrowLeft size={16} /> Kembali
         </Link>
       </div>
 
-      {/* SPLIT SCREEN CONTENT */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
-        
-        {/* KOLOM KIRI: Informasi KHS & Form Evaluasi */}
-        <div className="lg:col-span-1 space-y-6">
-          
+      <div className="grid grid-cols-1 xl:grid-cols-5 gap-6 items-start">
+        <div className="xl:col-span-2 space-y-6">
           <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-6">
-            <h3 className="text-sm font-bold text-slate-800 mb-6">Informasi KHS</h3>
-            
-            <div className="space-y-4">
-              <div className="flex justify-between text-sm border-b border-slate-50 pb-2">
-                <span className="text-slate-500">Semester</span>
-                <span className="font-bold text-slate-800">Semester {khs.semester_ke}</span>
-              </div>
-              <div className="flex justify-between text-sm border-b border-slate-50 pb-2">
-                <span className="text-slate-500">Tanggal Upload</span>
-                <span className="font-bold text-slate-800">{formatDate(khs.tanggal_unggah)}</span>
-              </div>
-              <div className="flex justify-between text-sm border-b border-slate-50 pb-2">
-                <span className="text-slate-500">IPK</span>
-                <span className="font-bold text-blue-600">{ipkValue}</span>
-              </div>
+            <h3 className="text-sm font-semibold text-slate-800 mb-5">Informasi KHS</h3>
+            <div className="space-y-3">
+              {infoItems.map((item) => {
+                const Icon = item.icon;
+                return (
+                  <div key={item.label} className="flex items-center gap-3 p-3 bg-slate-50 rounded-lg">
+                    <div className="p-2 bg-white rounded-lg shadow-sm">
+                      <Icon size={16} className="text-slate-400" />
+                    </div>
+                    <div>
+                      <p className="text-[10px] text-slate-400 font-medium">{item.label}</p>
+                      <p className={`text-sm ${item.highlight ? 'font-bold text-blue-600' : 'font-medium text-slate-800'}`}>
+                        {item.value}
+                      </p>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
 
-            {/* Download Button */}
-            <div className="mt-6">
-              <a 
-                href={khs.file_khs_path || '#'} 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className={`w-full flex items-center justify-center gap-2 py-2.5 border border-slate-200 rounded-lg text-xs font-bold text-slate-600 hover:bg-slate-50 transition-all ${!khs.file_khs_path && 'opacity-50 pointer-events-none'}`}
+            {khs.catatan_evaluasi && (
+              <div className="mt-5 p-3 bg-slate-50 rounded-lg">
+                <p className="text-[10px] text-slate-400 font-medium mb-1">Catatan</p>
+                <p className="text-xs text-slate-700">{khs.catatan_evaluasi}</p>
+              </div>
+            )}
+
+            <div className="mt-5">
+              <a
+                href={khs.file_khs_path || '#'}
+                target="_blank"
+                className={`w-full flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-semibold transition-colors ${
+                  isDisabled
+                    ? 'bg-slate-50 text-slate-400 cursor-not-allowed'
+                    : 'bg-blue-600 text-white hover:bg-blue-700 shadow-sm'
+                }`}
               >
-                <Download size={14} /> Download File Asli
+                <Download size={16} /> Download PDF
               </a>
             </div>
           </div>
-
-          {/* Form Verifikasi Admin */}
-          <form className="bg-white rounded-xl border border-slate-100 shadow-sm p-6 space-y-4">
-            <h4 className="text-sm font-bold text-slate-800">Tindakan Evaluasi</h4>
-            <input type="hidden" name="khsId" value={khsId} />
-            
-            <textarea
-              name="catatan"
-              className="w-full text-sm p-3 bg-slate-50 border border-slate-200 rounded-lg focus:ring-1 focus:ring-blue-500 outline-none min-h-[90px] resize-none"
-              placeholder="Tulis alasan revisi atau catatan audit..."
-              defaultValue={khs.catatan_evaluasi || ''}
-            ></textarea>
-            
-            <div className="grid grid-cols-2 gap-2">
-              <button 
-                type="submit" 
-                formAction={acceptKhs} 
-                className="py-2.5 bg-emerald-500 text-white rounded-lg text-xs font-bold hover:bg-emerald-600 transition-colors flex items-center justify-center gap-1.5 shadow-sm"
-              >
-                <CheckSquare size={14} /> DITERIMA
-              </button>
-              <button 
-                type="submit" 
-                formAction={rejectKhs} 
-                className="py-2.5 bg-white text-red-600 border border-red-200 rounded-lg text-xs font-bold hover:bg-red-50 transition-colors flex items-center justify-center gap-1.5 shadow-sm"
-              >
-                <XCircle size={14} /> DITOLAK
-              </button>
-            </div>
-            
-            <button 
-              type="submit" 
-              formAction={submitRevisionKhs} 
-              className="w-full py-2.5 bg-blue-50 text-blue-600 border border-blue-100 rounded-lg text-xs font-bold hover:bg-blue-600 hover:text-white transition-colors flex items-center justify-center gap-1.5"
-            >
-              <AlertCircle size={14} /> KIRIM REVISI
-            </button>
-          </form>
         </div>
 
-        {/* KOLOM KANAN: Preview KHS (Lebih Lebar) */}
-        <div className="lg:col-span-2 bg-white rounded-xl border border-slate-100 shadow-sm flex flex-col min-h-[600px] h-full">
-          <div className="p-4 border-b border-slate-100 bg-slate-800 rounded-t-xl">
-            <h3 className="text-sm font-semibold text-white text-center">Preview KHS</h3>
+        <div className="xl:col-span-3 bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden flex flex-col min-h-[500px]">
+          <div className="flex items-center justify-between px-5 py-3.5 bg-slate-800 border-b border-slate-700">
+            <h3 className="text-sm font-semibold text-white flex items-center gap-2">
+              <FileText size={15} className="text-slate-400" />
+              Dokumen KHS
+            </h3>
+            {khs.file_khs_path && (
+              <a
+                href={khs.file_khs_path}
+                target="_blank"
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-white/10 text-white rounded-md text-xs font-medium hover:bg-white/20 transition-colors"
+              >
+                <Download size={13} /> Unduh
+              </a>
+            )}
           </div>
-          
-          <div className="flex-1 p-6 bg-[#525659] flex items-center justify-center overflow-hidden rounded-b-xl relative">
+
+          <div className="flex-1 bg-[#525659] p-4 flex items-center justify-center min-h-[500px]">
             {khs.file_khs_path ? (
-              khs.file_khs_path.toLowerCase().endsWith('.pdf') ? (
-                // Jika PDF, gunakan iframe
-                <iframe 
-                  src={khs.file_khs_path} 
-                  className="w-full h-full min-h-[600px]" 
-                  title="PDF Preview"
-                />
-              ) : (
-                // Jika Gambar, gunakan img
-                <img 
-                  src={khs.file_khs_path} 
-                  alt="Dokumen KHS" 
-                  className="max-w-full h-auto max-h-[800px] object-contain bg-white shadow-lg"
-                />
-              )
+              <iframe
+                src={khs.file_khs_path}
+                className="w-full h-full min-h-[500px] bg-white rounded-lg shadow-lg"
+                title="Preview KHS"
+              />
             ) : (
-              <div className="text-center text-slate-300 bg-slate-800/50 p-10 rounded-xl">
-                <FileText size={48} className="mx-auto mb-3 opacity-50" />
-                <p className="text-sm font-medium">Dokumen Belum Tersedia</p>
+              <div className="text-center text-slate-400 bg-slate-700/50 p-12 rounded-xl">
+                <FileText size={56} className="mx-auto mb-4 opacity-30" strokeWidth={1.5} />
+                <p className="text-sm font-medium text-slate-300">Dokumen Belum Tersedia</p>
+                <p className="text-xs text-slate-500 mt-1">File KHS belum diunggah.</p>
               </div>
             )}
           </div>
