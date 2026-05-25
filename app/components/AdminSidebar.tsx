@@ -13,6 +13,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import type { MenuItem } from "../configs/menu";
+import { canAccess } from "@/src/lib/auth/permissions";
 
 const iconMap: Record<string, LucideIcon> = {
   LayoutDashboard,
@@ -34,7 +35,7 @@ export default function AdminSidebar({
 }) {
   const pathname = usePathname();
   const filteredItems = menuItems.filter((item) =>
-    item.allowedRoles.includes(currentRole)
+    canAccess(currentRole, item.allowedRoles)
   );
 
   return (
