@@ -1,5 +1,6 @@
 generator client {
-  provider = "prisma-client-js"
+  provider   = "prisma-client-js"
+  engineType = "library"
 }
 
 datasource db {
@@ -156,6 +157,7 @@ model MonitoringKhs {
   catatan_evaluasi String?
   tanggal_unggah   DateTime?       @db.Date
   created_at       DateTime?       @default(now()) @db.Timestamptz(6)
+  tahun_akademik   String?
   ipk              Decimal?        @db.Decimal(3, 2)
   status_evaluasi  String?         @default("Pending")
   tanggal_evaluasi DateTime?       @db.Timestamptz(6)
