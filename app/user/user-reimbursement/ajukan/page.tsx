@@ -83,7 +83,7 @@ export default function BantuanStudiCreatePage() {
     setFiles((prev) => ({ ...prev, [key]: { ...prev[key], file, error: null, uploaded: false } }));
   };
 
-  const uploadDokumen = async (key: string, masterId: number): Promise<boolean> => {
+  const uploadDokumen = async (key: string, masterId: number, reimbursementId: number): Promise<boolean> => {
     const fileEntry = files[key];
     if (!fileEntry.file || !pengajuanStudiId) return false;
 
@@ -93,6 +93,7 @@ export default function BantuanStudiCreatePage() {
       const formDataFile = new FormData();
       formDataFile.append("file", fileEntry.file);
       formDataFile.append("master_dokumen_id", masterId.toString());
+      formDataFile.append("pengajuan_reimbursement_id", reimbursementId.toString());
 
       const response = await fetch(`/api/pengajuan/${pengajuanStudiId}/dokumen`, {
         method: "POST",
@@ -137,17 +138,7 @@ export default function BantuanStudiCreatePage() {
 
     setIsSubmitting(true);
 
-    // Upload all 4 files
-    for (const dok of DOKUMEN_LIST) {
-      const success = await uploadDokumen(dok.key, dok.masterId);
-      if (!success) {
-        setIsSubmitting(false);
-        setError(`Gagal mengupload ${dok.label}. Silakan coba lagi.`);
-        return;
-      }
-    }
-
-    // Submit metadata
+    // Submit metadata dulu untuk mendapatkan reimbursement ID
     try {
       const body = new FormData();
       body.append("jenis_pengajuan", "bantuan_studi");
@@ -167,7 +158,19 @@ export default function BantuanStudiCreatePage() {
         throw new Error(result?.error || "Gagal mengajukan bantuan studi.");
       }
 
-      router.push(`/user/user-reimbursement/${result.id}`);
+      const reimbursementId = result.id;
+
+      // Upload all 4 files dengan reimbursement_id
+      for (const dok of DOKUMEN_LIST) {
+        const success = await uploadDokumen(dok.key, dok.masterId, reimbursementId);
+        if (!success) {
+          setIsSubmitting(false);
+          setError(`Gagal mengupload ${dok.label}. Silakan coba lagi.`);
+          return;
+        }
+      }
+
+      router.push(`/user/user-reimbursement/${reimbursementId}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Terjadi kesalahan.");
       setIsSubmitting(false);

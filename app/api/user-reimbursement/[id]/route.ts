@@ -28,7 +28,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
             wilayah: true,
             dokumen_pengajuan: {
               where: {
-                master_dokumen_id: { in: [21, 22, 23, 24] },
+                pengajuan_reimbursement_id: reimbursementId,
               },
               include: { master_dokumen: true },
             },

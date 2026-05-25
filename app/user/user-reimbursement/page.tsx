@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { headers } from "next/headers";
 import { prisma } from "@/src/lib/prisma";
-import { Clock3, CheckCircle2, FileText, Plus, AlertCircle, Check, Download, X } from "lucide-react";
+import { Clock3, CheckCircle2, FileText, Plus, AlertCircle } from "lucide-react";
 
 function formatRupiah(value: unknown) {
   if (value === null || value === undefined) return "-";
@@ -27,17 +27,6 @@ function statusClasses(status: string) {
     case "Selesai": return "text-sky-600 bg-sky-50 border-sky-100";
     case "Perlu Revisi": return "text-orange-600 bg-orange-50 border-orange-100";
     default: return "text-amber-600 bg-amber-50 border-amber-100";
-  }
-}
-
-function docStatusBadge(status: string) {
-  switch (status) {
-    case "terverifikasi":
-      return { icon: Check, color: "text-emerald-600 bg-emerald-50", label: "Terverifikasi" };
-    case "revisi":
-      return { icon: AlertCircle, color: "text-orange-600 bg-orange-50", label: "Revisi" };
-    default:
-      return { icon: Clock3, color: "text-amber-600 bg-amber-50", label: "Pending" };
   }
 }
 
@@ -69,15 +58,10 @@ export default async function BantuanStudiPage() {
         where: { jenis_pengajuan: "bantuan_studi" },
         orderBy: { created_at: "desc" },
       },
-      dokumen_pengajuan: {
-        where: { master_dokumen_id: { in: [21, 22, 23, 24] } },
-        include: { master_dokumen: true },
-      },
     },
   });
 
   const bantuanStudiList = pengajuan?.pengajuan_reimbursement ?? [];
-  const dokumenList = pengajuan?.dokumen_pengajuan ?? [];
 
   const counts = {
     total: bantuanStudiList.length,
@@ -119,51 +103,6 @@ export default async function BantuanStudiPage() {
           );
         })}
       </div>
-
-      {/* Dokumen Status */}
-      {dokumenList.length > 0 && (
-        <div className="bg-white rounded-[28px] border border-slate-200 shadow-sm p-6">
-          <h2 className="text-xl font-semibold text-slate-900 mb-4">Status Dokumen</h2>
-          <div className="grid gap-4 sm:grid-cols-2">
-            {dokumenList.map((doc) => {
-              const badge = docStatusBadge(doc.status_verifikasi?.toLowerCase() ?? "");
-              const Icon = badge.icon;
-              return (
-                <div key={doc.id} className="rounded-2xl border border-slate-200 bg-slate-50 p-4 flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <FileText size={18} className="text-blue-600" />
-                    <div>
-                      <p className="text-sm font-semibold text-slate-900">
-                        {doc.master_dokumen?.nama_dokumen || "Dokumen"}
-                      </p>
-                      <p className={`inline-flex items-center gap-1 mt-1 rounded-full px-2 py-0.5 text-xs font-medium ${badge.color}`}>
-                        <Icon size={12} /> {badge.label}
-                      </p>
-                      {doc.status_verifikasi?.toLowerCase() === "revisi" && doc.catatan_revisi && (
-                        <p className="text-xs text-orange-600 mt-1">Catatan: {doc.catatan_revisi}</p>
-                      )}
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    {doc.file_path ? (
-                      <a
-                        href={doc.file_path}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="p-2 text-blue-600 hover:bg-blue-100 rounded-lg transition-colors"
-                      >
-                        <Download size={16} />
-                      </a>
-                    ) : (
-                      <span className="text-xs text-slate-400">Belum diupload</span>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
 
       <div className="bg-white rounded-[28px] border border-slate-200 shadow-sm p-6">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { ArrowLeft, CheckCircle2, Clock3, Download, FileText, AlertCircle, Loader2 } from "lucide-react";
+import { ArrowLeft, CheckCircle2, FileText, AlertCircle, Loader2, Check, Clock, Upload } from "lucide-react";
 
 function formatDate(dateValue?: string | Date | null) {
   if (!dateValue) return "-";
@@ -56,6 +56,8 @@ type BantuanStudiDetail = {
     dokumen_pengajuan: Array<{
       id: number;
       file_path: string | null;
+      status_verifikasi: string | null;
+      catatan_revisi: string | null;
       master_dokumen: { nama_dokumen: string | null } | null;
     }>;
   } | null;
@@ -67,6 +69,7 @@ export default function BantuanStudiDetailPage() {
   const [data, setData] = useState<BantuanStudiDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [uploads, setUploads] = useState<Record<number, { file: File | null; uploading: boolean; error: string | null }>>({});
 
   useEffect(() => {
     if (!id) {
@@ -121,6 +124,66 @@ export default function BantuanStudiDetailPage() {
   const isDone = statusLabel === "Selesai";
   const isRevision = statusLabel === "Perlu Revisi";
   const dokumenFiles = data.pengajuan_studi?.dokumen_pengajuan ?? [];
+
+  const handleFileSelect = (docId: number, file: File) => {
+    if (file.type !== 'application/pdf') {
+      setUploads(prev => ({ ...prev, [docId]: { file: null, uploading: false, error: 'Format file harus PDF' } }));
+      return;
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      setUploads(prev => ({ ...prev, [docId]: { file: null, uploading: false, error: 'Ukuran file tidak boleh lebih dari 2MB' } }));
+      return;
+    }
+    setUploads(prev => ({ ...prev, [docId]: { file, uploading: false, error: null } }));
+  };
+
+  const handleResubmit = async (docId: number) => {
+    const upload = uploads[docId];
+    if (!upload?.file) return;
+
+    setUploads(prev => ({ ...prev, [docId]: { ...prev[docId], uploading: true, error: null } }));
+
+    try {
+      const formData = new FormData();
+      formData.append('file', upload.file);
+
+      const response = await fetch(`/api/pengajuan/${data.pengajuan_studi!.id}/dokumen/${docId}`, {
+        method: 'PUT',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const err = await response.json();
+        throw new Error(err.error || 'Gagal mengunggah');
+      }
+
+      setData(prev => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          pengajuan_studi: prev.pengajuan_studi ? {
+            ...prev.pengajuan_studi,
+            dokumen_pengajuan: prev.pengajuan_studi.dokumen_pengajuan.map(d =>
+              d.id === docId
+                ? { ...d, file_path: null, status_verifikasi: 'Pending', catatan_revisi: null }
+                : d
+            ),
+          } : null,
+        };
+      });
+
+      setUploads(prev => {
+        const next = { ...prev };
+        delete next[docId];
+        return next;
+      });
+    } catch (err) {
+      setUploads(prev => ({
+        ...prev,
+        [docId]: { ...prev[docId], uploading: false, error: err instanceof Error ? err.message : 'Gagal mengunggah' },
+      }));
+    }
+  };
 
   const progressSteps = [
     {
@@ -256,38 +319,113 @@ export default function BantuanStudiDetailPage() {
           </div>
 
           <div className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm">
-            <h2 className="text-lg font-semibold text-slate-900">Dokumen Terupload</h2>
-            <div className="mt-4 space-y-3">
+            <h3 className="text-lg font-semibold text-slate-900 mb-4">
+              Daftar Dokumen <span className="text-slate-400">({dokumenFiles.length} items)</span>
+            </h3>
+            <div className="space-y-3 max-h-[500px] overflow-y-auto">
               {dokumenFiles.length === 0 ? (
                 <p className="text-sm text-slate-500">Belum ada dokumen.</p>
               ) : (
-                dokumenFiles.map((doc) => (
-                  <div key={doc.id} className="rounded-3xl border border-slate-200 bg-slate-50 p-4">
-                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                      <div className="flex items-center gap-3">
-                        <FileText size={18} className="text-blue-600" />
-                        <div>
-                          <p className="text-sm font-semibold text-slate-900">
-                            {doc.master_dokumen?.nama_dokumen || "Dokumen"}
-                          </p>
-                          <p className="text-xs text-slate-500">
-                            {doc.file_path ? "Tersedia" : "Belum diupload"}
-                          </p>
+                dokumenFiles.map((doc) => {
+                  const status = (doc.status_verifikasi || 'pending').toLowerCase();
+                  return (
+                    <div key={doc.id} className="p-4 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 transition-all">
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="flex items-start gap-3">
+                          <div className="mt-1">
+                            {status === 'terverifikasi' ? (
+                              <Check size={18} className="text-green-500" />
+                            ) : status === 'revisi' ? (
+                              <AlertCircle size={18} className="text-red-500" />
+                            ) : (
+                              <Clock size={18} className="text-yellow-500" />
+                            )}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <h4 className="font-medium text-sm text-slate-900">
+                              {doc.master_dokumen?.nama_dokumen || "Dokumen"}
+                            </h4>
+                            {doc.catatan_revisi && (
+                              <p className="text-xs text-red-600 mt-1">
+                                Catatan: {doc.catatan_revisi}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          {status === 'terverifikasi' ? (
+                            <span className="inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-medium bg-green-100 text-green-700">
+                              <Check size={12} /> TERVERIFIKASI
+                            </span>
+                          ) : status === 'revisi' ? (
+                            <span className="inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-medium bg-red-100 text-red-700">
+                              <AlertCircle size={12} /> REVISI
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-medium bg-yellow-100 text-yellow-700">
+                              <Clock size={12} /> PENDING
+                            </span>
+                          )}
+                          {doc.file_path && (
+                            <a
+                              href={doc.file_path}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="p-2 text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                              title="Lihat dokumen"
+                            >
+                              <FileText size={16} />
+                            </a>
+                          )}
                         </div>
                       </div>
-                      {doc.file_path && (
-                        <a
-                          href={doc.file_path}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="inline-flex items-center justify-center gap-2 rounded-full border border-blue-600 bg-white px-4 py-2 text-sm font-semibold text-blue-600 transition hover:bg-blue-50"
-                        >
-                          <Download size={16} /> Download
-                        </a>
+                      {status === 'revisi' && (
+                        <div className="mt-3 pt-3 border-t border-red-100">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <input
+                              type="file"
+                              accept=".pdf"
+                              hidden
+                              id={`resubmit-file-${doc.id}`}
+                              onChange={(e) => {
+                                if (e.target.files?.[0]) handleFileSelect(doc.id, e.target.files[0]);
+                              }}
+                            />
+                            <button
+                              onClick={() => document.getElementById(`resubmit-file-${doc.id}`)?.click()}
+                              className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors"
+                            >
+                              <Upload size={14} />
+                              Pilih File
+                            </button>
+                            {uploads[doc.id]?.file && (
+                              <span className="text-xs text-slate-600 truncate max-w-[180px]">
+                                {uploads[doc.id].file!.name}
+                              </span>
+                            )}
+                            {uploads[doc.id]?.file && !uploads[doc.id]?.uploading && (
+                              <button
+                                onClick={() => handleResubmit(doc.id)}
+                                className="px-3 py-1.5 text-xs font-medium text-white bg-red-600 hover:bg-red-700 rounded-lg transition-colors"
+                              >
+                                Kirim Ulang
+                              </button>
+                            )}
+                            {uploads[doc.id]?.uploading && (
+                              <div className="flex items-center gap-2">
+                                <Loader2 size={14} className="animate-spin text-blue-600" />
+                                <span className="text-xs text-blue-600">Mengirim ulang...</span>
+                              </div>
+                            )}
+                          </div>
+                          {uploads[doc.id]?.error && (
+                            <p className="text-xs text-red-600 mt-1">{uploads[doc.id].error}</p>
+                          )}
+                        </div>
                       )}
                     </div>
-                  </div>
-                ))
+                  );
+                })
               )}
             </div>
           </div>

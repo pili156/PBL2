@@ -4,7 +4,6 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
 model MasterRole {
@@ -121,16 +120,18 @@ model PengajuanStudi {
 }
 
 model DokumenPengajuan {
-  id                Int             @id @default(autoincrement())
-  pengajuan_id      Int?
-  master_dokumen_id Int?
-  file_path         String?
-  status_verifikasi String?         @default("Pending")
-  catatan_revisi    String?
-  created_at        DateTime?       @default(now()) @db.Timestamptz(6)
-  updated_at        DateTime?       @updatedAt @db.Timestamptz(6)
-  master_dokumen    MasterDokumen?  @relation(fields: [master_dokumen_id], references: [id])
-  pengajuan_studi   PengajuanStudi? @relation(fields: [pengajuan_id], references: [id])
+  id                        Int                       @id @default(autoincrement())
+  pengajuan_id              Int?
+  master_dokumen_id         Int?
+  file_path                 String?
+  status_verifikasi         String?                   @default("Pending")
+  catatan_revisi            String?
+  pengajuan_reimbursement_id Int?
+  created_at                DateTime?                 @default(now()) @db.Timestamptz(6)
+  updated_at                DateTime?                 @updatedAt @db.Timestamptz(6)
+  master_dokumen            MasterDokumen?            @relation(fields: [master_dokumen_id], references: [id])
+  pengajuan_studi           PengajuanStudi?           @relation(fields: [pengajuan_id], references: [id])
+  pengajuan_reimbursement   PengajuanReimbursement?   @relation(fields: [pengajuan_reimbursement_id], references: [id])
 
   @@map("dokumen_pengajuan")
 }
@@ -180,7 +181,8 @@ model PengajuanReimbursement {
   created_at        DateTime?       @default(now()) @db.Timestamptz(6)
   tanggal_pencairan DateTime?       @db.Timestamptz(6)
   updated_at        DateTime?       @updatedAt @db.Timestamptz(6)
-  pengajuan_studi   PengajuanStudi? @relation(fields: [pengajuan_id], references: [id])
+  pengajuan_studi     PengajuanStudi?    @relation(fields: [pengajuan_id], references: [id])
+  dokumen_pengajuan   DokumenPengajuan[]
 
   @@map("pengajuan_reimbursement")
 }
