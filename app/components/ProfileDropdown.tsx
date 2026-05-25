@@ -41,13 +41,21 @@ export default function ProfileDropdown({ user }: { user: UserData }) {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  const roleCookieMap: Record<string, string> = {
+    dosen: 'token_dosen',
+    admin_fakultas: 'token_admin_fakultas',
+    master_admin: 'token_master_admin',
+    keuangan: 'token_keuangan',
+  };
+
+  const rolePathMap: Record<string, string> = {
+    dosen: '/user',
+    admin_fakultas: '/admin',
+    master_admin: '/master_admin',
+    keuangan: '/keuangan',
+  };
+
   const handleLogout = () => {
-    const roleCookieMap: Record<string, string> = {
-      dosen: 'token_dosen',
-      admin_fakultas: 'token_admin_fakultas',
-      master_admin: 'token_master_admin',
-      keuangan: 'token_keuangan',
-    };
     const cookieName = roleCookieMap[user.role];
     if (cookieName) {
       document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
@@ -138,7 +146,7 @@ export default function ProfileDropdown({ user }: { user: UserData }) {
               </div>
 
               <button
-                onClick={() => {}}
+                onClick={() => router.push(`${rolePathMap[user.role]}/profile`)}
                 className="mt-5 w-full flex items-center justify-center gap-2 py-2 px-4 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors"
               >
                 <Edit3 size={14} />
@@ -152,7 +160,7 @@ export default function ProfileDropdown({ user }: { user: UserData }) {
             {/* Right Column - Menu Actions */}
             <div className="w-[45%] p-6 flex flex-col gap-1">
               <button
-                onClick={() => {}}
+                onClick={() => router.push(`${rolePathMap[user.role]}/change-password`)}
                 className="flex items-center gap-3 px-3 py-2.5 text-sm text-slate-700 hover:bg-slate-100 rounded-lg transition-colors w-full text-left"
               >
                 <Lock size={16} className="text-slate-400" />
