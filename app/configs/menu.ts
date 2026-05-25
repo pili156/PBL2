@@ -8,7 +8,6 @@ export const menuItems: MenuItem[] = [
   { href: "/admin/buku-induk", label: "Buku Induk", icon: "BookOpen", allowedRoles: [ROLES.MASTER_ADMIN, ROLES.ADMIN_FAKULTAS] },
 
   { href: "/master_admin/monitoring-pengguna", label: "Monitoring Pengguna", icon: "UserCheck", allowedRoles: [ROLES.MASTER_ADMIN] },
-  { href: "/master_admin/manage-users", label: "Manage Users", icon: "UserCog", allowedRoles: [ROLES.MASTER_ADMIN] },
-  { href: "/master_admin/role-permission", label: "Role & Permission", icon: "Shield", allowedRoles: [ROLES.MASTER_ADMIN] },
-  { href: "/master_admin/audit-log", label: "Audit Log", icon: "ClipboardList", allowedRoles: [ROLES.MASTER_ADMIN] },
+  { href: "/master_admin/role-permission", label: "Peran & Hak Akses", icon: "Shield", allowedRoles: [ROLES.MASTER_ADMIN] },
+  { href: "/master_admin/audit-log", label: "Log Aktivitas", icon: "ClipboardList", allowedRoles: [ROLES.MASTER_ADMIN] },
 ];
