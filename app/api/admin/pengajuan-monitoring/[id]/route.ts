@@ -58,7 +58,6 @@ export async function GET(
       jenis_studi: pengajuan.jenis_studi?.nama_jenis || 'N/A',
       jalur_pendanaan: pengajuan.jalur_pendanaan?.nama_pendanaan || 'N/A',
       wilayah_studi: pengajuan.wilayah?.nama_wilayah || 'N/A',
-      alamat_kampus: pengajuan.alamat_kampus || '',
       status: pengajuan.status?.nama_status || 'N/A',
       tanggal_pengajuan: pengajuan.tanggal_pengajuan?.toISOString().split('T')[0] || '',
       dokumen: dokumenPengajuan.map((d) => ({

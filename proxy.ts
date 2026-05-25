@@ -60,16 +60,11 @@ export function proxy(request: NextRequest) {
   let allowedRoles: string[] = [];
   let matchedPrefix = '';
 
-  if (pathname === '/api/user/profile') {
-    allowedRoles = Object.keys(ROLE_TO_COOKIE);
-    matchedPrefix = '/user';
-  } else {
-    for (const [prefix, roles] of Object.entries(PATH_ROLE_MAP)) {
-      if (pathname === prefix || pathname.startsWith(`${prefix}/`) || pathname.startsWith(`/api${prefix}`)) {
-        allowedRoles = roles;
-        matchedPrefix = prefix;
-        break;
-      }
+  for (const [prefix, roles] of Object.entries(PATH_ROLE_MAP)) {
+    if (pathname === prefix || pathname.startsWith(`${prefix}/`) || pathname.startsWith(`/api${prefix}`)) {
+      allowedRoles = roles;
+      matchedPrefix = prefix;
+      break;
     }
   }
 

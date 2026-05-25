@@ -28,9 +28,10 @@ const roleDisplayMap: Record<string, string> = {
 
 type EditProfileFormProps = {
   backUrl: string;
+  apiUrl?: string;
 };
 
-export default function EditProfileForm({ backUrl }: EditProfileFormProps) {
+export default function EditProfileForm({ backUrl, apiUrl = "/api/user/profile" }: EditProfileFormProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -56,7 +57,7 @@ export default function EditProfileForm({ backUrl }: EditProfileFormProps) {
 
   const fetchProfile = async () => {
     try {
-      const res = await fetch("/api/user/profile");
+      const res = await fetch(apiUrl);
       const data = await res.json();
 
       if (res.ok) {
@@ -93,7 +94,7 @@ export default function EditProfileForm({ backUrl }: EditProfileFormProps) {
     setSaving(true);
 
     try {
-      const res = await fetch("/api/user/profile", {
+      const res = await fetch(apiUrl, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
