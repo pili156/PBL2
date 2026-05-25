@@ -3,6 +3,7 @@ import { headers } from "next/headers";
 
 import ProfileDropdown from "../components/ProfileDropdown"; 
 import { getUserFromToken } from "../../src/lib/auth-user";
+import { ROLES } from "@/src/lib/constants/roles";
 
 function getPageTitle(pathname: string): string {
   if (pathname.includes('/dashboard')) return 'Dashboard';
@@ -17,7 +18,7 @@ export default async function KeuanganLayout({
   const headersList = await headers();
   const pathname = headersList.get('x-nextjs-pathname') || '';
   
-  const userData = await getUserFromToken('keuangan');
+  const userData = await getUserFromToken(ROLES.KEUANGAN);
 
   const pageTitle = getPageTitle(pathname);
 

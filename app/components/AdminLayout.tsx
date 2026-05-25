@@ -3,13 +3,14 @@ import { headers } from "next/headers";
 import ProfileDropdown from "./ProfileDropdown";
 import AdminSidebar from "./AdminSidebar";
 import { getUserFromToken } from "@/src/lib/auth-user";
+import { ROLES } from "@/src/lib/constants/roles";
 import type { MenuItem } from "./AdminSidebar";
 
 function getPageTitle(pathname: string, role: string): string {
   if (pathname.includes('/verifikasi-pengajuan')) return 'Verifikasi Pengajuan';
   if (pathname.includes('/riwayat-dosen')) return 'Monitoring Dosen';
   if (pathname.includes('/buku-induk')) return 'Buku Induk';
-  if (role === 'master_admin' && pathname.includes('/monitoring-pengguna')) return 'Monitoring Pengguna';
+  if (role === ROLES.MASTER_ADMIN && pathname.includes('/monitoring-pengguna')) return 'Monitoring Pengguna';
   return 'Dashboard';
 }
 

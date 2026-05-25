@@ -1,5 +1,6 @@
 import AdminLayout from "../components/AdminLayout";
 import { masterAdminMenuItems } from "../configs/menu-master-admin";
+import { ROLES } from "@/src/lib/constants/roles";
 
 export default function MasterAdminLayoutWrapper({
   children,
@@ -7,7 +8,7 @@ export default function MasterAdminLayoutWrapper({
   children: React.ReactNode;
 }) {
   return (
-    <AdminLayout role="master_admin" menuItems={masterAdminMenuItems}>
+    <AdminLayout role={ROLES.MASTER_ADMIN} menuItems={masterAdminMenuItems}>
       {children}
     </AdminLayout>
   );

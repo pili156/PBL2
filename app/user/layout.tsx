@@ -4,6 +4,7 @@ import { headers } from "next/headers";
 import SidebarUser from "./SidebarUser";
 import ProfileDropdown from "../components/ProfileDropdown"; 
 import { getUserFromToken } from "../../src/lib/auth-user";
+import { ROLES } from "@/src/lib/constants/roles";
 
 function getPageTitle(pathname: string): string {
   if (pathname.includes('/pengajuan')) return 'Pengajuan Studi';
@@ -21,7 +22,7 @@ export default async function UserLayout({
   const headersList = await headers();
   const pathname = headersList.get('x-nextjs-pathname') || '';
   
-  const userData = await getUserFromToken('dosen');
+  const userData = await getUserFromToken(ROLES.DOSEN);
 
   const pageTitle = getPageTitle(pathname);
 
