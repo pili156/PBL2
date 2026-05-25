@@ -1,12 +1,9 @@
-import { cookies } from "next/headers";
 import { headers } from "next/headers";
 
 // Import komponen Client
 import SidebarUser from "./SidebarUser";
 import ProfileDropdown from "../components/ProfileDropdown"; 
-
-// Menggunakan instance Prisma
-import { prisma } from "../../src/lib/prisma";
+import { getUserFromToken } from "../../src/lib/auth-user";
 
 function getPageTitle(pathname: string): string {
   if (pathname.includes('/pengajuan')) return 'Pengajuan Studi';
@@ -21,51 +18,10 @@ export default async function UserLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const cookieStore = await cookies();
   const headersList = await headers();
   const pathname = headersList.get('x-nextjs-pathname') || '';
   
-  const userEmailFromCookie = cookieStore.get("user_email")?.value;
-
-  let userData = {
-    email: "Guest",
-    name: "User",
-    nip: undefined as string | undefined,
-    role: "dosen",
-    roleDisplay: "Dosen",
-    unitKerja: undefined as string | undefined,
-    jabatan: undefined as string | undefined,
-  };
-  
-  if (userEmailFromCookie) {
-    const user = await prisma.user.findUnique({
-      where: {
-        email: userEmailFromCookie,
-      },
-      include: {
-        master_dosen: {
-          select: {
-            nama_lengkap: true,
-            nip: true,
-            unit_kerja: true,
-            jabatan: true,
-          }
-        }
-      }
-    });
-
-    if (user) {
-      userData = {
-        email: user.email || "Guest",
-        name: user.master_dosen?.nama_lengkap || user.username || "User",
-        nip: user.master_dosen?.nip || undefined,
-        role: "dosen",
-        roleDisplay: "Dosen",
-        unitKerja: user.master_dosen?.unit_kerja || undefined,
-        jabatan: user.master_dosen?.jabatan || undefined,
-      };
-    }
-  }
+  const userData = await getUserFromToken('dosen');
 
   const pageTitle = getPageTitle(pathname);
 

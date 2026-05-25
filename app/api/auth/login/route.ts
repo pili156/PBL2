@@ -76,13 +76,7 @@ export async function POST(request: Request) {
     const cookieName = `token_${roleName}`;
 
     const cookieStore = await cookies();
-    cookieStore.delete("token");
-    cookieStore.delete("user_email");
-    cookieStore.delete("token_dosen");
-    cookieStore.delete("token_admin_fakultas");
-    cookieStore.delete("token_master_admin");
-    cookieStore.delete("token_keuangan");
-    
+
     cookieStore.set(cookieName, token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
@@ -90,16 +84,6 @@ export async function POST(request: Request) {
       maxAge: 60 * 60,
       path: "/",
     });
-
-    if (user.email) {
-      cookieStore.set("user_email", user.email, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "lax",
-        maxAge: 60 * 60,
-        path: "/",
-      });
-    }
 
     // Kembalikan data sukses beserta redirectUrl
     return NextResponse.json({

@@ -1,12 +1,12 @@
 import { NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
+import { headers } from 'next/headers';
 import { prisma } from '@/src/lib/prisma';
 import bcrypt from 'bcryptjs';
 
 export async function GET() {
   try {
-    const cookieStore = await cookies();
-    const userEmail = cookieStore.get("user_email")?.value;
+    const headersList = await headers();
+    const userEmail = headersList.get('x-user-email');
 
     if (!userEmail) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -48,8 +48,8 @@ export async function GET() {
 
 export async function PUT(request: Request) {
   try {
-    const cookieStore = await cookies();
-    const userEmail = cookieStore.get("user_email")?.value;
+    const headersList = await headers();
+    const userEmail = headersList.get('x-user-email');
 
     if (!userEmail) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

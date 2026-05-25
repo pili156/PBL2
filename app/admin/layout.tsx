@@ -1,12 +1,9 @@
 import Image from "next/image";
-import { cookies } from "next/headers";
 import { headers } from "next/headers";
-
 
 import ProfileDropdown from "../components/ProfileDropdown"; 
 import SidebarNav from "./SidebarNav"; 
-
-import { prisma } from "../../src/lib/prisma";
+import { getUserFromToken } from "../../src/lib/auth-user";
 
 function getPageTitle(pathname: string): string {
   if (pathname.includes('/verifikasi-pengajuan')) return 'Verifikasi Pengajuan';
@@ -20,51 +17,10 @@ export default async function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const cookieStore = await cookies();
   const headersList = await headers();
   const pathname = headersList.get('x-nextjs-pathname') || '';
   
-  const userEmailFromCookie = cookieStore.get("user_email")?.value;
-
-  let userData = {
-    email: "Guest",
-    name: "User",
-    nip: undefined as string | undefined,
-    role: "admin_fakultas",
-    roleDisplay: "Admin",
-    unitKerja: undefined as string | undefined,
-    jabatan: undefined as string | undefined,
-  };
-  
-  if (userEmailFromCookie) {
-    const user = await prisma.user.findUnique({
-      where: {
-        email: userEmailFromCookie,
-      },
-      include: {
-        master_dosen: {
-          select: {
-            nama_lengkap: true,
-            nip: true,
-            unit_kerja: true,
-            jabatan: true,
-          }
-        }
-      }
-    });
-
-    if (user) {
-      userData = {
-        email: user.email || "Guest",
-        name: user.master_dosen?.nama_lengkap || user.username || "User",
-        nip: user.master_dosen?.nip || undefined,
-        role: "admin_fakultas",
-        roleDisplay: "Admin",
-        unitKerja: user.master_dosen?.unit_kerja || undefined,
-        jabatan: user.master_dosen?.jabatan || undefined,
-      };
-    }
-  }
+  const userData = await getUserFromToken('admin_fakultas');
 
   const pageTitle = getPageTitle(pathname);
 

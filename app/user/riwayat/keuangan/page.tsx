@@ -1,4 +1,4 @@
-import { cookies } from "next/headers";
+import { headers } from "next/headers";
 import Link from "next/link";
 import { prisma } from "@/src/lib/prisma";
 import { Plus, Download } from "lucide-react";
@@ -46,8 +46,8 @@ function statusBadge(status: string) {
 }
 
 export default async function RiwayatKeuanganPage() {
-  const cookieStore = await cookies();
-  const userEmail = cookieStore.get("user_email")?.value;
+  const headersList = await headers();
+  const userEmail = headersList.get('x-user-email');
 
   if (!userEmail) {
     return <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-10 text-center text-slate-500">Silakan login terlebih dahulu</div>;

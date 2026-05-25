@@ -1,4 +1,4 @@
-import { cookies } from 'next/headers';
+import { headers } from 'next/headers';
 import { prisma } from '@/src/lib/prisma';
 import { notFound } from 'next/navigation';
 import TabNavigation from './TabNavigation';
@@ -6,8 +6,8 @@ import TabNavigation from './TabNavigation';
 export const dynamic = 'force-dynamic';
 
 export default async function RiwayatLayout({ children }: { children: React.ReactNode }) {
-  const cookieStore = await cookies();
-  const userEmail = cookieStore.get('user_email')?.value;
+  const headersList = await headers();
+  const userEmail = headersList.get('x-user-email');
 
   if (!userEmail) notFound();
 

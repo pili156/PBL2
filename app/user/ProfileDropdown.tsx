@@ -9,10 +9,7 @@ export default function ProfileDropdown({ email }: { email: string }) {
   const router = useRouter();
 
   const handleLogout = () => {
-    const cookies = ["token_dosen", "token_admin_fakultas", "token_master_admin", "token_keuangan", "user_email"];
-    cookies.forEach((name) => {
-      document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
-    });
+    document.cookie = "token_dosen=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
     
     router.push("/login");
     router.refresh(); 

@@ -60,8 +60,6 @@ export function proxy(request: NextRequest) {
   let allowedRoles: string[] = [];
   let matchedPrefix = '';
 
-  // Allow all authenticated roles to access profile fetch/update endpoint
-  // because /api/user/profile is used by all role pages for profile editing.
   if (pathname === '/api/user/profile') {
     allowedRoles = Object.keys(ROLE_TO_COOKIE);
     matchedPrefix = '/user';

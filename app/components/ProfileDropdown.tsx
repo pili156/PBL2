@@ -42,7 +42,16 @@ export default function ProfileDropdown({ user }: { user: UserData }) {
   }, []);
 
   const handleLogout = () => {
-    document.cookie = "user_email=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+    const roleCookieMap: Record<string, string> = {
+      dosen: 'token_dosen',
+      admin_fakultas: 'token_admin_fakultas',
+      master_admin: 'token_master_admin',
+      keuangan: 'token_keuangan',
+    };
+    const cookieName = roleCookieMap[user.role];
+    if (cookieName) {
+      document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
+    }
     router.push("/login");
     router.refresh();
   };

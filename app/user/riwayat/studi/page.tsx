@@ -1,4 +1,4 @@
-import { cookies } from 'next/headers';
+import { headers } from 'next/headers';
 import { prisma } from '@/src/lib/prisma';
 import { Plus, Eye, Pencil, Upload, Info } from 'lucide-react';
 import Link from 'next/link';
@@ -6,8 +6,8 @@ import Link from 'next/link';
 export const dynamic = 'force-dynamic';
 
 export default async function RiwayatStudiPage() {
-  const cookieStore = await cookies();
-  const userEmail = cookieStore.get('user_email')?.value;
+  const headersList = await headers();
+  const userEmail = headersList.get('x-user-email');
 
   if (!userEmail) return <div className="text-center py-10 text-slate-500">Silakan login terlebih dahulu</div>;
 
