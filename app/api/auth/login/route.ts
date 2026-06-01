@@ -58,7 +58,8 @@ export async function POST(request: Request) {
 
     if (roleName === "master_admin") {
       targetUrl = "/master_admin/dashboard";
-    } else if (roleName === "admin_fakultas") {
+    } else if (roleName === "admin" || roleName === "admin_fakultas") { 
+      // ^^^ Ubah baris di atas ini, tambahkan pengecekan untuk "admin"
       targetUrl = "/admin/dashboard";
     } else if (roleName === "keuangan") {
       targetUrl = "/keuangan/dashboard";
