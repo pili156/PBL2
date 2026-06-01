@@ -13,10 +13,12 @@ export async function POST(
     
     const master_dokumen_id = formData.get('master_dokumen_id') as string;
     const file = formData.get('file') as File;
+    const pengajuan_reimbursement_id = formData.get('pengajuan_reimbursement_id') as string;
 
     console.log('=== DEBUG UPLOAD ===');
     console.log('pengajuan_id:', id);
     console.log('master_dokumen_id:', master_dokumen_id);
+    console.log('pengajuan_reimbursement_id:', pengajuan_reimbursement_id);
     console.log('file:', file?.name, file?.size);
 
     if (!file) {
@@ -63,12 +65,15 @@ export async function POST(
     }
 
     console.log('Creating dokumenPengajuan...');
+    const parsedReimbursementId = pengajuan_reimbursement_id ? parseInt(pengajuan_reimbursement_id) : null;
+
     const dokumen = await prisma.dokumenPengajuan.create({
       data: {
         pengajuan_id: parsedPengajuanId,
         master_dokumen_id: parsedMasterDokumenId,
         file_path: relativePath,
         status_verifikasi: 'menunggu',
+        pengajuan_reimbursement_id: parsedReimbursementId,
       },
     });
 

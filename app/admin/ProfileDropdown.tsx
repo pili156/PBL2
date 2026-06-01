@@ -9,12 +9,10 @@ export default function ProfileDropdown({ email }: { email: string }) {
   const router = useRouter();
 
   const handleLogout = () => {
-    // Menghapus cookie user_email
-    document.cookie = "user_email=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+    document.cookie = "token_admin_fakultas=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
     
-    // Arahkan kembali ke halaman login
     router.push("/login");
-    router.refresh(); // Refresh state Next.js
+    router.refresh();
   };
 
   return (

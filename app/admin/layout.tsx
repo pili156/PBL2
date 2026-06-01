@@ -1,52 +1,31 @@
 import Image from "next/image";
-import Link from "next/link";
-import { cookies } from "next/headers";
-import { 
-  LayoutDashboard, 
-  FileText, 
-  CheckSquare, 
-  ListOrdered, 
-  CreditCard, 
-  UserCircle
-} from "lucide-react";
+import { headers } from "next/headers";
 
-// Import komponen Client yang baru saja kita buat
-// Sesuaikan letak path-nya jika kamu menyimpannya di folder /components
-import ProfileDropdown from "./ProfileDropdown"; 
+import ProfileDropdown from "../components/ProfileDropdown"; 
+import SidebarNav from "./SidebarNav"; 
+import { getUserFromToken } from "../../src/lib/auth-user";
 
-// Menggunakan instance Prisma dari folder src/lib/prisma.ts kamu
-import { prisma } from "../../src/lib/prisma";
+function getPageTitle(pathname: string): string {
+  if (pathname.includes('/verifikasi-pengajuan')) return 'Verifikasi Pengajuan';
+  if (pathname.includes('/riwayat-dosen')) return 'Monitoring Dosen';
+  if (pathname.includes('/buku-induk')) return 'Buku Induk';
+  return 'Dashboard';
+}
 
 export default async function AdminLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const cookieStore = await cookies();
+  const headersList = await headers();
+  const pathname = headersList.get('x-nextjs-pathname') || '';
   
-  // Mengambil email dari cookie yang diset saat login
-  const userEmailFromCookie = cookieStore.get("user_email")?.value;
+  const userData = await getUserFromToken('admin_fakultas');
 
-  let currentUserEmail: string = "Guest";
-  
-  if (userEmailFromCookie) {
-    const user = await prisma.user.findUnique({
-      where: {
-        email: userEmailFromCookie,
-      },
-      select: {
-        email: true,
-      }
-    });
-
-    if (user && user.email) {
-      currentUserEmail = user.email;
-    }
-  }
+  const pageTitle = getPageTitle(pathname);
 
   return (
     <div className="flex h-screen bg-[#F4F7F6] font-sans">
-      {/* Sidebar */}
       <aside className="w-[260px] bg-[#0A192F] text-white flex flex-col flex-shrink-0">
         <div className="p-6 flex items-center gap-3 border-b border-slate-700/50">
           <div className="w-10 h-10 relative flex-shrink-0">
@@ -65,42 +44,14 @@ export default async function AdminLayout({
           </div>
         </div>
 
-        <nav className="flex-1 py-4 flex flex-col">
-          <Link href="/admin/dashboard" className="flex items-center gap-3 px-8 py-3.5 bg-[#1A56DB] text-white">
-            <LayoutDashboard size={20} strokeWidth={2} />
-            <span className="text-sm font-medium">Dashboard</span>
-          </Link>
-          <Link href="/admin/verifikasi-pengajuan" className="flex items-center gap-3 px-8 py-3.5 text-slate-300 hover:bg-slate-800 transition-colors">
-            <FileText size={20} strokeWidth={2} />
-            <span className="text-sm font-medium">Pengajuan</span>
-          </Link>
-          <Link href="#" className="flex items-center gap-3 px-8 py-3.5 text-slate-300 hover:bg-slate-800 transition-colors">
-            <CheckSquare size={20} strokeWidth={2} />
-            <span className="text-sm font-medium">Status</span>
-          </Link>
-          <Link href="#" className="flex items-center gap-3 px-8 py-3.5 text-slate-300 hover:bg-slate-800 transition-colors">
-            <ListOrdered size={20} strokeWidth={2} />
-            <span className="text-sm font-medium">Laporan KHS</span>
-          </Link>
-          <Link href="#" className="flex items-center gap-3 px-8 py-3.5 text-slate-300 hover:bg-slate-800 transition-colors">
-            <CreditCard size={20} strokeWidth={2} />
-            <span className="text-sm font-medium">Reimbursement</span>
-          </Link>
-          <Link href="#" className="flex items-center gap-3 px-8 py-3.5 text-slate-300 hover:bg-slate-800 transition-colors">
-            <UserCircle size={20} strokeWidth={2} />
-            <span className="text-sm font-medium">Profil Saya</span>
-          </Link>
-        </nav>
+        <SidebarNav />
       </aside>
 
-      {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden">
-        {/* Topbar */}
         <header className="h-[80px] bg-[#0A192F] text-white flex items-center justify-between px-8 flex-shrink-0">
-          <h2 className="text-2xl font-bold tracking-wide">Dashboard</h2>
+          <h2 className="text-2xl font-bold tracking-wide">{pageTitle}</h2>
           
-          {/* Menggunakan komponen Client untuk Dropdown */}
-          <ProfileDropdown email={currentUserEmail} />
+          <ProfileDropdown user={userData} />
 
         </header>
 

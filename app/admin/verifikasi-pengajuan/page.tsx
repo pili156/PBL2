@@ -51,18 +51,19 @@ export default function VerifikasiPengajuanPage() {
   const stats = [
     {
       label: "Belum Direview",
-      count: data.filter((d) => d.status === "pending").length,
+      count: data.filter((d) => d.status === "Pending").length,
       color: "bg-gray-100",
+      icon: "📋",
     },
     {
-      label: "Pending",
-      count: data.filter((d) => d.status === "pending").length,
+      label: "Revisi",
+      count: data.filter((d) => d.status === "Revisi").length,
       color: "bg-red-100",
       icon: "⚠️",
     },
     {
       label: "Terverifikasi",
-      count: data.filter((d) => d.status === "terverifikasi").length,
+      count: data.filter((d) => d.status === "Terverifikasi").length,
       color: "bg-green-100",
       icon: "✓",
     },
@@ -99,11 +100,11 @@ export default function VerifikasiPengajuanPage() {
             key={idx}
             className={`${stat.color} rounded-lg p-6 text-center`}
           >
-            <div className="text-3xl font-bold mb-2">
+            <div className="text-3xl font-bold mb-2 text-black">
               {stat.icon && <span className="mr-2">{stat.icon}</span>}
               {stat.count}
             </div>
-            <p className="text-sm font-medium text-slate-700">{stat.label}</p>
+            <p className="text-sm font-medium text-black">{stat.label}</p>
           </div>
         ))}
       </div>
@@ -131,8 +132,8 @@ export default function VerifikasiPengajuanPage() {
         >
           <option value="semua">Semua Status</option>
           <option value="pending">Pending</option>
-          <option value="terverifikasi">Terverifikasi</option>
           <option value="revisi">Revisi</option>
+          <option value="terverifikasi">Terverifikasi</option>
         </select>
 
         <button

@@ -34,19 +34,17 @@ export default function Login() {
 
       const data = await res.json();
 
-      if (res.ok) {
-        // Berhasil login, langsung proses redirect berdasarkan role (TANPA ALERT POPUP)
-        if (data.user.role === "admin") {
+if (res.ok) {
+        if (data.user.role === "admin_fakultas") {
           router.push("/admin/dashboard");
-        } else if (data.user.role === "master_admin" || data.user.role === "master admin") {
+        } else if (data.user.role === "master_admin") {
           router.push("/master_admin/dashboard");
         } else if (data.user.role === "keuangan") {
           router.push("/keuangan/dashboard"); 
         } else {
-          router.push("/user/dashboard"); // Default
+          router.push("/user/dashboard");
         }
-      } else {
-        // Gagal login, tangkap pesan error dari API (misal: "Akun belum diaktifkan. Silakan hubungi Admin.")
+} else {
         setErrorMsg(data.error || "Login Gagal");
       }
     } catch (error) {

@@ -1,11 +1,21 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/src/lib/prisma';
+import { headers } from 'next/headers';
+
+function isAdminRole(role: string | null): boolean {
+  return role === 'admin_fakultas' || role === 'master_admin';
+}
 
 export async function GET(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const headersList = await headers();
+    if (!isAdminRole(headersList.get('x-user-role'))) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
     const { id } = await params;
     const pengajuanId = parseInt(id);
 
@@ -48,7 +58,6 @@ export async function GET(
       jenis_studi: pengajuan.jenis_studi?.nama_jenis || 'N/A',
       jalur_pendanaan: pengajuan.jalur_pendanaan?.nama_pendanaan || 'N/A',
       wilayah_studi: pengajuan.wilayah?.nama_wilayah || 'N/A',
-      alamat_kampus: pengajuan.alamat_kampus || '',
       status: pengajuan.status?.nama_status || 'N/A',
       tanggal_pengajuan: pengajuan.tanggal_pengajuan?.toISOString().split('T')[0] || '',
       dokumen: dokumenPengajuan.map((d) => ({
@@ -76,10 +85,28 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const headersList = await headers();
+    if (!isAdminRole(headersList.get('x-user-role'))) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
     const { id } = await params;
     const dokumentId = parseInt(id);
     const body = await request.json();
     const { status_verifikasi, catatan_revisi } = body;
+
+    const dokumen = await prisma.dokumenPengajuan.findUnique({
+      where: { id: dokumentId },
+    });
+
+    if (!dokumen) {
+      return NextResponse.json(
+        { error: 'Dokumen not found' },
+        { status: 404 }
+      );
+    }
+
+    const pengajuanId = dokumen.pengajuan_id;
 
     const updated = await prisma.dokumenPengajuan.update({
       where: { id: dokumentId },
@@ -89,6 +116,34 @@ export async function PUT(
         updated_at: new Date(),
       },
     });
+
+    const allDokumen = await prisma.dokumenPengajuan.findMany({
+      where: { pengajuan_id: pengajuanId },
+    });
+
+    const allTerverifikasi = allDokumen.every((d) => d.status_verifikasi === 'terverifikasi');
+    const hasRevisi = allDokumen.some((d) => d.status_verifikasi === 'revisi');
+    const allPending = allDokumen.every((d) => d.status_verifikasi === 'pending');
+
+    let newStatus: string;
+    if (allTerverifikasi) {
+      newStatus = 'Terverifikasi';
+    } else if (hasRevisi) {
+      newStatus = 'Revisi';
+    } else {
+      newStatus = 'Pending';
+    }
+
+    const statusMaster = await prisma.masterStatusPengajuan.findFirst({
+      where: { nama_status: newStatus },
+    });
+
+    if (statusMaster && pengajuanId !== null) {
+      await prisma.pengajuanStudi.update({
+        where: { id: pengajuanId },
+        data: { status_id: statusMaster.id },
+      });
+    }
 
     return NextResponse.json(updated, { status: 200 });
   } catch (error) {

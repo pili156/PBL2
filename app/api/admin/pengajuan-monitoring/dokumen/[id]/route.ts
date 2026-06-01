@@ -1,11 +1,18 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/src/lib/prisma';
+import { headers } from 'next/headers';
 
 export async function PUT(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const headersList = await headers();
+    const role = headersList.get('x-user-role');
+    if (!role || (role !== 'admin_fakultas' && role !== 'master_admin')) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
     const { id } = await params;
     const dokumentId = parseInt(id, 10);
 
