@@ -70,7 +70,7 @@ export default async function AdminLayout({
             <LayoutDashboard size={20} strokeWidth={2} />
             <span className="text-sm font-medium">Dashboard</span>
           </Link>
-          <Link href="#" className="flex items-center gap-3 px-8 py-3.5 text-slate-300 hover:bg-slate-800 transition-colors">
+          <Link href="/admin/verifikasi-pengajuan" className="flex items-center gap-3 px-8 py-3.5 text-slate-300 hover:bg-slate-800 transition-colors">
             <FileText size={20} strokeWidth={2} />
             <span className="text-sm font-medium">Pengajuan</span>
           </Link>
