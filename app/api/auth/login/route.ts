@@ -1,3 +1,4 @@
+// app/api/auth/login/route.ts
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { prisma } from '@/src/lib/prisma';
@@ -49,8 +50,11 @@ export async function POST(request: Request) {
     // Ambil nama_role dari relasi tabel master_role
     const roleName = user.role?.nama_role;
 
-    if (roleName === 'dosen' && user.status_akun === 'menunggu') {
-      return NextResponse.json({ error: "Akun belum diaktifkan. Silakan hubungi Admin." }, { status: 403 });
+    // --- PERBAIKAN INKONSISTENSI STATUS (Case-insensitive) ---
+    const statusAkun = user.status_akun?.toLowerCase(); 
+
+    if (roleName === 'dosen' && (statusAkun === 'pending' || statusAkun === 'menunggu')) {
+      return NextResponse.json({ error: "Akun Anda berstatus Pending. Silakan hubungi Admin untuk aktivasi." }, { status: 403 });
     }
 
     // --- LOGIC REDIRECT DITENTUKAN DI BACKEND ---
@@ -58,8 +62,7 @@ export async function POST(request: Request) {
 
     if (roleName === "master_admin") {
       targetUrl = "/master_admin/dashboard";
-    } else if (roleName === "admin" || roleName === "admin_fakultas") { 
-      // ^^^ Ubah baris di atas ini, tambahkan pengecekan untuk "admin"
+    } else if (roleName === "admin" || roleName === "admin_fakultas") { // PERBAIKAN REDIRECT ADMIN
       targetUrl = "/admin/dashboard";
     } else if (roleName === "keuangan") {
       targetUrl = "/keuangan/dashboard";
