@@ -57,8 +57,9 @@ export async function POST(request: Request) {
     let targetUrl = "/user/dashboard"; // Default folder untuk dosen
 
     if (roleName === "master_admin") {
-      targetUrl = "/master_admin/monitoring-pengguna";
-    } else if (roleName === "admin_fakultas") {
+      targetUrl = "/master_admin/dashboard";
+    } else if (roleName === "admin" || roleName === "admin_fakultas") { 
+      // ^^^ Ubah baris di atas ini, tambahkan pengecekan untuk "admin"
       targetUrl = "/admin/dashboard";
     } else if (roleName === "keuangan") {
       targetUrl = "/keuangan/dashboard";
