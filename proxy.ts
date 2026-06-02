@@ -4,6 +4,7 @@ import { verifyToken, type JwtPayload } from '@/src/lib/jwt';
 
 const ROLE_DASHBOARD_MAP: Record<string, string> = {
   dosen: '/user/dashboard',
+  admin: '/admin/dashboard',
   admin_fakultas: '/admin/dashboard',
   master_admin: '/master_admin/dashboard',
   keuangan: '/keuangan/dashboard',
@@ -15,19 +16,18 @@ function getRedirectUrl(role: string): string {
 
 const PATH_ROLE_MAP: Record<string, string[]> = {
   '/user': ['dosen'],
-  '/admin': ['admin_fakultas', 'master_admin'],
+  '/admin': ['admin', 'admin_fakultas', 'master_admin'],
   '/master_admin': ['master_admin'],
   '/keuangan': ['keuangan'],
 };
 
 const ROLE_TO_COOKIE: Record<string, string> = {
   dosen: 'token_dosen',
+  admin: 'token_admin',
   admin_fakultas: 'token_admin_fakultas',
   master_admin: 'token_master_admin',
   keuangan: 'token_keuangan',
 };
-
-const ALL_TOKEN_COOKIES = Object.values(ROLE_TO_COOKIE);
 
 function findToken(request: NextRequest, allowedRoles: string[]): { token: string; payload: JwtPayload } | null {
   for (const [role, cookieName] of Object.entries(ROLE_TO_COOKIE)) {
@@ -77,11 +77,7 @@ export function proxy(request: NextRequest) {
 
   if (!found) {
     const loginUrl = new URL('/login', request.url);
-    const response = NextResponse.redirect(loginUrl);
-    for (const cookieName of ALL_TOKEN_COOKIES) {
-      response.cookies.delete(cookieName);
-    }
-    return response;
+    return NextResponse.redirect(loginUrl);
   }
 
   const { payload } = found;

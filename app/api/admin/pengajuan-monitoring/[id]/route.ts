@@ -3,7 +3,7 @@ import { prisma } from '@/src/lib/prisma';
 import { headers } from 'next/headers';
 
 function isAdminRole(role: string | null): boolean {
-  return role === 'admin_fakultas' || role === 'master_admin';
+  return role === 'admin_fakultas' || role === 'master_admin' || role === 'admin';
 }
 
 export async function GET(

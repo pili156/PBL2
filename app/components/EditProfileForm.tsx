@@ -21,6 +21,7 @@ type ProfileData = {
 
 const roleDisplayMap: Record<string, string> = {
   dosen: "Dosen",
+  admin: "Admin",
   admin_fakultas: "Admin Fakultas",
   master_admin: "Master Admin",
   keuangan: "Bagian Keuangan",

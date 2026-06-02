@@ -22,10 +22,12 @@ const ROLE_ID_MAP: Record<number, string> = {
   2: 'admin_fakultas',
   3: 'dosen',
   4: 'keuangan',
+  5: 'admin',
 };
 
 const ROLE_DISPLAY: Record<string, string> = {
   master_admin: 'Master Admin',
+  admin: 'Admin',
   admin_fakultas: 'Admin',
   dosen: 'Dosen',
   keuangan: 'Keuangan',
@@ -33,6 +35,7 @@ const ROLE_DISPLAY: Record<string, string> = {
 
 const ROLE_BADGE: Record<string, string> = {
   master_admin: 'bg-purple-100 text-purple-700',
+  admin: 'bg-blue-100 text-blue-700',
   admin_fakultas: 'bg-blue-100 text-blue-700',
   dosen: 'bg-emerald-100 text-emerald-700',
   keuangan: 'bg-amber-100 text-amber-700',

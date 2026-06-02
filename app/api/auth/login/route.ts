@@ -62,7 +62,7 @@ export async function POST(request: Request) {
 
     if (roleName === "master_admin") {
       targetUrl = "/master_admin/dashboard";
-    } else if (roleName === "admin" || roleName === "admin_fakultas") { // PERBAIKAN REDIRECT ADMIN
+    } else if (roleName === "admin" || roleName === "admin_fakultas") {
       targetUrl = "/admin/dashboard";
     } else if (roleName === "keuangan") {
       targetUrl = "/keuangan/dashboard";
@@ -80,14 +80,6 @@ export async function POST(request: Request) {
     const cookieName = `token_${roleName}`;
 
     const cookieStore = await cookies();
-
-    // Hapus cookie token dari role lain biar gak konflik
-    const allTokenCookies = ['token_dosen', 'token_admin_fakultas', 'token_master_admin', 'token_keuangan'];
-    for (const name of allTokenCookies) {
-      if (name !== cookieName) {
-        cookieStore.set(name, '', { maxAge: 0, path: '/' });
-      }
-    }
 
     cookieStore.set(cookieName, token, {
       httpOnly: true,
