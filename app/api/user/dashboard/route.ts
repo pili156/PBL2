@@ -1,12 +1,9 @@
-// app/api/user/dashboard/route.ts
 import { NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
 import { prisma } from '@/src/lib/prisma';
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
-    const cookieStore = await cookies();
-    const userEmail = cookieStore.get('user_email')?.value;
+    const userEmail = request.headers.get('x-user-email');
 
     if (!userEmail) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

@@ -94,7 +94,6 @@ export async function GET(request: Request) {
         tanggal_pengajuan: p.tanggal_pengajuan?.toISOString().split('T')[0] || '',
         total_dokumen: total,
         dokumen_terverifikasi: terverifikasi,
-        alamat_kampus: p.alamat_kampus || '',
       };
     });
 

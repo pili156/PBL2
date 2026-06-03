@@ -6,7 +6,7 @@ const ROLE_DASHBOARD_MAP: Record<string, string> = {
   dosen: '/user/dashboard',
   admin: '/admin/dashboard',
   admin_fakultas: '/admin/dashboard',
-  master_admin: '/master_admin/dashboard',
+  master_admin: '/admin/dashboard',
   keuangan: '/keuangan/dashboard',
 };
 

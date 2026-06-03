@@ -1,145 +1,171 @@
-// app/admin/dashboard/page.tsx
+import { headers } from "next/headers";
 import { prisma } from "@/src/lib/prisma";
+import MasterAdminDashboard from "./MasterAdminDashboard";
 import DashboardClient from "./DashboardClient";
 
-export default async function AdminDashboardPage(props: { searchParams: Promise<{ filter?: string }> }) {
-  
-  const searchParams = await props.searchParams;
-  const filter = searchParams.filter || 'all';
-  
-  // --- 1. LOGIKA FILTER TANGGAL ---
-  let dateFilter: any = {};
-  let skDateFilter: any = {};
-  
-  if (filter === 'bulan') {
-    const oneMonthAgo = new Date();
-    oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
-    dateFilter = { created_at: { gte: oneMonthAgo } };
-    skDateFilter = { tanggal_terbit: { gte: oneMonthAgo } };
-  } else if (filter === 'semester') {
-    const sixMonthsAgo = new Date();
-    sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
-    dateFilter = { created_at: { gte: sixMonthsAgo } };
-    skDateFilter = { tanggal_terbit: { gte: sixMonthsAgo } };
-  } else if (filter === 'tahun') {
-    const oneYearAgo = new Date();
-    oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
-    dateFilter = { created_at: { gte: oneYearAgo } };
-    skDateFilter = { tanggal_terbit: { gte: oneYearAgo } };
+function getDateFilter(filter: string) {
+  const now = new Date();
+  switch (filter) {
+    case "bulan":
+      return { gte: new Date(now.getFullYear(), now.getMonth(), 1) };
+    case "semester":
+      return { gte: new Date(now.getFullYear(), now.getMonth() - 5, 1) };
+    case "tahun":
+      return { gte: new Date(now.getFullYear(), 0, 1) };
+    default:
+      return undefined;
+  }
+}
+
+export default async function AdminDashboardPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}) {
+  const headersList = await headers();
+  const userRole = headersList.get("x-user-role") || "";
+
+  if (userRole === "master_admin") {
+    const params = await searchParams;
+    return (
+      <MasterAdminDashboard
+        dari={typeof params.dari === "string" ? params.dari : undefined}
+        sampai={typeof params.sampai === "string" ? params.sampai : undefined}
+      />
+    );
   }
 
-  // --- 2. DATA KPI UTAMA ---
-  const [pendingVerifikasi, totalSK, khsTerlambat, aktifStudi] = await Promise.all([
-    prisma.dokumenPengajuan.count({ 
-      where: { status_verifikasi: "Pending", ...dateFilter } 
-    }),
-    prisma.skKementerian.count({ 
-      where: skDateFilter 
-    }),
-    prisma.monitoringKhs.count({ 
-      where: { catatan_evaluasi: { contains: "Terlambat", mode: 'insensitive' }, ...dateFilter } 
-    }),
-    prisma.skKementerian.count({ where: { status_studi: "Aktif" } })
-  ]);
+  const params = await searchParams;
+  const filter = typeof params.filter === "string" ? params.filter : "all";
+  const dateFilter = getDateFilter(filter);
+  const dateCondition = dateFilter ? { created_at: dateFilter } : {};
 
-  // --- 3. DATA GRAFIK BAR (Tren Jurusan) ---
-  const daftarJurusan = ["Elektro", "Sipil", "Mesin", "AB", "Akuntansi"];
-  const monitoringData = await Promise.all(
-    daftarJurusan.map(async (jurusan) => {
-      const total = await prisma.pengajuanStudi.count({
-        where: { user: { master_dosen: { unit_kerja: jurusan } }, ...dateFilter }
-      });
-      return { jurusan, total };
-    })
-  );
-
-  // --- 4. DATA GRAFIK PIE (Status Pengajuan) ---
-  const statusDataRaw = await prisma.pengajuanStudi.groupBy({
-    by: ['status_id'],
-    _count: true,
-    where: dateFilter
-  });
-  const masterStatus = await prisma.masterStatusPengajuan.findMany();
-  const grafikStatus = masterStatus.map(s => ({
-    name: s.nama_status || 'Unknown',
-    value: statusDataRaw.find(d => d.status_id === s.id)?._count || 0
-  })).filter(s => s.value > 0);
-
-  // --- 5. DATA TINDAKAN CEPAT (Antrean Pending) ---
-  const urgentTasksRaw = await prisma.dokumenPengajuan.findMany({
-    where: { status_verifikasi: "Pending", ...dateFilter },
-    include: { master_dokumen: true, pengajuan_studi: { include: { user: { include: { master_dosen: true } } } } },
-    take: 4,
-    orderBy: { updated_at: 'asc' }
-  });
-  const urgentTasks = urgentTasksRaw.map(t => ({
-    id: t.id,
-    pengajuan_id: t.pengajuan_id,
-    dosen: t.pengajuan_studi?.user?.master_dosen?.nama_lengkap || 'Dosen',
-    dokumen: t.master_dokumen?.nama_dokumen || 'Berkas',
-    tanggal: t.updated_at?.toISOString() || null
-  }));
-
-  // --- 6. DATA PENGAJUAN BARU MASUK ---
-  const pengajuanBaruRaw = await prisma.pengajuanStudi.findMany({
-    where: dateFilter,
-    include: { user: { include: { master_dosen: true } }, jenis_studi: true, status: true },
-    take: 5,
-    orderBy: { created_at: 'desc' }
-  });
-  const pengajuanBaru = pengajuanBaruRaw.map(p => ({
-    id: p.id,
-    dosen: p.user?.master_dosen?.nama_lengkap || 'Dosen',
-    jenis: p.jenis_studi?.nama_jenis || 'Studi',
-    status: p.status?.nama_status || 'Pending',
-    tanggal: p.created_at?.toISOString() || null
-  }));
-
-  // --- 7. DOKUMEN MELEWATI BATAS REVISI (7 Hari) ---
   const tujuhHariLalu = new Date();
   tujuhHariLalu.setDate(tujuhHariLalu.getDate() - 7);
-  const lewatBatasRaw = await prisma.dokumenPengajuan.findMany({
-    where: {
-      status_verifikasi: { in: ["Revisi", "Ditolak"] },
-      updated_at: { lt: tujuhHariLalu }
-    },
-    include: { master_dokumen: true, pengajuan_studi: { include: { user: { include: { master_dosen: true } } } } },
-    take: 5
-  });
-  const lewatBatas = lewatBatasRaw.map(t => ({
-    id: t.id,
-    pengajuan_id: t.pengajuan_id,
-    dosen: t.pengajuan_studi?.user?.master_dosen?.nama_lengkap || 'Dosen',
-    dokumen: t.master_dokumen?.nama_dokumen || 'Berkas',
-    status: t.status_verifikasi || 'Revisi',
-    tanggalUpdate: t.updated_at?.toISOString() || null
-  }));
 
-  // --- 8. DATA UNTUK EXPORT EXCEL ---
-  const allPengajuan = await prisma.pengajuanStudi.findMany({
-    where: dateFilter,
-    include: { user: { include: { master_dosen: true } }, status: true, jenis_studi: true }
-  });
-  const exportData = allPengajuan.map((p, idx) => ({
-    "No": idx + 1,
-    "Nama Dosen": p.user?.master_dosen?.nama_lengkap || "Unknown",
-    "NIP": p.user?.master_dosen?.nip || "-",
-    "Jurusan": p.user?.master_dosen?.unit_kerja || "-",
-    "Jenis Studi": p.jenis_studi?.nama_jenis || "-",
-    "Status Pengajuan": p.status?.nama_status || "-",
-    "Tanggal Pengajuan": p.created_at ? p.created_at.toLocaleDateString('id-ID') : "-"
-  }));
-
-  const dashboardData = {
-    kpi: { pendingVerifikasi, totalSK, khsTerlambat, aktifStudi },
+  const [
+    pendingVerifikasi,
+    totalSK,
+    khsTerlambat,
+    aktifStudi,
     monitoringData,
-    grafikStatus,
     urgentTasks,
     pengajuanBaru,
+    statusGroups,
+    masterStatuses,
     lewatBatas,
-    exportData,
-    filter
-  };
+  ] = await Promise.all([
+    prisma.dokumenPengajuan.count({ where: { status_verifikasi: "Pending" } }),
+    prisma.skKementerian.count(),
+    prisma.monitoringKhs.count({
+      where: { catatan_evaluasi: { contains: "Terlambat", mode: "insensitive" } },
+    }),
+    prisma.skKementerian.count({ where: { status_studi: "Aktif" } }),
 
-  return <DashboardClient data={dashboardData} />;
+    Promise.all(
+      ["Elektro", "Sipil", "Mesin", "AB", "Akuntansi"].map(async (jurusan) => {
+        const total = await prisma.pengajuanStudi.count({
+          where: { user: { master_dosen: { unit_kerja: jurusan } } },
+        });
+        return { jurusan, total };
+      })
+    ),
+
+    prisma.dokumenPengajuan.findMany({
+      where: { status_verifikasi: "Pending" },
+      include: {
+        master_dokumen: true,
+        pengajuan_studi: {
+          include: { user: { include: { master_dosen: true } } },
+        },
+      },
+      take: 6,
+      orderBy: { updated_at: "asc" },
+    }),
+
+    prisma.pengajuanStudi.findMany({
+      where: dateCondition,
+      include: {
+        user: { include: { master_dosen: true } },
+        dokumen_pengajuan: { include: { master_dokumen: true } },
+        status: true,
+      },
+      orderBy: { created_at: "desc" },
+      take: 5,
+    }),
+
+    prisma.pengajuanStudi.groupBy({
+      by: ["status_id"],
+      _count: true,
+    }),
+    prisma.masterStatusPengajuan.findMany(),
+
+    prisma.dokumenPengajuan.findMany({
+      where: {
+        status_verifikasi: { in: ["Revisi", "Ditolak"] },
+        updated_at: { lt: tujuhHariLalu },
+      },
+      include: {
+        master_dokumen: true,
+        pengajuan_studi: {
+          include: { user: { include: { master_dosen: true } } },
+        },
+      },
+      orderBy: { updated_at: "asc" },
+    }),
+  ]);
+
+  const mappedUrgentTasks = urgentTasks.map((t) => ({
+    id: t.id,
+    dosen: t.pengajuan_studi?.user?.master_dosen?.nama_lengkap || "Dosen",
+    dokumen: t.master_dokumen?.nama_dokumen || "Berkas",
+    pengajuan_id: String(t.pengajuan_studi?.id ?? t.id),
+  }));
+
+  const mappedPengajuanBaru = pengajuanBaru.map((p) => ({
+    id: p.id,
+    dosen: p.user?.master_dosen?.nama_lengkap || "Dosen",
+    jenis: p.dokumen_pengajuan?.[0]?.master_dokumen?.nama_dokumen || "Pengajuan",
+    tanggal: p.created_at?.toISOString() || null,
+    status: p.status?.nama_status || "Pending",
+    pengajuan_id: String(p.id),
+  }));
+
+  const mappedLewatBatas = lewatBatas.map((t) => ({
+    id: t.id,
+    dosen: t.pengajuan_studi?.user?.master_dosen?.nama_lengkap || "Dosen",
+    dokumen: t.master_dokumen?.nama_dokumen || "Berkas",
+    tanggalUpdate: t.updated_at?.toISOString() || null,
+    pengajuan_id: String(t.pengajuan_studi?.id ?? t.id),
+  }));
+
+  const statusMap = new Map(masterStatuses.map((s) => [s.id, s.nama_status]));
+  const grafikStatus = statusGroups
+    .filter((g) => g.status_id !== null)
+    .map((g) => ({
+      name: statusMap.get(g.status_id!) || "Unknown",
+      value: g._count,
+    }));
+
+  const exportData = mappedPengajuanBaru.map((p) => ({
+    Dosen: p.dosen,
+    Jenis: p.jenis,
+    Tanggal: p.tanggal,
+    Status: p.status,
+  }));
+
+  return (
+    <DashboardClient
+      data={{
+        kpi: { aktifStudi, pendingVerifikasi, khsTerlambat, totalSK },
+        monitoringData,
+        pengajuanBaru: mappedPengajuanBaru,
+        urgentTasks: mappedUrgentTasks,
+        lewatBatas: mappedLewatBatas,
+        grafikStatus,
+        exportData,
+        filter,
+      }}
+    />
+  );
 }
