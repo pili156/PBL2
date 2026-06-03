@@ -63,7 +63,7 @@ export default async function DetailKHSUserPage({
           </div>
           
           <div className="flex-1 bg-slate-100 flex flex-col">
-            <div className="bg-[#323639] text-slate-300 px-4 py-2 flex justify-between items-center text-xs font-mono">
+            <div className="bg-slate-700 text-slate-300 px-4 py-2 flex justify-between items-center text-xs font-mono">
               <span>KHS_Semester_{khs.semester_ke}_Tahun_{khs.tahun_akademik?.replace(/\s/g, '_')}.pdf</span>
               <div className="flex items-center gap-4">
                 <span>1 / 1</span>

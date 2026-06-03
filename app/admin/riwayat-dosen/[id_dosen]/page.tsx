@@ -4,6 +4,7 @@ import {
   Calendar, ChevronRight,
 } from 'lucide-react';
 import { notFound } from 'next/navigation';
+import { formatRupiah, formatDate } from '@/src/lib/formatters';
 
 export const dynamic = 'force-dynamic';
 
@@ -11,14 +12,8 @@ interface Props {
   params: Promise<{ id_dosen: string }>;
 }
 
-const formatDate = (date: Date | string | null | undefined) => {
-  if (!date) return '-';
-  const d = typeof date === 'string' ? new Date(date) : date;
-  return d.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
-};
-
 const StatCard = ({ icon: Icon, label, value, color }: { icon: React.ComponentType<{ size?: number; className?: string }>; label: string; value: string; color: string }) => (
-  <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-5">
+  <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-5">
     <div className="flex items-start justify-between mb-3">
       <p className="text-[10px] text-slate-400 font-medium uppercase tracking-wider">{label}</p>
       <div className="p-2 bg-slate-50 rounded-lg"><Icon size={16} className={color} /></div>
@@ -86,9 +81,6 @@ export default async function DashboardDosen({ params }: Props) {
     .filter((r) => r.status_pencairan === 'DICAIRKAN')
     .reduce((s, r) => s + Number(r.nominal || 0), 0);
 
-  const formatRupiah = (angka: number) =>
-    new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(angka);
-
   const steps = [
     { label: 'Pengajuan', sub: formatDate(pengajuan.tanggal_pengajuan), done: true },
     { label: 'Persetujuan', sub: isDisetujui ? 'Disetujui' : 'Proses', done: isDisetujui },
@@ -154,7 +146,7 @@ export default async function DashboardDosen({ params }: Props) {
           </div>
 
           {skKementerian && (
-            <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-6">
+      <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
               <h4 className="text-sm font-semibold text-slate-800 mb-4">SK Tugas Belajar</h4>
               <div className="flex items-center justify-between p-4 bg-slate-50 rounded-lg">
                 <div>

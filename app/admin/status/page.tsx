@@ -12,25 +12,24 @@ export default async function MonitoringPengajuanPage() {
   });
 
   return (
-    <div className="p-8 bg-[#F8FAFC] min-h-screen">
-      {/* Header Baru sesuai permintaan */}
+    <div className="p-8 bg-slate-50 min-h-screen">
       <div className="mb-2">
-        <p className="text-sm text-gray-400 font-medium">
-          Dashboard {'>'} <span className="text-[#0085FF] font-bold">Status</span>
+        <p className="text-sm text-slate-400 font-medium">
+          Dashboard {'>'} <span className="text-blue-600 font-bold">Status</span>
         </p>
       </div>
-      <h1 className="text-3xl font-bold text-[#0A192F] mb-10">Status Pengajuan Dosen</h1>
+      <h1 className="text-3xl font-bold text-slate-900 mb-10">Status Pengajuan Dosen</h1>
 
       {/* Filter & Search - Tetap simpel sesuai image_4ab16e */}
       <div className="flex items-center justify-between gap-6 mb-8">
         <div className="flex gap-8">
           <div className="flex items-center gap-2 cursor-pointer group">
-            <span className="text-sm font-bold text-gray-500 group-hover:text-gray-700">Semua Semester</span>
-            <span className="text-[10px] text-gray-400">▼</span>
-          </div>
-          <div className="flex items-center gap-2 cursor-pointer group">
-            <span className="text-sm font-bold text-gray-500 group-hover:text-gray-700">Semua Status</span>
-            <span className="text-[10px] text-gray-400">▼</span>
+          <span className="text-sm font-bold text-slate-500 group-hover:text-slate-700">Semua Semester</span>
+          <span className="text-[10px] text-slate-400">▼</span>
+        </div>
+        <div className="flex items-center gap-2 cursor-pointer group">
+          <span className="text-sm font-bold text-slate-500 group-hover:text-slate-700">Semua Status</span>
+          <span className="text-[10px] text-slate-400">▼</span>
           </div>
         </div>
 
@@ -38,37 +37,36 @@ export default async function MonitoringPengajuanPage() {
           <input 
             type="text" 
             placeholder="Cari Dosen / NIP..." 
-            className="w-full pl-6 pr-12 py-3 bg-white border border-gray-200 rounded-full outline-none focus:border-blue-500 text-sm shadow-sm"
+            className="w-full pl-6 pr-12 py-3 bg-white border border-slate-200 rounded-full outline-none focus:border-blue-500 text-sm shadow-sm"
           />
-          <Search className="absolute right-5 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+          <Search className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
         </div>
       </div>
 
-      {/* Tabel - Persis seperti image_4a4bd6 & image_4ab16e */}
-      <div className="bg-white rounded-3xl shadow-sm border border-gray-50 p-4">
+      <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
         <table className="w-full text-left">
           <thead>
-            <tr className="border-b border-gray-50">
-              <th className="p-6 text-[11px] font-black text-gray-400 uppercase tracking-widest">No</th>
-              <th className="p-6 text-[11px] font-black text-gray-400 uppercase tracking-widest">Nama Dosen</th>
-              <th className="p-6 text-[11px] font-black text-gray-400 uppercase tracking-widest">NIP</th>
-              <th className="p-6 text-[11px] font-black text-gray-400 uppercase tracking-widest text-center">Status</th>
-              <th className="p-6 text-[11px] font-black text-gray-400 uppercase tracking-widest text-center">Aksi</th>
+            <tr className="border-b border-slate-200">
+              <th className="p-6 text-xs font-bold text-slate-500 uppercase tracking-wider">No</th>
+              <th className="p-6 text-xs font-bold text-slate-500 uppercase tracking-wider">Nama Dosen</th>
+              <th className="p-6 text-xs font-bold text-slate-500 uppercase tracking-wider">NIP</th>
+              <th className="p-6 text-xs font-bold text-slate-500 uppercase tracking-wider text-center">Status</th>
+              <th className="p-6 text-xs font-bold text-slate-500 uppercase tracking-wider text-center">Aksi</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-50">
+          <tbody className="divide-y divide-slate-100">
             {pengajuan.map((item, index) => (
-              <tr key={item.id} className="hover:bg-gray-50/30 transition-colors">
-                <td className="p-6 text-sm font-bold text-gray-400 text-center w-20">{index + 1}.</td>
-                <td className="p-6 text-sm font-bold text-gray-700">{item.user?.master_dosen?.nama_lengkap || "-"}</td>
-                <td className="p-6 text-sm font-medium text-gray-400">{item.user?.master_dosen?.nip || "-"}</td>
+              <tr key={item.id} className="hover:bg-slate-50/30 transition-colors">
+                <td className="p-6 text-sm font-bold text-slate-400 text-center w-20">{index + 1}.</td>
+                <td className="p-6 text-sm font-bold text-slate-700">{item.user?.master_dosen?.nama_lengkap || "-"}</td>
+                <td className="p-6 text-sm font-medium text-slate-400">{item.user?.master_dosen?.nip || "-"}</td>
                 <td className="p-6 text-center">
-                  <span className={`px-6 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest ${
+                  <span className={`px-3 py-1.5 rounded-lg text-xs font-bold ${
                     item.status?.nama_status === 'DITERIMA' 
-                      ? 'bg-[#C4F2C9] text-[#2D7336]' 
+                      ? 'text-emerald-700 bg-emerald-50 border border-emerald-200' 
                       : item.status?.nama_status === 'REVISI'
-                      ? 'bg-[#FFEFD2] text-[#B38B3F]'
-                      : 'bg-[#FFE2E2] text-[#CC3333]'
+                      ? 'text-amber-700 bg-amber-50 border border-amber-200'
+                      : 'text-rose-700 bg-rose-50 border border-rose-200'
                   }`}>
                     {item.status?.nama_status || "PENDING"}
                   </span>
@@ -76,7 +74,7 @@ export default async function MonitoringPengajuanPage() {
                 <td className="p-6 text-center">
                   <Link 
                     href={`/admin/status/${item.id}`}
-                    className="text-[11px] font-black uppercase tracking-widest text-gray-400 hover:text-[#0085FF] transition-colors"
+                    className="text-xs font-bold text-slate-500 hover:text-blue-600 transition-colors"
                   >
                     Review
                   </Link>

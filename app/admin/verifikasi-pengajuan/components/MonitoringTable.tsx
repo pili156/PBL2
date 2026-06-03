@@ -20,29 +20,29 @@ export default function MonitoringTable({
   const getStatusColor = (status: string) => {
     switch (status) {
       case "Terverifikasi":
-        return "text-green-600 bg-green-50";
+        return "text-emerald-700 bg-emerald-50 border border-emerald-200";
       case "Revisi":
-        return "text-red-600 bg-red-50";
+        return "text-rose-700 bg-rose-50 border border-rose-200";
       case "Pending":
-        return "text-yellow-600 bg-yellow-50";
+        return "text-amber-700 bg-amber-50 border border-amber-200";
       default:
-        return "text-slate-600 bg-slate-50";
+        return "text-slate-600 bg-slate-50 border border-slate-200";
     }
   };
 
   return (
-    <div className="bg-white rounded-lg border border-slate-200 overflow-hidden">
+    <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
       <div className="overflow-x-auto">
         <table className="w-full">
           <thead className="bg-slate-50 border-b border-slate-200">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-semibold text-slate-700">No</th>
-              <th className="px-6 py-3 text-left text-xs font-semibold text-slate-700">Nama Dosen</th>
-              <th className="px-6 py-3 text-left text-xs font-semibold text-slate-700">NIP</th>
-              <th className="px-6 py-3 text-left text-xs font-semibold text-slate-700">Proses</th>
-              <th className="px-6 py-3 text-left text-xs font-semibold text-slate-700">Tanggal Unggah</th>
-              <th className="px-6 py-3 text-left text-xs font-semibold text-slate-700">Status</th>
-              <th className="px-6 py-3 text-left text-xs font-semibold text-slate-700">Aksi</th>
+              <th className="px-6 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">No</th>
+              <th className="px-6 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Nama Dosen</th>
+              <th className="px-6 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">NIP</th>
+              <th className="px-6 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Proses</th>
+              <th className="px-6 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Tanggal Unggah</th>
+              <th className="px-6 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Status</th>
+              <th className="px-6 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Aksi</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-200">
@@ -68,7 +68,7 @@ export default function MonitoringTable({
                 </td>
                 <td className="px-6 py-4">
                   <span
-                    className={`inline-block px-3 py-1 rounded-full text-xs font-semibold capitalize ${getStatusColor(
+                    className={`inline-block px-3 py-1.5 rounded-lg text-xs font-bold ${getStatusColor(
                       item.status
                     )}`}
                   >

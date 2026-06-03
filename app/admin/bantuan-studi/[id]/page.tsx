@@ -4,31 +4,8 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, CheckCircle2, Download, FileText, Loader2 } from "lucide-react";
-
-function formatDate(dateValue?: string | Date | null) {
-  if (!dateValue) return "-";
-  return new Date(dateValue).toLocaleDateString("id-ID", {
-    day: "2-digit", month: "long", year: "numeric",
-  });
-}
-
-function normalizeStatus(status?: string | null) {
-  if (!status) return "Pending";
-  const text = status.toLowerCase();
-  if (text.includes("selesai") || text.includes("completed")) return "Selesai";
-  if (text.includes("disetujui") || text.includes("diterima")) return "Disetujui";
-  if (text.includes("revisi") || text.includes("ditolak")) return "Perlu Revisi";
-  return "Diproses";
-}
-
-function statusBadge(status: string) {
-  switch (status) {
-    case "Disetujui": return "text-emerald-700 bg-emerald-100";
-    case "Selesai": return "text-sky-700 bg-sky-100";
-    case "Perlu Revisi": return "text-orange-700 bg-orange-100";
-    default: return "text-amber-700 bg-amber-100";
-  }
-}
+import { formatDateLong } from "@/src/lib/formatters";
+import { normalizeStatus, statusBadgeClass } from "@/src/lib/status-utils";
 
 type DetailData = {
   id: number;
@@ -186,7 +163,7 @@ export default function AdminBantuanStudiDetailPage() {
             <p className="text-sm text-slate-500">Detail pengajuan bantuan studi.</p>
           </div>
         </div>
-        <div className={`rounded-3xl px-5 py-4 text-sm font-semibold ${statusBadge(statusLabel)}`}>
+        <div className={`rounded-3xl px-5 py-4 text-sm font-semibold ${statusBadgeClass(statusLabel)}`}>
           {statusLabel}
         </div>
       </div>
@@ -201,7 +178,7 @@ export default function AdminBantuanStudiDetailPage() {
               {data.pengajuan_studi?.user?.master_dosen?.nama_lengkap || data.pengajuan_studi?.user?.username || "Dosen"}
             </h2>
             <p className="text-sm text-slate-500">
-              NIP: {data.pengajuan_studi?.user?.master_dosen?.nip || "-"} • Diajukan {formatDate(data.created_at)}
+              NIP: {data.pengajuan_studi?.user?.master_dosen?.nip || "-"} • Diajukan {formatDateLong(data.created_at)}
             </p>
           </div>
           <div className="rounded-3xl bg-slate-50 p-5">

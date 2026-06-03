@@ -63,7 +63,7 @@ export default async function LaporanKHSUserPage() {
     <div className="w-full space-y-6 animate-in fade-in duration-500">
       
       <div>
-        <h2 className="text-2xl font-bold text-slate-800">KHS Saya</h2>
+        <h1 className="text-2xl font-bold text-slate-800">KHS Saya</h1>
         <p className="text-sm text-slate-500 mt-1">Kelola dan pantau dokumen KHS Anda</p>
       </div>
 
@@ -91,7 +91,7 @@ export default async function LaporanKHSUserPage() {
           </div>
         </div>
 
-        <div className={`border rounded-xl p-4 text-center min-w-[140px] ${pengajuanAktif ? 'bg-[#F0FDF4] border-emerald-100' : 'bg-slate-50 border-slate-200'}`}>
+        <div className={`border rounded-xl p-4 text-center min-w-[140px] ${pengajuanAktif ? 'bg-emerald-50 border-emerald-100' : 'bg-slate-50 border-slate-200'}`}>
           <p className={`text-xs font-semibold mb-1 ${pengajuanAktif ? 'text-emerald-600' : 'text-slate-500'}`}>Status Studi</p>
           <p className={`text-xl font-black ${pengajuanAktif ? 'text-emerald-600' : 'text-slate-700'}`}>
             {pengajuanAktif ? 'Aktif' : 'Belum Mulai'}
@@ -115,7 +115,7 @@ export default async function LaporanKHSUserPage() {
       <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6 space-y-6">
         
         <div className="flex flex-col sm:flex-row justify-between items-center gap-4 border-b border-slate-100 pb-4">
-          <h3 className="text-lg font-bold text-slate-800">Riwayat KHS</h3>
+          <h3 className="text-base font-bold text-slate-800">Riwayat KHS</h3>
           <Link 
             href="/user/laporanKHS/upload" 
             className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-blue-700 transition-colors shadow-sm"
@@ -212,7 +212,7 @@ export default async function LaporanKHSUserPage() {
           </table>
         </div>
 
-        <div className="mt-6 bg-[#F8FAFC] border border-blue-100 rounded-lg p-4 flex flex-col sm:flex-row gap-4 sm:items-center text-xs">
+        <div className="mt-6 bg-slate-50 border border-blue-100 rounded-lg p-4 flex flex-col sm:flex-row gap-4 sm:items-center text-xs">
           <div className="flex items-center gap-2 text-blue-600 font-bold shrink-0">
             <Info size={16} /> Keterangan Status:
           </div>

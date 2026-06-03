@@ -2,17 +2,9 @@ import { headers } from "next/headers";
 import Link from "next/link";
 import { prisma } from "@/src/lib/prisma";
 import { Plus, Download } from "lucide-react";
+import { formatRupiah } from "@/src/lib/formatters";
 
 export const dynamic = "force-dynamic";
-
-function formatRupiah(value: unknown) {
-  if (value === null || value === undefined) return "-";
-  const numericValue = typeof value === "object" && value !== null && "toNumber" in value
-    ? Number((value as { toNumber: () => number }).toNumber())
-    : Number(value);
-  if (Number.isNaN(numericValue)) return "-";
-  return `Rp ${numericValue.toLocaleString("id-ID", { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
-}
 
 function normalizeStatus(status?: string | null) {
   if (!status) return "Diproses";

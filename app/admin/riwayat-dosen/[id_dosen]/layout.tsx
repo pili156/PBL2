@@ -3,6 +3,7 @@ import { ArrowLeft, Download, GraduationCap, BookOpen, Wallet } from 'lucide-rea
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import TabNavigation from './TabNavigation';
+import { formatRupiah } from '@/src/lib/formatters';
 
 export const dynamic = 'force-dynamic';
 
@@ -51,9 +52,6 @@ export default async function DetailDosenLayout({ children, params }: LayoutProp
   const totalCair = latestPengajuan?.pengajuan_reimbursement
     ?.filter((r) => r.status_pencairan === 'DICAIRKAN')
     .reduce((sum, r) => sum + Number(r.nominal || 0), 0) || 0;
-
-  const formatRupiah = (angka: number) =>
-    new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(angka);
 
   return (
     <div className="space-y-6">

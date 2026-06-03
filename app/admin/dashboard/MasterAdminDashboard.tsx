@@ -13,17 +13,7 @@ import { prisma } from "@/src/lib/prisma";
 import BarChartRegistrasi from "./BarChartRegistrasi";
 import PieChartRole from "./PieChartRole";
 import DateFilter from "./DateFilter";
-
-function formatDate(date: Date | null | undefined): string {
-  if (!date) return "-";
-  return date.toLocaleDateString("id-ID", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-}
+import { formatDateTime } from "@/src/lib/formatters";
 
 export default async function MasterAdminDashboard({
   dari,
@@ -130,7 +120,7 @@ export default async function MasterAdminDashboard({
     <div className="p-6 bg-slate-50 min-h-screen space-y-8">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Dashboard Master Admin</h1>
+          <h1 className="text-2xl font-bold text-slate-800">Dashboard Master Admin</h1>
           <p className="text-slate-500">Pantau aktivitas sistem, kelola pengguna, dan tinjau log aktivitas secara real-time.</p>
         </div>
         <div className="flex items-center gap-3">
@@ -177,10 +167,10 @@ export default async function MasterAdminDashboard({
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white p-8 rounded-xl border border-slate-200 shadow-sm">
+        <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
           <div className="flex items-center justify-between mb-2">
             <div>
-              <h3 className="text-xl font-bold text-slate-800">Registrasi User per Bulan</h3>
+              <h3 className="text-base font-bold text-slate-800">Registrasi User per Bulan</h3>
               <p className="text-sm text-slate-400">
                 {dateFilterStart || dateFilterEnd
                   ? "Tren pendaftaran berdasarkan filter tanggal."
@@ -194,10 +184,10 @@ export default async function MasterAdminDashboard({
           <BarChartRegistrasi data={monthlyData} />
         </div>
 
-        <div className="bg-white p-8 rounded-xl border border-slate-200 shadow-sm">
+        <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
           <div className="flex items-center justify-between mb-2">
             <div>
-              <h3 className="text-xl font-bold text-slate-800">Distribusi User by Role</h3>
+              <h3 className="text-base font-bold text-slate-800">Distribusi User by Role</h3>
               <p className="text-sm text-slate-400">Komposisi pengguna berdasarkan peran akses.</p>
             </div>
             <div className="p-3 bg-purple-50 rounded-full text-purple-600">
@@ -208,7 +198,7 @@ export default async function MasterAdminDashboard({
         </div>
       </div>
 
-      <div className="bg-white p-8 rounded-xl border border-slate-200 shadow-sm">
+      <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
         <div className="flex items-center justify-between mb-6">
           <div>
             <h3 className="text-xl font-bold text-slate-800">Aktivitas Terbaru</h3>
@@ -233,7 +223,7 @@ export default async function MasterAdminDashboard({
               <tbody>
                 {recentLogs.map((log) => (
                   <tr key={log.id} className="border-b border-slate-100 hover:bg-slate-50">
-                    <td className="py-3 px-2 text-slate-600 whitespace-nowrap">{formatDate(log.created_at)}</td>
+                    <td className="py-3 px-2 text-slate-600 whitespace-nowrap">{formatDateTime(log.created_at)}</td>
                     <td className="py-3 px-2 font-medium text-slate-800">
                       {log.user?.username || log.user?.email || log.created_by || "-"}
                     </td>
@@ -348,7 +338,7 @@ function KpiCard({
 
   return (
     <div
-      className={`bg-white p-6 rounded-2xl border shadow-sm transition-all hover:-translate-y-1 ${
+      className={`bg-white p-6 rounded-xl border shadow-sm transition-all hover:-translate-y-1 ${
         isUrgent ? "border-rose-200 ring-4 ring-rose-50" : "border-slate-200"
       }`}
     >

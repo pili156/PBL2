@@ -2,18 +2,13 @@ import { prisma } from '@/src/lib/prisma';
 import { Eye, BarChart3, Plus, FileText } from 'lucide-react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import { formatDateLong } from '@/src/lib/formatters';
 
 export const dynamic = 'force-dynamic';
 
 interface Props {
   params: Promise<{ id_dosen: string }>;
 }
-
-const formatDate = (date: Date | string | null | undefined) => {
-  if (!date) return 'Belum upload';
-  const d = typeof date === 'string' ? new Date(date) : date;
-  return d.toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' });
-};
 
 const IpkBar = ({ ipk, semester }: { ipk: number; semester: number }) => {
   const pct = Math.min((ipk / 4) * 100, 100);
@@ -149,7 +144,7 @@ export default async function RiwayatStudi({ params }: Props) {
                         </span>
                       </td>
                       <td className="px-5 py-3.5 text-sm text-slate-600">{k.semester_ke ? 20 : '-'}</td>
-                      <td className="px-5 py-3.5 text-sm text-slate-500">{formatDate(k.tanggal_unggah)}</td>
+                      <td className="px-5 py-3.5 text-sm text-slate-500">{formatDateLong(k.tanggal_unggah)}</td>
                       <td className="px-5 py-3.5 text-center">
                         {isDisabled ? (
                           <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-50 text-slate-400 text-xs font-medium rounded-lg cursor-not-allowed">

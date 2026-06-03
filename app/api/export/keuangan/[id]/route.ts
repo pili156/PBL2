@@ -2,14 +2,9 @@ import { prisma } from '@/src/lib/prisma';
 import { exportRiwayatKeuangan, type RiwayatKeuanganRow } from '@/src/lib/export-excel';
 import { logActivity } from '@/src/lib/activity-log';
 import { NextResponse } from 'next/server';
+import { formatRupiah, formatDate } from '@/src/lib/formatters';
 
 export const dynamic = 'force-dynamic';
-
-const formatDate = (d: string | null | undefined) =>
-  d ? new Date(d).toLocaleDateString('id-ID') : '-';
-
-const formatRupiah = (n: number) =>
-  new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(n);
 
 export async function GET(
   _req: Request,

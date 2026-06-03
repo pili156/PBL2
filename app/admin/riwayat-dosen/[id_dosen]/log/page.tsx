@@ -5,17 +5,13 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import { formatDateTime } from '@/src/lib/formatters';
 
 export const dynamic = 'force-dynamic';
 
 interface Props {
   params: Promise<{ id_dosen: string }>;
 }
-
-const formatDateTime = (date: Date | null | undefined) => {
-  if (!date) return '';
-  return date.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' }) + ' WIB';
-};
 
 type ActivityType = 'upload' | 'verifikasi' | 'revisi' | 'pencairan' | 'surat' | 'komunikasi' | 'manual';
 

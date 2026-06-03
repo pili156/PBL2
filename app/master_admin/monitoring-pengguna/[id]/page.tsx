@@ -9,6 +9,7 @@ import { revalidatePath } from 'next/cache';
 import { updateUserById, resetPassword } from '../actions';
 import DeleteUserButton from './DeleteUserButton';
 import ToggleSwitch from '../ToggleSwitch';
+import { formatDateTime } from '@/src/lib/formatters';
 
 export const dynamic = 'force-dynamic';
 
@@ -18,14 +19,6 @@ const ROLE_OPTIONS = [
   { id: 3, name: 'Dosen' },
   { id: 4, name: 'Keuangan' },
 ];
-
-const formatDate = (date: Date | null | undefined) => {
-  if (!date) return '-';
-  return date.toLocaleDateString('id-ID', {
-    day: '2-digit', month: 'short', year: 'numeric',
-    hour: '2-digit', minute: '2-digit',
-  });
-};
 
 async function updateUserAction(formData: FormData) {
   'use server';
@@ -275,7 +268,7 @@ export default async function EditUserPage({ params }: Props) {
               ) : (
                 user.activity_logs.map((log) => (
                   <tr key={log.id} className="border-b border-slate-50 last:border-0 hover:bg-slate-50/50 transition-colors">
-                    <td className="px-5 py-3 text-xs text-slate-400 whitespace-nowrap">{formatDate(log.created_at)}</td>
+                    <td className="px-5 py-3 text-xs text-slate-400 whitespace-nowrap">{formatDateTime(log.created_at)}</td>
                     <td className="px-5 py-3 text-sm text-slate-600">{log.aktivitas || '-'}</td>
                     <td className="px-5 py-3">
                       <span className="inline-block px-2 py-0.5 text-[11px] font-semibold rounded-full bg-slate-100 text-slate-600">

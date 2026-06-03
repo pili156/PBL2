@@ -2,17 +2,13 @@ import { prisma } from '@/src/lib/prisma';
 import { ArrowLeft, Download, FileText, Calendar, BookOpen, Target, User } from 'lucide-react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import { formatDateLong } from '@/src/lib/formatters';
 
 export const dynamic = 'force-dynamic';
 
 interface Props {
   params: Promise<{ id_dosen: string; id: string }>;
 }
-
-const formatDate = (date: Date | null | undefined) => {
-  if (!date) return '-';
-  return date.toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' });
-};
 
 export default async function DetailKhsPage({ params }: Props) {
   const { id_dosen, id } = await params;
@@ -42,7 +38,7 @@ export default async function DetailKhsPage({ params }: Props) {
     { icon: BookOpen, label: 'Semester', value: `Semester ${khs.semester_ke || '-'}` },
     { icon: Calendar, label: 'Tahun Akademik', value: khs.tahun_akademik || '-' },
     { icon: User, label: 'Dosen', value: namaDosen },
-    { icon: Calendar, label: 'Tanggal Upload', value: formatDate(khs.tanggal_unggah) },
+    { icon: Calendar, label: 'Tanggal Upload', value: formatDateLong(khs.tanggal_unggah) },
     { icon: Target, label: 'IPK', value: `${ipkValue} / 4.00`, highlight: true },
   ];
 

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { AlertCircle, CheckCircle } from "lucide-react";
 import Step1JenisStudi from "./components/Step1JenisStudi";
 import Step2Dokumen from "./components/Step2Dokumen";
 import Step3DocumentUpload from "./components/Step3DocumentUpload";
@@ -56,8 +57,6 @@ export default function PengajuanPage() {
       try {
         const res = await fetch('/api/master-data');
         const data = await res.json();
-        console.log('[DEBUG] Master Data received:', data);
-        console.log('[DEBUG] jalurPendanaan:', data.jalurPendanaan);
         setMasterData({
           jenisStudi: data.jenisStudi || [],
           jalurPendanaan: data.jalurPendanaan || [],
@@ -75,26 +74,26 @@ export default function PengajuanPage() {
       try {
         const response = await fetch('/api/user/pengajuan');
         
-        console.log('[DEBUG] Check pengajuan - Status:', response.status);
+        //
         
         if (response.status === 404) {
-          console.log('[DEBUG] Tidak ada pengajuan, mulai dari awal');
+          //
           setIsInitialized(true);
           return;
         }
 
         if (response.status === 401) {
-          console.log('[DEBUG] Unauthorized, redirect ke login');
+          //
           window.location.href = '/login';
           return;
         }
 
         if (response.ok) {
           const data = await response.json();
-          console.log('[DEBUG] Data pengajuan:', JSON.stringify(data));
+          //
           
           if (COMPLETED_STATUSES.includes(data.status)) {
-            console.log('[DEBUG] Pengajuan sudah selesai, tampilkan status');
+            //
             setHasCompletedPengajuan(true);
             setFlowStep("completed");
           } else {
@@ -102,11 +101,11 @@ export default function PengajuanPage() {
             const hasSk = data.sk && data.sk.file_sk_path;
             
             if (hasDocuments || hasSk) {
-              console.log('[DEBUG] Pengajuan ada dokumen/SK, tampilkan status');
+              //
               setHasCompletedPengajuan(true);
               setFlowStep("completed");
             } else {
-              console.log('[DEBUG] Pengajuan kosong, hapus dan mulai ulang');
+              //
               await fetch('/api/user/pengajuan', { method: 'DELETE' });
             }
           }
@@ -282,7 +281,7 @@ export default function PengajuanPage() {
 
   if (!isInitialized) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-50">
+      <div className="flex items-center justify-center min-h-screen bg-slate-50">
         <div className="flex flex-col items-center gap-4">
           <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
           <p className="text-slate-500">Memuat...</p>
@@ -292,18 +291,18 @@ export default function PengajuanPage() {
   }
 
   return (
-    <div className="flex gap-8 min-h-screen bg-gray-50 p-4 md:p-8">
+    <div className="flex gap-8 min-h-screen bg-slate-50 p-4 md:p-8">
       <div className="flex-1">
         {error && (
-          <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg flex items-start justify-between">
+          <div className="mb-4 p-4 bg-rose-50 border border-rose-200 rounded-xl flex items-start justify-between">
             <div className="flex items-start gap-3">
-              <div className="text-red-600 text-lg">⚠️</div>
+              <AlertCircle size={20} className="text-rose-600 mt-0.5" />
               <div>
-                <p className="font-semibold text-red-800">Terjadi Kesalahan</p>
-                <p className="text-sm text-red-700">{error}</p>
+                <p className="font-semibold text-rose-800">Terjadi Kesalahan</p>
+                <p className="text-sm text-rose-700">{error}</p>
               </div>
             </div>
-            <button onClick={clearError} className="text-red-500 hover:text-red-700">
+            <button onClick={clearError} className="text-rose-500 hover:text-rose-700">
               ✕
             </button>
           </div>
@@ -334,13 +333,13 @@ export default function PengajuanPage() {
 
           {flowStep === "completed" && (
             <div className="space-y-6">
-              <div className="bg-green-50 border border-green-200 rounded-lg p-4 flex items-center gap-3">
-                <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
-                  <span className="text-green-600 text-xl">✓</span>
+              <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4 flex items-center gap-3">
+                <div className="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center">
+                  <CheckCircle size={20} className="text-emerald-600" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-green-900">Pengajuan Berhasil Dikirim</h3>
-                  <p className="text-sm text-green-700">Pengajuan Anda akan diproses dalam 2-5 hari kerja.</p>
+                  <h3 className="font-semibold text-emerald-900">Pengajuan Berhasil Dikirim</h3>
+                  <p className="text-sm text-emerald-700">Pengajuan Anda akan diproses dalam 2-5 hari kerja.</p>
                 </div>
               </div>
               <DocumentStatusList />
@@ -349,7 +348,7 @@ export default function PengajuanPage() {
                   onClick={() => {
                     window.location.href = "/user/dashboard";
                   }}
-                  className="inline-flex items-center gap-2 px-6 py-3 bg-gray-200 text-gray-700 rounded-lg font-semibold hover:bg-gray-300 transition-all"
+                  className="inline-flex items-center gap-2 px-6 py-3 bg-slate-200 text-slate-700 rounded-lg font-semibold hover:bg-slate-300 transition-all"
                 >
                   Kembali ke Dashboard
                 </button>

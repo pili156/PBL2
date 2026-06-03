@@ -2,18 +2,13 @@ import { prisma } from '@/src/lib/prisma';
 import { FileText, Download, Landmark, Eye, File, FileSpreadsheet, FileImage, Plus } from 'lucide-react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import { formatDateLong } from '@/src/lib/formatters';
 
 export const dynamic = 'force-dynamic';
 
 interface Props {
   params: Promise<{ id_dosen: string }>;
 }
-
-const formatDate = (date: Date | string | null | undefined) => {
-  if (!date) return '-';
-  const d = typeof date === 'string' ? new Date(date) : date;
-  return d.toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' });
-};
 
 const fileIcon = (path: string | null | undefined) => {
   if (!path) return File;
@@ -90,7 +85,7 @@ export default async function DokumenSuratPage({ params }: Props) {
         name: (sk.nomor_sk as string) || 'SK Tugas Belajar',
         date: sk.tanggal_terbit ? new Date(sk.tanggal_terbit as string) : null,
         path: sk.file_sk_path as string | null,
-        meta: `Terbit: ${formatDate(sk.tanggal_terbit ? new Date(sk.tanggal_terbit as string) : null)}`,
+        meta: `Terbit: ${formatDateLong(sk.tanggal_terbit ? new Date(sk.tanggal_terbit as string) : null)}`,
       })),
     });
   }
@@ -104,7 +99,7 @@ export default async function DokumenSuratPage({ params }: Props) {
         name: ((doc.master_dokumen as Record<string, unknown> | null)?.nama_dokumen as string) || 'Dokumen',
         date: doc.created_at ? new Date(doc.created_at as string) : null,
         path: doc.file_path as string | null,
-        meta: `Upload: ${formatDate(doc.created_at ? new Date(doc.created_at as string) : null)}`,
+        meta: `Upload: ${formatDateLong(doc.created_at ? new Date(doc.created_at as string) : null)}`,
       })),
     });
   }

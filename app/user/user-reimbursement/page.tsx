@@ -2,33 +2,8 @@ import Link from "next/link";
 import { headers } from "next/headers";
 import { prisma } from "@/src/lib/prisma";
 import { Clock3, CheckCircle2, FileText, Plus, AlertCircle } from "lucide-react";
-
-function formatRupiah(value: unknown) {
-  if (value === null || value === undefined) return "-";
-  const numericValue = typeof value === "object" && value !== null && "toNumber" in value
-    ? Number((value as { toNumber: () => number }).toNumber())
-    : Number(value);
-  if (Number.isNaN(numericValue)) return "-";
-  return `Rp ${numericValue.toLocaleString("id-ID", { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
-}
-
-function normalizeStatus(status?: string | null) {
-  if (!status) return "Pending";
-  const text = status.toLowerCase();
-  if (text.includes("selesai") || text.includes("completed")) return "Selesai";
-  if (text.includes("disetujui") || text.includes("approved") || text.includes("diterima")) return "Disetujui";
-  if (text.includes("revisi") || text.includes("ditolak")) return "Perlu Revisi";
-  return "Diproses";
-}
-
-function statusClasses(status: string) {
-  switch (status) {
-    case "Disetujui": return "text-emerald-600 bg-emerald-50 border-emerald-100";
-    case "Selesai": return "text-sky-600 bg-sky-50 border-sky-100";
-    case "Perlu Revisi": return "text-orange-600 bg-orange-50 border-orange-100";
-    default: return "text-amber-600 bg-amber-50 border-amber-100";
-  }
-}
+import { formatRupiah } from "@/src/lib/formatters";
+import { normalizeStatus, statusBadgeClass } from "@/src/lib/status-utils";
 
 const STATUS_CARDS = [
   { label: "Total Pengajuan", key: "total", icon: FileText },
@@ -82,7 +57,7 @@ export default async function BantuanStudiPage() {
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
       <div className="space-y-2">
-        <h1 className="text-3xl font-bold text-slate-900">Bantuan Studi Saya</h1>
+        <h1 className="text-2xl font-bold text-slate-800">Bantuan Studi Saya</h1>
         <p className="text-sm text-slate-500">Ajukan dan pantau permohonan bantuan studi lanjut Anda.</p>
       </div>
 
@@ -90,13 +65,13 @@ export default async function BantuanStudiPage() {
         {STATUS_CARDS.map((card) => {
           const Icon = card.icon;
           return (
-            <div key={card.key} className="rounded-3xl bg-white border border-slate-200 p-6 shadow-sm flex items-center gap-4">
+            <div key={card.key} className="rounded-xl bg-white border border-slate-200 p-6 shadow-sm flex items-center gap-4">
               <div className="w-14 h-14 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-700">
                 <Icon size={24} />
               </div>
               <div>
                 <p className="text-sm text-slate-500">{card.label}</p>
-                <p className="text-3xl font-semibold text-slate-900">{counts[card.key as keyof typeof counts]}</p>
+                <p className="text-3xl font-bold text-slate-800">{counts[card.key as keyof typeof counts]}</p>
                 <p className="text-xs uppercase tracking-[0.18em] text-slate-400 mt-1">Pengajuan</p>
               </div>
             </div>
@@ -104,14 +79,14 @@ export default async function BantuanStudiPage() {
         })}
       </div>
 
-      <div className="bg-white rounded-[28px] border border-slate-200 shadow-sm p-6">
+      <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h2 className="text-xl font-semibold text-slate-900">Daftar Pengajuan Bantuan Studi</h2>
+            <h2 className="text-base font-bold text-slate-800">Daftar Pengajuan Bantuan Studi</h2>
           </div>
           <Link
             href="/user/user-reimbursement/ajukan"
-            className="inline-flex items-center justify-center gap-2 rounded-full bg-blue-600 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700"
+            className="inline-flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700"
           >
             <Plus size={16} /> Ajukan Baru
           </Link>
@@ -120,7 +95,7 @@ export default async function BantuanStudiPage() {
         <div className="mt-6 overflow-x-auto">
           <table className="min-w-full border-separate border-spacing-y-3 text-left">
             <thead>
-              <tr className="text-sm font-semibold text-slate-600">
+              <tr className="text-xs font-bold text-slate-500 uppercase tracking-wider">
                 <th className="px-4 py-3">No</th>
                 <th className="px-4 py-3">Semester</th>
                 <th className="px-4 py-3">Tahun Akademik</th>
@@ -140,7 +115,6 @@ export default async function BantuanStudiPage() {
               ) : (
                 bantuanStudiList.map((item, index) => {
                   const status = normalizeStatus(item.status_pencairan);
-                  const statusClass = statusClasses(status);
                   return (
                     <tr key={item.id} className="bg-slate-50/80 rounded-[18px] border border-slate-100">
                       <td className="px-4 py-4 text-sm font-medium text-slate-700">{index + 1}.</td>
@@ -155,14 +129,14 @@ export default async function BantuanStudiPage() {
                           : "-"}
                       </td>
                       <td className="px-4 py-4">
-                        <span className={`inline-flex rounded-full border px-3 py-1 text-xs font-semibold ${statusClass}`}>
+                        <span className={`inline-flex rounded-lg px-3 py-1.5 text-xs font-bold ${statusBadgeClass(status)}`}>
                           {status}
                         </span>
                       </td>
                       <td className="px-4 py-4 text-center">
                         <Link
                           href={`/user/user-reimbursement/${item.id}`}
-                          className="inline-flex items-center justify-center rounded-full border border-blue-600 bg-white px-4 py-2 text-sm font-semibold text-blue-600 transition hover:bg-blue-50"
+                          className="inline-flex items-center justify-center rounded-lg border border-blue-600 bg-white px-4 py-2 text-sm font-semibold text-blue-600 transition hover:bg-blue-50"
                         >
                           Lihat Detail
                         </Link>

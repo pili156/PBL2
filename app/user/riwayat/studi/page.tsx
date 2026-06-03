@@ -141,7 +141,7 @@ export default async function RiwayatStudiPage() {
         </table>
       </div>
 
-      <div className="bg-[#F8FAFC] border border-blue-100 rounded-lg p-4 flex flex-col sm:flex-row gap-4 sm:items-center text-xs">
+      <div className="bg-slate-50 border border-blue-100 rounded-xl p-4 flex flex-col sm:flex-row gap-4 sm:items-center text-xs">
         <div className="flex items-center gap-2 text-blue-600 font-bold shrink-0">
           <Info size={16} /> Keterangan Status:
         </div>

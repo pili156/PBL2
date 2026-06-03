@@ -46,10 +46,10 @@ export default function LineChartJurusan({ data }: { data: any[] }) {
           <Line 
             type="monotone" 
             dataKey="total" 
-            stroke="#2563eb" 
+            stroke="#3b82f6" 
             strokeWidth={3}
-            dot={{ r: 4, fill: '#ffffff', strokeWidth: 2, stroke: '#2563eb' }}
-            activeDot={{ r: 6, fill: '#2563eb', strokeWidth: 0 }}
+            dot={{ r: 4, fill: '#ffffff', strokeWidth: 2, stroke: '#3b82f6' }}
+            activeDot={{ r: 6, fill: '#3b82f6', strokeWidth: 0 }}
           />
         </LineChart>
       </ResponsiveContainer>

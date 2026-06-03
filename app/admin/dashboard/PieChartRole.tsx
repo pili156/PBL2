@@ -9,7 +9,7 @@ import {
   Legend,
 } from "recharts";
 
-const COLORS = ["#2563eb", "#f59e0b", "#ef4444", "#10b981", "#8b5cf6", "#ec4899"];
+const COLORS = ["#3b82f6", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6", "#06b6d4"];
 
 export default function PieChartRole({ data }: { data: { name: string; value: number }[] }) {
   return (

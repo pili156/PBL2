@@ -2,21 +2,13 @@ import { prisma } from '@/src/lib/prisma';
 import { Plus, Wallet, TrendingUp, Banknote, Clock, Check, Send, FileText } from 'lucide-react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import { formatRupiah, formatDateLong } from '@/src/lib/formatters';
 
 export const dynamic = 'force-dynamic';
 
 interface Props {
   params: Promise<{ id_dosen: string }>;
 }
-
-const formatRupiah = (angka: number) =>
-  new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(angka);
-
-const formatDate = (date: Date | string | null | undefined) => {
-  if (!date) return '-';
-  const d = typeof date === 'string' ? new Date(date) : date;
-  return d.toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' });
-};
 
 const statusStyle = (status: string | null | undefined) => {
   const s = status?.toUpperCase() || 'PENDING';
@@ -179,7 +171,7 @@ export default async function RiwayatKeuangan({ params }: Props) {
                         {k.nominal ? formatRupiah(Number(k.nominal)) : 'Rp 0'}
                       </td>
                       <td className="px-5 py-3.5 text-sm text-slate-500">
-                        {k.tanggal_pencairan ? formatDate(k.tanggal_pencairan) : formatDate(k.created_at)}
+                        {k.tanggal_pencairan ? formatDateLong(k.tanggal_pencairan) : formatDateLong(k.created_at)}
                       </td>
                       <td className="px-5 py-3.5">
                         <span className={`inline-block px-2.5 py-1 text-[10px] font-semibold rounded-full ${s.color}`}>{s.label}</span>

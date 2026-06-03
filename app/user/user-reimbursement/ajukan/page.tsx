@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Upload, FileText, Loader2, CheckCircle, AlertCircle } from "lucide-react";
+import { ArrowLeft, Upload, Loader2, CheckCircle } from "lucide-react";
 
 type FileUploadState = {
   file: File | null;

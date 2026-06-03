@@ -12,6 +12,8 @@ import {
   Download,
 } from "lucide-react";
 import Link from "next/link";
+import { formatDate } from "@/src/lib/formatters";
+import { getStatusBadgeClass } from "@/src/lib/status-utils";
 
 export const dynamic = 'force-dynamic';
 
@@ -73,23 +75,7 @@ async function getSummaryData() {
   return { totalDosenAktif, aktifStudi, studiLulus, belumUploadKhs, pengajuanKeuanganPending, jurusanList, empty };
 }
 
-const statusBadge = (status: string) => {
-  const styles: Record<string, string> = {
-    Aktif: 'bg-emerald-100 text-emerald-700',
-    Pending: 'bg-amber-100 text-amber-700',
-    Nonaktif: 'bg-slate-100 text-slate-500',
-  };
-  return styles[status] || 'bg-slate-100 text-slate-600';
-};
 
-const formatDate = (date: Date | null | undefined) => {
-  if (!date) return '-';
-  return date.toLocaleDateString('id-ID', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric',
-  });
-};
 
 export default async function RiwayatDosenPage({ searchParams }: PageProps) {
   const params = await searchParams;
@@ -133,6 +119,7 @@ export default async function RiwayatDosenPage({ searchParams }: PageProps) {
     jurusan: user.master_dosen?.jurusan || '-',
     nip: user.master_dosen?.nip || 'NIP Belum Diatur',
     status: user.status_akun === 'aktif' ? 'Aktif' : user.status_akun === 'pending' ? 'Pending' : 'Nonaktif',
+    badgeStatus: user.status_akun === 'aktif' ? 'valid' : user.status_akun === 'pending' ? 'pending' : 'nonaktif',
     inisial: (user.master_dosen?.nama_lengkap || user.username || 'D').charAt(0).toUpperCase(),
     terakhirUpdate: formatDate(user.updated_at),
   }));
@@ -184,7 +171,7 @@ export default async function RiwayatDosenPage({ searchParams }: PageProps) {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-slate-900 tracking-tight">Monitoring & Riwayat Dosen</h2>
+          <h2 className="text-2xl font-bold text-slate-800">Monitoring & Riwayat Dosen</h2>
           <p className="text-sm text-slate-500 mt-1">Kelola dan pantau seluruh data studi dosen</p>
         </div>
         <a
@@ -199,9 +186,9 @@ export default async function RiwayatDosenPage({ searchParams }: PageProps) {
         {summaryCards.map((card) => {
           const Icon = card.icon;
           return (
-            <div key={card.label} className="bg-white rounded-xl border border-slate-100 shadow-sm p-5 hover:shadow-md transition-shadow">
+            <div key={card.label} className="bg-white rounded-xl border border-slate-200 shadow-sm p-5 hover:shadow-md transition-shadow">
               <div className="flex items-center justify-between mb-3">
-                <span className="text-xs font-medium text-slate-400 uppercase tracking-wider">{card.label}</span>
+                <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">{card.label}</span>
                 <div className={`${card.bg} p-2 rounded-lg`}>
                   <Icon size={16} className={card.color} strokeWidth={2} />
                 </div>
@@ -212,7 +199,7 @@ export default async function RiwayatDosenPage({ searchParams }: PageProps) {
         })}
       </div>
 
-      <div className="bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden">
+      <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
         <div className="p-5 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <h3 className="text-base font-semibold text-slate-800">Daftar Dosen</h3>
           <form className="flex flex-col sm:flex-row gap-3" method="GET">
@@ -248,7 +235,7 @@ export default async function RiwayatDosenPage({ searchParams }: PageProps) {
         <div className="overflow-x-auto">
           <table className="w-full text-left">
             <thead>
-              <tr className="border-b border-slate-100 text-xs font-semibold text-slate-400 uppercase tracking-wider bg-slate-50/50">
+              <tr className="border-b border-slate-200 text-xs font-bold text-slate-500 uppercase tracking-wider bg-slate-50/50">
                 <th className="px-6 py-4 w-12">No</th>
                 <th className="px-6 py-4">Nama Dosen</th>
                 <th className="px-6 py-4">NIP</th>
@@ -280,7 +267,7 @@ export default async function RiwayatDosenPage({ searchParams }: PageProps) {
                     <td className="px-6 py-4 text-sm text-slate-500 font-mono">{dosen.nip}</td>
                     <td className="px-6 py-4 text-sm text-slate-600">{dosen.jurusan}</td>
                     <td className="px-6 py-4">
-                      <span className={`inline-block px-2.5 py-1 text-[11px] font-semibold rounded-full ${statusBadge(dosen.status)}`}>
+                      <span className={`inline-block px-2.5 py-1 text-[11px] font-semibold rounded-full ${getStatusBadgeClass(dosen.badgeStatus)}`}>
                         {dosen.status}
                       </span>
                     </td>

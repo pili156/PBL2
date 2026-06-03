@@ -1,5 +1,5 @@
 import { prisma } from '@/src/lib/prisma';
-import { Shield, ShieldCheck, Users, BookOpen, Wallet, Settings, ClipboardList, UserCog, UserCheck, LayoutDashboard } from "lucide-react";
+import { Shield, ShieldCheck, Users, BookOpen, Wallet, Settings } from "lucide-react";
 
 export const dynamic = 'force-dynamic';
 

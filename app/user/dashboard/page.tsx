@@ -2,10 +2,12 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { Upload, Wallet, ClipboardCheck, FileEdit } from "lucide-react";
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer,
   LineChart, Line
 } from "recharts";
+import { formatRupiah } from "@/src/lib/formatters";
 
 // --- Interfaces Data ---
 interface DashboardData {
@@ -58,14 +60,6 @@ export default function DashboardPage() {
   if (!data) return null;
 
   // --- Utility Functions ---
-  const formatRupiah = (angka: number) => {
-    return new Intl.NumberFormat("id-ID", { 
-      style: "currency", 
-      currency: "IDR", 
-      maximumFractionDigits: 0 
-    }).format(angka);
-  };
-
   const getStatusBadgeClass = (status: string) => {
     switch(status?.toLowerCase()) {
       case 'valid': 
@@ -109,36 +103,28 @@ export default function DashboardPage() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <Link href="/user/pengajuan" className="flex flex-col items-center justify-center p-5 bg-white hover:bg-blue-50/50 border border-slate-200 hover:border-blue-300 rounded-xl text-slate-700 hover:text-blue-700 transition shadow-sm group">
             <div className="p-3 bg-blue-50 rounded-lg text-blue-600 mb-3 group-hover:bg-blue-100 transition">
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-              </svg>
+              <FileEdit size={20} />
             </div>
             <span className="font-semibold text-xs text-center">Ajukan / Update Studi</span>
           </Link>
 
           <Link href="/user/laporanKHS/upload" className="flex flex-col items-center justify-center p-5 bg-white hover:bg-emerald-50/50 border border-slate-200 hover:border-emerald-300 rounded-xl text-slate-700 hover:text-emerald-700 transition shadow-sm group">
             <div className="p-3 bg-emerald-50 rounded-lg text-emerald-600 mb-3 group-hover:bg-emerald-100 transition">
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-              </svg>
+              <Upload size={20} />
             </div>
             <span className="font-semibold text-xs text-center">Upload KHS Baru</span>
           </Link>
 
           <Link href="/user/user-reimbursement/ajukan" className="flex flex-col items-center justify-center p-5 bg-white hover:bg-amber-50/50 border border-slate-200 hover:border-amber-300 rounded-xl text-slate-700 hover:text-amber-700 transition shadow-sm group">
             <div className="p-3 bg-amber-50 rounded-lg text-amber-600 mb-3 group-hover:bg-amber-100 transition">
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
+              <Wallet size={20} />
             </div>
             <span className="font-semibold text-xs text-center">Klaim Reimbursement</span>
           </Link>
 
           <Link href="/user/status" className="flex flex-col items-center justify-center p-5 bg-white hover:bg-purple-50/50 border border-slate-200 hover:border-purple-300 rounded-xl text-slate-700 hover:text-purple-700 transition shadow-sm group">
             <div className="p-3 bg-purple-50 rounded-lg text-purple-600 mb-3 group-hover:bg-purple-100 transition">
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
-              </svg>
+              <ClipboardCheck size={20} />
             </div>
             <span className="font-semibold text-xs text-center">Cek Status Dokumen</span>
           </Link>

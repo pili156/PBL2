@@ -34,7 +34,7 @@ export default function BarChartRegistrasi({ data }: { data: { bulan: string; to
             cursor={{ fill: '#e0e7ff' }}
             formatter={(value) => [`${value} User`, 'Registrasi']}
           />
-          <Bar dataKey="total" fill="#2563eb" radius={[6, 6, 0, 0]} barSize={28} />
+          <Bar dataKey="total" fill="#3b82f6" radius={[6, 6, 0, 0]} barSize={28} />
         </BarChart>
       </ResponsiveContainer>
     </div>

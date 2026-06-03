@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import ToggleSwitch from "./ToggleSwitch";
+import { formatDate } from '@/src/lib/formatters';
 
 export const dynamic = 'force-dynamic';
 
@@ -51,11 +52,6 @@ const statusLabel = (status: string | null) => {
   const s = (status || 'pending').toLowerCase();
   const map: Record<string, string> = { aktif: 'Aktif', menunggu: 'Menunggu', pending: 'Tertunda' };
   return map[s] || 'Tertunda';
-};
-
-const formatDate = (date: Date | null | undefined) => {
-  if (!date) return '-';
-  return date.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
 };
 
 interface PageProps {

@@ -7,6 +7,8 @@ import * as XLSX from "xlsx";
 import { 
   Clock, FileCheck, AlertCircle, ArrowRight, GraduationCap, Download, AlertTriangle, FilePlus, Calendar
 } from "lucide-react";
+import { formatDateTime } from "@/src/lib/formatters";
+import { getStatusBadgeClass } from "@/src/lib/status-utils";
 import { 
   BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, Legend
 } from "recharts";
@@ -38,19 +40,6 @@ export default function DashboardClient({ data }: { data: any }) {
     XLSX.writeFile(wb, `Ringkasan_Admin_${data.filter.toUpperCase()}.xlsx`);
   };
 
-  // Format Tanggal Profesional (Misal: 01 Juni 2026, 14:30)
-  const formatDate = (dateString: string | null) => {
-    if (!dateString) return '-';
-    const date = new Date(dateString);
-    return date.toLocaleDateString('id-ID', { 
-      day: '2-digit', 
-      month: 'long', 
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    }).replace('.', ':') + ' WIB';
-  };
-
   // Format Tanggal Hari Ini untuk Header
   const todayDate = new Date().toLocaleDateString('id-ID', { 
     weekday: 'long', 
@@ -58,15 +47,6 @@ export default function DashboardClient({ data }: { data: any }) {
     month: 'long', 
     day: 'numeric' 
   });
-
-  const getStatusBadgeClass = (status: string) => {
-    switch(status?.toLowerCase()) {
-      case 'valid': case 'disetujui': case 'selesai': return 'text-emerald-700 bg-emerald-50 border border-emerald-200';
-      case 'revisi': case 'ditolak': return 'text-rose-700 bg-rose-50 border border-rose-200';
-      case 'pending': case 'menunggu': return 'text-amber-700 bg-amber-50 border border-amber-200';
-      default: return 'text-slate-600 bg-slate-50 border border-slate-200';
-    }
-  };
 
   return (
     <div className="p-6 bg-slate-50 min-h-screen space-y-8 rounded-2xl">
@@ -172,7 +152,7 @@ export default function DashboardClient({ data }: { data: any }) {
                 <div key={item.id} className="flex justify-between items-center p-3 border border-slate-100 bg-slate-50/50 rounded-xl">
                   <div>
                     <p className="font-bold text-sm text-slate-700">{item.dosen}</p>
-                    <p className="text-[11px] text-slate-500 font-medium mt-0.5">{item.jenis} • {formatDate(item.tanggal)}</p>
+                    <p className="text-[11px] text-slate-500 font-medium mt-0.5">{item.jenis} • {formatDateTime(item.tanggal)}</p>
                   </div>
                   <span className={`px-2.5 py-1 rounded-lg text-[10px] font-bold ${getStatusBadgeClass(item.status)}`}>{item.status}</span>
                 </div>
@@ -233,7 +213,7 @@ export default function DashboardClient({ data }: { data: any }) {
                   <tr key={item.id} className="hover:bg-rose-50/30 transition">
                     <td className="px-4 py-3 font-medium text-slate-800">{item.dosen}</td>
                     <td className="px-4 py-3">{item.dokumen}</td>
-                    <td className="px-4 py-3 text-rose-600 font-semibold">{formatDate(item.tanggalUpdate)}</td>
+                    <td className="px-4 py-3 text-rose-600 font-semibold">{formatDateTime(item.tanggalUpdate)}</td>
                     <td className="px-4 py-3 text-center">
                       <Link href={`/admin/verifikasi-pengajuan/${item.pengajuan_id}`} className="text-xs font-bold text-blue-600 hover:underline">Tinjau</Link>
                     </td>
@@ -265,7 +245,7 @@ function StatCard({ title, value, icon, trend, color, isUrgent }: any) {
           <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{title}</p>
           <h3 className="text-3xl font-black text-slate-800">{value}</h3>
         </div>
-        <div className={`p-3 rounded-lg ${colors[color]}`}>
+        <div className={`p-3 rounded-xl ${colors[color]}`}>
           {icon}
         </div>
       </div>

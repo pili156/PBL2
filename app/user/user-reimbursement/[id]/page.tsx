@@ -4,39 +4,8 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { ArrowLeft, CheckCircle2, FileText, AlertCircle, Loader2, Check, Clock, Upload } from "lucide-react";
-
-function formatDate(dateValue?: string | Date | null) {
-  if (!dateValue) return "-";
-  return new Date(dateValue).toLocaleDateString("id-ID", {
-    day: "2-digit", month: "long", year: "numeric",
-  });
-}
-
-function formatDateTime(dateValue?: string | Date | null) {
-  if (!dateValue) return "-";
-  const date = new Date(dateValue);
-  return `${formatDate(date)} - ${date.toLocaleTimeString("id-ID", {
-    hour: "2-digit", minute: "2-digit", hour12: false,
-  })} WIB`;
-}
-
-function normalizeStatus(status?: string | null) {
-  if (!status) return "Pending";
-  const text = status.toLowerCase();
-  if (text.includes("selesai") || text.includes("completed")) return "Selesai";
-  if (text.includes("disetujui") || text.includes("diterima")) return "Disetujui";
-  if (text.includes("revisi") || text.includes("ditolak")) return "Perlu Revisi";
-  return "Diproses";
-}
-
-function statusBadge(status: string) {
-  switch (status) {
-    case "Disetujui": return "text-emerald-700 bg-emerald-100";
-    case "Selesai": return "text-sky-700 bg-sky-100";
-    case "Perlu Revisi": return "text-orange-700 bg-orange-100";
-    default: return "text-amber-700 bg-amber-100";
-  }
-}
+import { formatDateLong, formatDateTime } from "@/src/lib/formatters";
+import { normalizeStatus, statusBadgeClass } from "@/src/lib/status-utils";
 
 type BantuanStudiDetail = {
   id: number;
@@ -188,25 +157,25 @@ export default function BantuanStudiDetailPage() {
   const progressSteps = [
     {
       label: "Pengajuan Dikirim",
-      sub: formatDate(data.created_at),
+      sub: formatDateLong(data.created_at),
       done: true,
       description: "Pengajuan bantuan studi berhasil dikirim",
     },
     {
       label: "Diverifikasi Admin",
-      sub: isApproved || isRevision ? formatDate(data.created_at) : "Menunggu verifikasi",
+      sub: isApproved || isRevision ? formatDateLong(data.created_at) : "Menunggu verifikasi",
       done: isApproved || isRevision || isDone,
       description: isRevision ? "Dokumen perlu diperbaiki" : "Dokumen sedang diverifikasi",
     },
     {
       label: "Disetujui",
-      sub: isApproved ? formatDate(data.created_at) : isRevision ? "Perlu revisi" : "Menunggu persetujuan",
+      sub: isApproved ? formatDateLong(data.created_at) : isRevision ? "Perlu revisi" : "Menunggu persetujuan",
       done: isApproved || isDone,
       description: isApproved ? "Pengajuan disetujui" : "Menunggu persetujuan",
     },
     {
       label: "Selesai",
-      sub: isDone ? formatDate(data.created_at) : "Menunggu",
+      sub: isDone ? formatDateLong(data.created_at) : "Menunggu",
       done: isDone,
       description: isDone ? "Proses selesai" : "Menunggu penyelesaian",
     },
@@ -224,7 +193,7 @@ export default function BantuanStudiDetailPage() {
             <p className="text-sm text-slate-500">Lihat detail dan progres pengajuan bantuan studi Anda.</p>
           </div>
         </div>
-        <div className={`rounded-3xl px-5 py-4 text-sm font-semibold ${statusBadge(statusLabel)}`}>
+        <div className={`rounded-3xl px-5 py-4 text-sm font-semibold ${statusBadgeClass(statusLabel)}`}>
           {statusLabel}
         </div>
       </div>
@@ -240,7 +209,7 @@ export default function BantuanStudiDetailPage() {
               {data.pengajuan_studi?.jalur_pendanaan?.nama_pendanaan ?? "Bantuan Studi"}
             </h2>
             <p className="text-sm text-slate-500">
-              Diajukan pada {formatDate(data.created_at)} • ID BST-{String(data.id).padStart(3, "0")}
+              Diajukan pada {formatDateLong(data.created_at)} • ID BST-{String(data.id).padStart(3, "0")}
             </p>
           </div>
           <div className="rounded-3xl bg-slate-50 p-5 text-right xl:text-left">

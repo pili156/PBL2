@@ -3,25 +3,13 @@ import { ArrowLeft, Download, FileText, Check, Send, Star, Info, XCircle, CheckS
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { acceptKeuangan, rejectKeuangan } from '../../../actions';
+import { formatRupiah, formatDateLong, formatDateTime } from '@/src/lib/formatters';
 
 export const dynamic = 'force-dynamic';
 
 interface Props {
   params: Promise<{ id_dosen: string; id: string }>;
 }
-
-const formatRupiah = (angka: number) =>
-  new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(angka);
-
-const formatDate = (date: Date | null | undefined) => {
-  if (!date) return '-';
-  return date.toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' });
-};
-
-const formatDateTime = (date: Date | null | undefined) => {
-  if (!date) return '';
-  return date.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) + ' WIB';
-};
 
 const statusStyle = (status: string | null | undefined) => {
   const s = status?.toUpperCase() || 'PENDING';
@@ -112,8 +100,8 @@ export default async function DetailKeuanganPage({ params }: Props) {
             <h4 className="text-sm font-semibold text-slate-800 mb-5">Informasi Pencairan</h4>
             <div className="space-y-3">
               <InfoItem icon={Banknote} label="Nominal" value={keuangan.nominal ? formatRupiah(Number(keuangan.nominal)) : '-'} valueClass="text-blue-600 font-bold" />
-              <InfoItem icon={Calendar} label="Tanggal Pengajuan" value={formatDate(keuangan.created_at)} />
-              <InfoItem icon={Calendar} label="Tanggal Transfer" value={keuangan.tanggal_pencairan ? formatDate(keuangan.tanggal_pencairan) : '-'} />
+              <InfoItem icon={Calendar} label="Tanggal Pengajuan" value={formatDateLong(keuangan.created_at)} />
+              <InfoItem icon={Calendar} label="Tanggal Transfer" value={keuangan.tanggal_pencairan ? formatDateLong(keuangan.tanggal_pencairan) : '-'} />
               <InfoItem icon={Building} label="Bank Tujuan" value={bank} />
               <InfoItem icon={User} label="Nomor Rekening" value={norek} valueClass="font-mono" />
               <InfoItem icon={FileText} label="Semester" value={`Semester ${keuangan.semester_ke || '-'}`} />

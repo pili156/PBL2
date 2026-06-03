@@ -2,42 +2,17 @@ import Link from "next/link";
 import { headers } from "next/headers";
 import { prisma } from "@/src/lib/prisma";
 import { FileText, Clock3, CheckCircle2, AlertCircle, Check, Download } from "lucide-react";
-
-function formatRupiah(value: unknown) {
-  if (value === null || value === undefined) return "-";
-  const numericValue = typeof value === "object" && value !== null && "toNumber" in value
-    ? Number((value as { toNumber: () => number }).toNumber())
-    : Number(value);
-  if (Number.isNaN(numericValue)) return "-";
-  return `Rp ${numericValue.toLocaleString("id-ID", { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
-}
-
-function normalizeStatus(status?: string | null) {
-  if (!status) return "Pending";
-  const text = status.toLowerCase();
-  if (text.includes("selesai") || text.includes("completed")) return "Selesai";
-  if (text.includes("disetujui") || text.includes("diterima")) return "Disetujui";
-  if (text.includes("revisi") || text.includes("ditolak")) return "Perlu Revisi";
-  return "Diproses";
-}
-
-function statusClasses(status: string) {
-  switch (status) {
-    case "Disetujui": return "text-emerald-700 bg-emerald-100";
-    case "Selesai": return "text-sky-700 bg-sky-100";
-    case "Perlu Revisi": return "text-orange-700 bg-orange-100";
-    default: return "text-amber-700 bg-amber-100";
-  }
-}
+import { formatRupiah } from "@/src/lib/formatters";
+import { normalizeStatus, statusBadgeClass } from "@/src/lib/status-utils";
 
 function docStatusBadge(status: string) {
   switch (status) {
     case "terverifikasi":
-      return { icon: Check, color: "text-emerald-700 bg-emerald-100", label: "Terverifikasi" };
+      return { icon: Check, color: "text-emerald-700 bg-emerald-50", label: "Terverifikasi" };
     case "revisi":
-      return { icon: AlertCircle, color: "text-orange-700 bg-orange-100", label: "Revisi" };
+      return { icon: AlertCircle, color: "text-orange-700 bg-orange-50", label: "Revisi" };
     default:
-      return { icon: Clock3, color: "text-amber-700 bg-amber-100", label: "Pending" };
+      return { icon: Clock3, color: "text-amber-700 bg-amber-50", label: "Pending" };
   }
 }
 
@@ -105,7 +80,7 @@ export default async function AdminBantuanStudiPage() {
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
       <div className="space-y-2">
-        <h1 className="text-3xl font-bold text-slate-900">Verifikasi Bantuan Studi</h1>
+        <h1 className="text-2xl font-bold text-slate-800">Verifikasi Bantuan Studi</h1>
         <p className="text-sm text-slate-500">Verifikasi pengajuan bantuan studi dari dosen.</p>
       </div>
 
@@ -113,19 +88,19 @@ export default async function AdminBantuanStudiPage() {
         {STATUS_CARDS.map((card) => {
           const Icon = card.icon;
           return (
-            <div key={card.key} className="rounded-3xl bg-white border border-slate-200 p-6 shadow-sm flex items-center gap-4">
-              <div className="w-14 h-14 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-700">
+            <div key={card.key} className="rounded-xl bg-white border border-slate-200 p-6 shadow-sm flex items-center gap-4">
+              <div className="w-14 h-14 rounded-xl bg-slate-50 flex items-center justify-center text-slate-700">
                 <Icon size={24} />
               </div>
               <div>
                 <p className="text-sm text-slate-500">{card.label}</p>
-                <p className="text-3xl font-semibold text-slate-900">{counts[card.key as keyof typeof counts]}</p>
+                <p className="text-3xl font-bold text-slate-800">{counts[card.key as keyof typeof counts]}</p>
               </div>
             </div>
           );
         })}
-        <div className="rounded-3xl bg-emerald-50 border border-emerald-200 p-6 shadow-sm flex items-center gap-4">
-          <div className="w-14 h-14 rounded-2xl bg-emerald-100 flex items-center justify-center text-emerald-700">
+        <div className="rounded-xl bg-emerald-50 border border-emerald-200 p-6 shadow-sm flex items-center gap-4">
+          <div className="w-14 h-14 rounded-xl bg-emerald-100 flex items-center justify-center text-emerald-700">
             <CheckCircle2 size={24} />
           </div>
           <div>
@@ -135,13 +110,13 @@ export default async function AdminBantuanStudiPage() {
         </div>
       </div>
 
-      <div className="bg-white rounded-[28px] border border-slate-200 shadow-sm p-6">
-        <h2 className="text-xl font-semibold text-slate-900">Daftar Pengajuan Bantuan Studi</h2>
+      <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+        <h2 className="text-base font-bold text-slate-800">Daftar Pengajuan Bantuan Studi</h2>
 
         <div className="mt-6 overflow-x-auto">
           <table className="min-w-full border-separate border-spacing-y-3 text-left">
             <thead>
-              <tr className="text-sm font-semibold text-slate-600">
+              <tr className="text-xs font-bold text-slate-500 uppercase tracking-wider">
                 <th className="px-4 py-3">No</th>
                 <th className="px-4 py-3">Nama Dosen</th>
                 <th className="px-4 py-3">Semester</th>
@@ -199,14 +174,14 @@ export default async function AdminBantuanStudiPage() {
                         </div>
                       </td>
                       <td className="px-4 py-4">
-                        <span className={`inline-flex rounded-full border px-3 py-1 text-xs font-semibold ${statusClasses(status)}`}>
+                        <span className={`inline-flex rounded-lg px-3 py-1.5 text-xs font-bold ${statusBadgeClass(status)}`}>
                           {status}
                         </span>
                       </td>
                       <td className="px-4 py-4 text-center">
                         <Link
                           href={`/admin/bantuan-studi/${item.id}`}
-                          className="inline-flex items-center justify-center rounded-full border border-blue-600 bg-white px-4 py-2 text-sm font-semibold text-blue-600 transition hover:bg-blue-50"
+                          className="inline-flex items-center justify-center rounded-lg border border-blue-600 bg-white px-4 py-2 text-sm font-semibold text-blue-600 transition hover:bg-blue-50"
                         >
                           Verifikasi
                         </Link>

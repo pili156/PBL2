@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Download, Search } from "lucide-react";
+import { Download, Search, ClipboardList, AlertTriangle, CheckCircle } from "lucide-react";
 import { PengajuanMonitoring } from "./types";
 import MonitoringTable from "./components/MonitoringTable";
 
@@ -52,20 +52,23 @@ export default function VerifikasiPengajuanPage() {
     {
       label: "Belum Direview",
       count: data.filter((d) => d.status === "Pending").length,
-      color: "bg-gray-100",
-      icon: "📋",
+      color: "bg-slate-100",
+      icon: ClipboardList,
+      iconColor: "text-slate-600",
     },
     {
       label: "Revisi",
       count: data.filter((d) => d.status === "Revisi").length,
       color: "bg-red-100",
-      icon: "⚠️",
+      icon: AlertTriangle,
+      iconColor: "text-red-600",
     },
     {
       label: "Terverifikasi",
       count: data.filter((d) => d.status === "Terverifikasi").length,
       color: "bg-green-100",
-      icon: "✓",
+      icon: CheckCircle,
+      iconColor: "text-green-600",
     },
   ];
 
@@ -83,7 +86,7 @@ export default function VerifikasiPengajuanPage() {
       {/* Page Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900">
+          <h1 className="text-2xl font-bold text-slate-800">
             Monitoring Pengajuan Dosen
           </h1>
         </div>
@@ -95,28 +98,33 @@ export default function VerifikasiPengajuanPage() {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {stats.map((stat, idx) => (
-          <div
-            key={idx}
-            className={`${stat.color} rounded-lg p-6 text-center`}
-          >
-            <div className="text-3xl font-bold mb-2 text-black">
-              {stat.icon && <span className="mr-2">{stat.icon}</span>}
-              {stat.count}
+        {stats.map((stat, idx) => {
+          const Icon = stat.icon;
+          return (
+            <div
+              key={idx}
+              className="bg-white rounded-xl border border-slate-200 shadow-sm p-6"
+            >
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">{stat.label}</span>
+                <div className={`p-2.5 rounded-lg ${stat.color}`}>
+                  <Icon size={18} className={stat.iconColor} />
+                </div>
+              </div>
+              <p className="text-3xl font-bold text-slate-800">{stat.count}</p>
             </div>
-            <p className="text-sm font-medium text-black">{stat.label}</p>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       {/* Filters */}
-      <div className="bg-white rounded-lg border border-slate-200 p-4 flex items-center gap-4">
+      <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4 flex items-center gap-4">
         <input
           type="text"
           placeholder="Cari Dosen / NIP..."
           value={searchNip}
           onChange={(e) => setSearchNip(e.target.value)}
-          className="flex-1 px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="flex-1 px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
         <button className="p-2 hover:bg-slate-100 rounded transition-colors">
           <Search size={20} className="text-slate-600" />
@@ -128,7 +136,7 @@ export default function VerifikasiPengajuanPage() {
             setSelectedStatus(e.target.value);
             setCurrentPage(1);
           }}
-          className="px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
         >
           <option value="semua">Semua Status</option>
           <option value="pending">Pending</option>
@@ -142,7 +150,7 @@ export default function VerifikasiPengajuanPage() {
             setSearchNip("");
             setCurrentPage(1);
           }}
-          className="px-4 py-2 border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors font-medium"
+          className="px-4 py-2 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors font-medium"
         >
           Reset
         </button>
@@ -150,7 +158,7 @@ export default function VerifikasiPengajuanPage() {
 
       {/* Table */}
       {loading ? (
-        <div className="bg-white rounded-lg border border-slate-200 p-8 text-center">
+        <div className="bg-white rounded-xl border border-slate-200 p-8 text-center">
           <p className="text-slate-500">Loading data...</p>
         </div>
       ) : (
