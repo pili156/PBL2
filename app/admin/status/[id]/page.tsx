@@ -76,7 +76,7 @@ export default function ManajemenStatusPage({ params }: Props) {
     const statusPengajuan = statusSelect?.value;
     
     formData.append('status_pengajuan', statusPengajuan);
-    formData.append('status_studi', 'Aktif');
+    formData.append('status_studi', 'aktif');
 
     setUploading(true);
     setMessage(null);
@@ -209,9 +209,9 @@ export default function ManajemenStatusPage({ params }: Props) {
                   className="w-full p-4 bg-gray-50 border border-gray-200 rounded-2xl outline-none focus:border-[#0085FF] font-bold text-sm text-[#434343] cursor-pointer"
                 >
                   <option value="">Pilih Status Baru...</option>
-                  <option value="DITERIMA">DITERIMA</option>
-                  <option value="Pending">PENDING</option>
-                  <option value="Revisi">REVISI</option>
+                  <option value="diterima">DITERIMA</option>
+                  <option value="pending">PENDING</option>
+                  <option value="revisi">REVISI</option>
                 </select>
               </div>
             </div>
@@ -237,11 +237,11 @@ export default function ManajemenStatusPage({ params }: Props) {
               <div className="pt-8 mt-4 border-t border-gray-50 flex justify-between items-center">
                 <span className="text-[10px] text-gray-400 font-black uppercase tracking-widest">Status Saat Ini</span>
                 <span className={`px-5 py-2 rounded-xl text-[10px] font-black uppercase tracking-[0.15em] ${
-                  data.status === 'DITERIMA' || data.status === 'Terverifikasi'
+                  data.status === 'diterima' || data.status === 'terverifikasi'
                     ? 'bg-[#C4F2C9] text-[#2D7336]' 
                     : 'bg-[#FFE2E2] text-[#CC3333]'
                 }`}>
-                  {data.status || "PENDING"}
+                  {data.status || "pending"}
                 </span>
               </div>
             </div>

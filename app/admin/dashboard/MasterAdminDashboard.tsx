@@ -85,7 +85,7 @@ export default async function MasterAdminDashboard({
     }),
     prisma.pengajuanStudi.count({ where: pengajuanDateFilter }),
     prisma.user.count({
-      where: { status_akun: "Pending", ...userDateFilter },
+      where: { status_akun: "pending", ...userDateFilter },
     }),
     prisma.user.findMany({
       where: {

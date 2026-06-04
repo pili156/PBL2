@@ -3,39 +3,9 @@ import Link from "next/link";
 import { prisma } from "@/src/lib/prisma";
 import { Plus, Download } from "lucide-react";
 import { formatRupiah } from "@/src/lib/formatters";
+import StatusBadge from "@/src/components/StatusBadge";
 
 export const dynamic = "force-dynamic";
-
-function normalizeStatus(status?: string | null) {
-  if (!status) return "Diproses";
-  const text = status.toLowerCase();
-  if (text.includes("cair") || text.includes("dicaikan") || text.includes("selesai")) return "Cair";
-  if (text.includes("tolak") || text.includes("revisi")) return "Ditolak";
-  return "Diproses";
-}
-
-function statusBadge(status: string) {
-  switch (status) {
-    case "Cair":
-      return (
-        <span className="inline-flex items-center gap-1.5 text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-md">
-          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> CAIR
-        </span>
-      );
-    case "Ditolak":
-      return (
-        <span className="inline-flex items-center gap-1.5 text-[10px] font-bold text-red-600 bg-red-50 px-2.5 py-1 rounded-md">
-          <span className="w-1.5 h-1.5 rounded-full bg-red-500"></span> DITOLAK
-        </span>
-      );
-    default:
-      return (
-        <span className="inline-flex items-center gap-1.5 text-[10px] font-bold text-amber-600 bg-amber-50 px-2.5 py-1 rounded-md">
-          <span className="w-1.5 h-1.5 rounded-full bg-amber-500"></span> DIPROSES
-        </span>
-      );
-  }
-}
 
 export default async function RiwayatKeuanganPage() {
   const headersList = await headers();
@@ -103,7 +73,6 @@ export default async function RiwayatKeuanganPage() {
               </tr>
             ) : (
               riwayatList.map((item, index) => {
-                const status = normalizeStatus(item.status_pencairan);
                 return (
                   <tr key={item.id} className="border-b border-slate-50 hover:bg-slate-50 transition-colors">
                     <td className="py-4 px-2 text-sm text-slate-600 text-center">{index + 1}.</td>
@@ -120,7 +89,7 @@ export default async function RiwayatKeuanganPage() {
                         ? new Date(item.tanggal_pencairan).toLocaleDateString("id-ID", { day: "2-digit", month: "long", year: "numeric" })
                         : "-"}
                     </td>
-                    <td className="py-4 px-4">{statusBadge(status)}</td>
+                    <td className="py-4 px-4"><StatusBadge status={item.status_pencairan} domain="pencairan" size="sm" dot /></td>
                     <td className="py-4 px-4 text-center">
                       {item.file_bukti_bayar ? (
                         <a

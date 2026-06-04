@@ -1,7 +1,9 @@
 // app/user/laporanKHS/[id]/page.tsx
 import { getKHSById } from '../actions';
 import { ArrowLeft, AlertCircle, UploadCloud, FileText, CheckCircle2 } from 'lucide-react';
+import { getStatusLabel } from '@/src/lib/status-utils';
 import Link from 'next/link';
+import StatusBadge from "@/src/components/StatusBadge";
 import { notFound } from 'next/navigation';
 
 export const dynamic = 'force-dynamic';
@@ -24,10 +26,10 @@ export default async function DetailKHSUserPage({
     notFound();
   }
 
-  const statusEvaluasi = khs.status_evaluasi?.toUpperCase() || 'PENDING';
-  const isRevisi = statusEvaluasi === 'REVISI';
-  const isValid = statusEvaluasi === 'VALID';
-  const isPending = statusEvaluasi === 'PENDING';
+  const statusEvaluasi = getStatusLabel(khs.status_evaluasi, 'evaluasi');
+  const isRevisi = statusEvaluasi === 'Revisi';
+  const isValid = statusEvaluasi === 'Valid';
+  const isPending = statusEvaluasi === 'Pending';
 
   const tanggalUpload = khs.tanggal_unggah 
     ? new Date(khs.tanggal_unggah).toLocaleDateString('id-ID', { 
@@ -115,21 +117,7 @@ export default async function DetailKHSUserPage({
               <div className="grid grid-cols-2 py-1 items-center">
                 <span className="text-xs text-slate-500">Status</span>
                 <div>
-                  {isValid && (
-                    <span className="inline-flex items-center gap-1.5 text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-md">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> VALID
-                    </span>
-                  )}
-                  {isPending && (
-                    <span className="inline-flex items-center gap-1.5 text-[10px] font-bold text-blue-600 bg-blue-50 px-2.5 py-1 rounded-md">
-                      <span className="w-1.5 h-1.5 rounded-full bg-blue-500"></span> PENDING
-                    </span>
-                  )}
-                  {isRevisi && (
-                    <span className="inline-flex items-center gap-1.5 text-[10px] font-bold text-amber-600 bg-amber-50 px-2.5 py-1 rounded-md">
-                      <span className="w-1.5 h-1.5 rounded-full bg-amber-500"></span> REVISI
-                    </span>
-                  )}
+                  <StatusBadge status={khs.status_evaluasi} domain="evaluasi" size="md" dot />
                 </div>
               </div>
               {(isRevisi || isValid) && (

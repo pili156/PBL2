@@ -1,20 +1,9 @@
 import Link from "next/link";
 import { headers } from "next/headers";
 import { prisma } from "@/src/lib/prisma";
-import { FileText, Clock3, CheckCircle2, AlertCircle, Check, Download } from "lucide-react";
+import { FileText, Clock3, CheckCircle2, AlertCircle, Download } from "lucide-react";
 import { formatRupiah } from "@/src/lib/formatters";
-import { normalizeStatus, statusBadgeClass } from "@/src/lib/status-utils";
-
-function docStatusBadge(status: string) {
-  switch (status) {
-    case "terverifikasi":
-      return { icon: Check, color: "text-emerald-700 bg-emerald-50", label: "Terverifikasi" };
-    case "revisi":
-      return { icon: AlertCircle, color: "text-orange-700 bg-orange-50", label: "Revisi" };
-    default:
-      return { icon: Clock3, color: "text-amber-700 bg-amber-50", label: "Pending" };
-  }
-}
+import StatusBadge from "@/src/components/StatusBadge";
 
 const STATUS_CARDS = [
   { label: "Total Pengajuan", key: "total", icon: FileText },
@@ -62,18 +51,18 @@ export default async function AdminBantuanStudiPage() {
     }).length,
     disetujui: bantuanStudiList.filter((item) => {
       const s = item.status_pencairan?.toLowerCase() ?? "";
-      return s.includes("disetujui") || s.includes("diterima");
+      return ["disetujui", "dicairkan", "selesai"].includes(s);
     }).length,
     revisi: bantuanStudiList.filter((item) => {
       const s = item.status_pencairan?.toLowerCase() ?? "";
-      return s.includes("revisi") || s.includes("ditolak");
+      return ["revisi", "ditolak", "dibatalkan"].includes(s);
     }).length,
   };
 
   const totalDisbursed = bantuanStudiList
     .filter((item) => {
       const s = item.status_pencairan?.toLowerCase() ?? "";
-      return s.includes("disetujui") || s.includes("diterima");
+      return ["disetujui", "dicairkan", "selesai"].includes(s);
     })
     .reduce((sum, item) => sum + Number(item.nominal ?? 0), 0);
 
@@ -135,7 +124,6 @@ export default async function AdminBantuanStudiPage() {
                 </tr>
               ) : (
                 bantuanStudiList.map((item, index) => {
-                  const status = normalizeStatus(item.status_pencairan);
                   const allDocs = item.pengajuan_studi?.dokumen_pengajuan ?? [];
                   return (
                     <tr key={item.id} className="bg-slate-50/80 border border-slate-100">
@@ -151,7 +139,6 @@ export default async function AdminBantuanStudiPage() {
                             <span className="text-xs text-slate-400">Tidak ada</span>
                           ) : (
                             allDocs.map((doc) => {
-                              const badge = docStatusBadge(doc.status_verifikasi?.toLowerCase() ?? "");
                               return (
                                 <div
                                   key={doc.id}
@@ -159,9 +146,7 @@ export default async function AdminBantuanStudiPage() {
                                   title={doc.master_dokumen?.nama_dokumen ?? ""}
                                 >
                                   <span className="max-w-[100px] truncate">{doc.master_dokumen?.nama_dokumen?.replace("Bantuan Studi ", "") || "Dokumen"}</span>
-                                  <span className={`inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[10px] font-medium ${badge.color}`}>
-                                    <badge.icon size={10} />
-                                  </span>
+                                  <StatusBadge status={doc.status_verifikasi} domain="verifikasi" size="sm" />
                                   {doc.file_path && (
                                     <a href={doc.file_path} target="_blank" rel="noreferrer" className="text-blue-600 hover:text-blue-800">
                                       <Download size={10} />
@@ -174,9 +159,7 @@ export default async function AdminBantuanStudiPage() {
                         </div>
                       </td>
                       <td className="px-4 py-4">
-                        <span className={`inline-flex rounded-lg px-3 py-1.5 text-xs font-bold ${statusBadgeClass(status)}`}>
-                          {status}
-                        </span>
+                        <StatusBadge status={item.status_pencairan} domain="pencairan" size="md" />
                       </td>
                       <td className="px-4 py-4 text-center">
                         <Link

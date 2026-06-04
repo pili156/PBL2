@@ -3,6 +3,7 @@ import { Plus, Wallet, TrendingUp, Banknote, Clock, Check, Send, FileText } from
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { formatRupiah, formatDateLong } from '@/src/lib/formatters';
+import StatusBadge from "@/src/components/StatusBadge";
 
 export const dynamic = 'force-dynamic';
 
@@ -10,19 +11,10 @@ interface Props {
   params: Promise<{ id_dosen: string }>;
 }
 
-const statusStyle = (status: string | null | undefined) => {
-  const s = status?.toUpperCase() || 'PENDING';
-  if (s === 'DICAIRKAN' || s === 'SELESAI') return { label: 'Dicairkan', color: 'bg-emerald-100 text-emerald-700' };
-  if (s === 'DITOLAK' || s === 'DIBATALKAN') return { label: 'Ditolak', color: 'bg-red-100 text-red-700' };
-  if (s === 'DIPROSES') return { label: 'Diproses', color: 'bg-blue-100 text-blue-700' };
-  if (s === 'DRAFT') return { label: 'Draft', color: 'bg-slate-100 text-slate-500' };
-  return { label: 'Menunggu', color: 'bg-amber-100 text-amber-700' };
-};
-
 const statusIcon = (status: string | null | undefined, step: number) => {
-  const s = status?.toUpperCase() || 'PENDING';
-  const isSelesai = s === 'DICAIRKAN' || s === 'SELESAI';
-  const isDiproses = s === 'DIPROSES';
+  const s = status?.toLowerCase() || 'pending';
+  const isSelesai = s === 'dicairkan' || s === 'selesai';
+  const isDiproses = s === 'pending' || s === 'diproses';
   const steps = [
     step <= 1 || (step === 1), // Pengajuan
     step <= 2 || (step === 2 && (isDiproses || isSelesai)), // Verifikasi
@@ -64,12 +56,12 @@ export default async function RiwayatKeuangan({ params }: Props) {
 
   const totalBantuan = keuanganList.reduce((total, k) => total + Number(k.nominal || 0), 0);
   const totalDicairkan = keuanganList
-    .filter((k) => k.status_pencairan === 'DICAIRKAN')
+    .filter((k) => k.status_pencairan === 'dicairkan')
     .reduce((total, k) => total + Number(k.nominal || 0), 0);
   const sisaBantuan = totalBantuan - totalDicairkan;
-  const jumlahPencairan = keuanganList.filter((k) => k.status_pencairan === 'DICAIRKAN').length;
+  const jumlahPencairan = keuanganList.filter((k) => k.status_pencairan === 'dicairkan').length;
 
-  const latestStatus = keuanganList.length > 0 ? keuanganList[keuanganList.length - 1].status_pencairan?.toUpperCase() || 'PENDING' : null;
+  const latestStatus = keuanganList.length > 0 ? keuanganList[keuanganList.length - 1].status_pencairan || 'pending' : null;
 
   return (
     <div className="space-y-6">
@@ -138,7 +130,6 @@ export default async function RiwayatKeuangan({ params }: Props) {
                 </tr>
               ) : (
                 keuanganList.map((k, index) => {
-                  const s = statusStyle(k.status_pencairan);
                   return (
                     <tr key={k.id} className="border-b border-slate-50 last:border-0 hover:bg-slate-50/50 transition-colors">
                       <td className="px-5 py-3.5 text-sm text-slate-400 font-mono">{index + 1}.</td>
@@ -152,7 +143,7 @@ export default async function RiwayatKeuangan({ params }: Props) {
                         {k.tanggal_pencairan ? formatDateLong(k.tanggal_pencairan) : formatDateLong(k.created_at)}
                       </td>
                       <td className="px-5 py-3.5">
-                        <span className={`inline-block px-2.5 py-1 text-[10px] font-semibold rounded-full ${s.color}`}>{s.label}</span>
+                        <StatusBadge status={k.status_pencairan} domain="pencairan" size="sm" dot />
                       </td>
                       <td className="px-5 py-3.5 text-center">
                         <Link

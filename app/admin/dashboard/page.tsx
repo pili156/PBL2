@@ -55,12 +55,12 @@ export default async function AdminDashboardPage({
     masterStatuses,
     lewatBatas,
   ] = await Promise.all([
-    prisma.dokumenPengajuan.count({ where: { status_verifikasi: "Pending" } }),
+    prisma.dokumenPengajuan.count({ where: { status_verifikasi: "pending" } }),
     prisma.skKementerian.count(),
     prisma.monitoringKhs.count({
       where: { catatan_evaluasi: { contains: "Terlambat", mode: "insensitive" } },
     }),
-    prisma.skKementerian.count({ where: { status_studi: "Aktif" } }),
+    prisma.skKementerian.count({ where: { status_studi: "aktif" } }),
 
     Promise.all(
       ["Elektro", "Sipil", "Mesin", "AB", "Akuntansi"].map(async (jurusan) => {
@@ -72,7 +72,7 @@ export default async function AdminDashboardPage({
     ),
 
     prisma.dokumenPengajuan.findMany({
-      where: { status_verifikasi: "Pending" },
+      where: { status_verifikasi: "pending" },
       include: {
         master_dokumen: true,
         pengajuan_studi: {
@@ -102,7 +102,7 @@ export default async function AdminDashboardPage({
 
     prisma.dokumenPengajuan.findMany({
       where: {
-        status_verifikasi: { in: ["Revisi", "Ditolak"] },
+        status_verifikasi: { in: ["revisi"] },
         updated_at: { lt: tujuhHariLalu },
       },
       include: {
@@ -127,7 +127,7 @@ export default async function AdminDashboardPage({
     dosen: p.user?.master_dosen?.nama_lengkap || "Dosen",
     jenis: p.dokumen_pengajuan?.[0]?.master_dokumen?.nama_dokumen || "Pengajuan",
     tanggal: p.created_at?.toISOString() || null,
-    status: p.status?.nama_status || "Pending",
+    status: p.status?.nama_status || "pending",
     pengajuan_id: String(p.id),
   }));
 

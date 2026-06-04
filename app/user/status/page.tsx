@@ -1,9 +1,29 @@
 import { AlertCircle, ChevronLeft } from "lucide-react";
 import Link from "next/link";
+import { headers } from "next/headers";
+import { prisma } from "@/src/lib/prisma";
+import StatusBadge from "@/src/components/StatusBadge";
 
-export default function StatusProsesUser() {
-  // Simulasi status dari database
-  const statusPengajuan = "DIPROSES";
+export const dynamic = "force-dynamic";
+
+export default async function StatusProsesUser() {
+  const headersList = await headers();
+  const userEmail = headersList.get('x-user-email');
+
+  let statusPengajuan = "belum_ada";
+  if (userEmail) {
+    const currentUser = await prisma.user.findUnique({
+      where: { email: userEmail },
+    });
+    if (currentUser) {
+      const pengajuan = await prisma.pengajuanStudi.findFirst({
+        where: { user_id: currentUser.id },
+        orderBy: { created_at: "desc" },
+        include: { status: true },
+      });
+      statusPengajuan = pengajuan?.status?.nama_status || "belum_ada";
+    }
+  }
 
   return (
     <div className="p-8 bg-slate-50 min-h-screen">
@@ -24,9 +44,7 @@ export default function StatusProsesUser() {
 
         <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm inline-flex items-center gap-4">
           <span className="font-bold text-sm text-slate-800">Status Pengajuan :</span>
-          <div className="bg-slate-500 text-white px-4 py-1.5 rounded-lg text-xs font-bold flex items-center gap-2 tracking-widest uppercase">
-            {statusPengajuan}
-          </div>
+          <StatusBadge status={statusPengajuan} domain="pengajuan" size="md" uppercase />
         </div>
 
         <div className="bg-amber-50 border border-amber-200 p-6 rounded-xl flex gap-5 max-w-4xl">

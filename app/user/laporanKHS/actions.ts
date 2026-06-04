@@ -68,7 +68,7 @@ export async function uploadKHS(formData: FormData) {
       file_khs_path: fileUrl,
       catatan_evaluasi: catatan || null,
       tanggal_unggah: new Date(),
-      status_evaluasi: 'Pending',
+status_evaluasi: 'pending',
     },
   });
 
@@ -93,7 +93,7 @@ export async function updateKHS(id: number, formData: FormData) {
     ipk: parseFloat(ipk),
     catatan_evaluasi: catatan || null,
     tanggal_unggah: new Date(),
-    status_evaluasi: 'Pending',
+    status_evaluasi: 'pending',
   };
 
   if (file && file.size > 0) {

@@ -144,8 +144,8 @@ export default async function LogAktivitasPage({ params }: Props) {
         user: dosen.master_dosen?.nama_lengkap || 'Dosen',
       });
       if (khs.tanggal_evaluasi) activities.push({
-        type: khs.status_evaluasi === 'DITOLAK' ? 'revisi' : 'verifikasi',
-        title: `KHS Semester ${khs.semester_ke || '-'} ${khs.status_evaluasi === 'DITERIMA' ? 'Diverifikasi' : khs.status_evaluasi === 'DITOLAK' ? 'Ditolak' : 'Direvisi'}`,
+        type: khs.status_evaluasi === 'ditolak' ? 'revisi' : 'verifikasi',
+        title: `KHS Semester ${khs.semester_ke || '-'} ${khs.status_evaluasi === 'diterima' ? 'Diverifikasi' : khs.status_evaluasi === 'ditolak' ? 'Ditolak' : 'Direvisi'}`,
         description: khs.catatan_evaluasi || 'Evaluasi oleh admin',
         date: khs.tanggal_evaluasi,
         user: 'Admin',

@@ -42,14 +42,14 @@ export async function POST(request: Request) {
     // Cari ID Role Dosen
     const roleDosen = await prisma.masterRole.findFirst({ where: { nama_role: "dosen" } });
 
-    // 5. Buat Akun & Profil dengan Status Konsisten ("Pending")
+    // 5. Buat Akun & Profil dengan Status Konsisten ("pending")
     const newUser = await prisma.user.create({
       data: {
         username: username,
         email: email,
         password_hash: hashedPassword,
         role_id: roleDosen?.id || 2, 
-        status_akun: "Pending", // KONSISTENSI STATUS (Gunakan P besar)
+        status_akun: "pending",
         master_dosen: {
           create: {
             nip: nip,

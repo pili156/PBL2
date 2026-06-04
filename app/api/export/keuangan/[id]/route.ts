@@ -20,10 +20,10 @@ export async function GET(
     }) as Record<string, unknown>[];
 
     const statusLabel = (s: string | null | undefined) => {
-      const up = s?.toUpperCase() || 'PENDING';
-      if (up === 'DICAIRKAN' || up === 'SELESAI') return 'Dicairkan';
-      if (up === 'DITOLAK') return 'Ditolak';
-      if (up === 'DIPROSES') return 'Diproses';
+      const st = s?.toLowerCase() || 'pending';
+      if (st === 'dicairkan' || st === 'selesai') return 'Dicairkan';
+      if (st === 'ditolak') return 'Ditolak';
+      if (st === 'pending') return 'Diproses';
       return 'Menunggu';
     };
 

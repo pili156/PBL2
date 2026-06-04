@@ -1,6 +1,7 @@
 import { prisma } from "../../../src/lib/prisma";
 import Link from "next/link";
 import { Search } from "lucide-react";
+import StatusBadge from "@/src/components/StatusBadge";
 
 export default async function MonitoringPengajuanPage() {
   const pengajuan = await prisma.pengajuanStudi.findMany({
@@ -61,15 +62,7 @@ export default async function MonitoringPengajuanPage() {
                 <td className="p-6 text-sm font-bold text-slate-700">{item.user?.master_dosen?.nama_lengkap || "-"}</td>
                 <td className="p-6 text-sm font-medium text-slate-400">{item.user?.master_dosen?.nip || "-"}</td>
                 <td className="p-6 text-center">
-                  <span className={`px-3 py-1.5 rounded-lg text-xs font-bold ${
-                    item.status?.nama_status === 'DITERIMA' 
-                      ? 'text-emerald-700 bg-emerald-50 border border-emerald-200' 
-                      : item.status?.nama_status === 'REVISI'
-                      ? 'text-amber-700 bg-amber-50 border border-amber-200'
-                      : 'text-rose-700 bg-rose-50 border border-rose-200'
-                  }`}>
-                    {item.status?.nama_status || "PENDING"}
-                  </span>
+                  <StatusBadge status={item.status?.nama_status} domain="pengajuan" size="sm" />
                 </td>
                 <td className="p-6 text-center">
                   <Link 

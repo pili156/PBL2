@@ -64,7 +64,7 @@ export async function PUT(
       where: { id: parsedDokumenId },
       data: {
         file_path: relativePath,
-        status_verifikasi: 'menunggu',
+        status_verifikasi: 'pending',
         catatan_revisi: null,
         updated_at: new Date(),
       },

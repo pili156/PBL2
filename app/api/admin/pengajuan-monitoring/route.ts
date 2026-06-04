@@ -1,24 +1,19 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/src/lib/prisma';
 import { headers } from 'next/headers';
-
-const statusMapping: Record<string, string> = {
-  'pending': 'Pending',
-  'revisi': 'Revisi',
-  'terverifikasi': 'Terverifikasi',
-};
+import { getStatusLabel } from '@/src/lib/status-utils';
 
 const determinePengajuanStatus = (dokumen: any[]): string => {
-  if (!dokumen || dokumen.length === 0) return 'Pending';
+  if (!dokumen || dokumen.length === 0) return 'pending';
   
   const allTerverifikasi = dokumen.every((d) => d.status_verifikasi === 'terverifikasi');
   const hasRevisi = dokumen.some((d) => d.status_verifikasi === 'revisi');
   const allPending = dokumen.every((d) => d.status_verifikasi === 'pending');
   
-  if (allTerverifikasi) return 'Terverifikasi';
-  if (hasRevisi) return 'Revisi';
-  if (allPending) return 'Pending';
-  return 'Pending';
+  if (allTerverifikasi) return 'terverifikasi';
+  if (hasRevisi) return 'revisi';
+  if (allPending) return 'pending';
+  return 'pending';
 };
 
 export async function GET(request: Request) {
@@ -41,7 +36,7 @@ export async function GET(request: Request) {
       },
     };
     if (status && status !== 'semua') {
-      const dbStatus = statusMapping[status] || status;
+      const dbStatus = getStatusLabel(status, 'pengajuan');
       whereClause.status = {
         nama_status: dbStatus,
       };

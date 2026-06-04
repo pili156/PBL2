@@ -8,7 +8,7 @@ import {
   Clock, FileCheck, AlertCircle, ArrowRight, GraduationCap, Download, AlertTriangle, FilePlus, Calendar
 } from "lucide-react";
 import { formatDateTime } from "@/src/lib/formatters";
-import { getStatusBadgeClass } from "@/src/lib/status-utils";
+import StatusBadge from "@/src/components/StatusBadge";
 import { 
   BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, Legend
 } from "recharts";
@@ -154,7 +154,7 @@ export default function DashboardClient({ data }: { data: any }) {
                     <p className="font-bold text-sm text-slate-700">{item.dosen}</p>
                     <p className="text-[11px] text-slate-500 font-medium mt-0.5">{item.jenis} • {formatDateTime(item.tanggal)}</p>
                   </div>
-                  <span className={`px-2.5 py-1 rounded-lg text-[10px] font-bold ${getStatusBadgeClass(item.status)}`}>{item.status}</span>
+                  <StatusBadge status={item.status} size="sm" />
                 </div>
               ))}
             </div>

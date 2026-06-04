@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/src/lib/prisma';
+import { getStatusLabel } from '@/src/lib/status-utils';
 import { exportDosen, exportRiwayatStudi, exportRiwayatKeuangan } from '@/src/lib/export-excel';
 
 export async function GET(req: NextRequest) {
@@ -19,7 +20,7 @@ export async function GET(req: NextRequest) {
       Nama: d.master_dosen?.nama_lengkap || d.username || '-',
       NIP: d.master_dosen?.nip || '-',
       Jurusan: d.master_dosen?.jurusan || '-',
-      Status: d.status_akun === 'aktif' ? 'Aktif' : d.status_akun === 'pending' ? 'Pending' : 'Nonaktif',
+      Status: getStatusLabel(d.status_akun, 'akun'),
       'Terakhir Update': d.updated_at?.toLocaleDateString('id-ID') || '-',
     }));
 
@@ -76,7 +77,7 @@ export async function GET(req: NextRequest) {
       Nominal: k.nominal ? `Rp ${Number(k.nominal).toLocaleString('id-ID')}` : '-',
       'Tanggal Pengajuan': k.created_at?.toLocaleDateString('id-ID') || '-',
       'Tanggal Cair': k.tanggal_pencairan?.toLocaleDateString('id-ID') || '-',
-      Status: k.status_pencairan || '-',
+      Status: getStatusLabel(k.status_pencairan, 'pencairan'),
     }));
 
     const buffer = Buffer.from(exportRiwayatKeuangan(data));

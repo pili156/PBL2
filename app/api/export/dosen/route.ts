@@ -1,4 +1,5 @@
 import { prisma } from '@/src/lib/prisma';
+import { getStatusLabel } from '@/src/lib/status-utils';
 import { exportDosen, type DosenRow } from '@/src/lib/export-excel';
 import { logActivity } from '@/src/lib/activity-log';
 import { NextResponse } from 'next/server';
@@ -20,7 +21,7 @@ export async function GET() {
         Nama: (md?.nama_lengkap as string) || (u.username as string) || '-',
         NIP: (md?.nip as string) || '-',
         Jurusan: (md?.jurusan as string) || '-',
-        Status: u.status_akun === 'aktif' ? 'Aktif' : (u.status_akun as string) || '-',
+        Status: getStatusLabel(u.status_akun as string, 'akun'),
         'Terakhir Update': u.updated_at
           ? new Date(u.updated_at as string).toLocaleDateString('id-ID')
           : '-',

@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { formatDate } from "@/src/lib/formatters";
-import { getStatusBadgeClass } from "@/src/lib/status-utils";
+import StatusBadge from "@/src/components/StatusBadge";
 
 export const dynamic = 'force-dynamic';
 
@@ -119,7 +119,7 @@ export default async function RiwayatDosenPage({ searchParams }: PageProps) {
     jurusan: user.master_dosen?.jurusan || '-',
     nip: user.master_dosen?.nip || 'NIP Belum Diatur',
     status: user.status_akun === 'aktif' ? 'Aktif' : user.status_akun === 'pending' ? 'Pending' : 'Nonaktif',
-    badgeStatus: user.status_akun === 'aktif' ? 'valid' : user.status_akun === 'pending' ? 'pending' : 'nonaktif',
+    statusAkun: user.status_akun,
     inisial: (user.master_dosen?.nama_lengkap || user.username || 'D').charAt(0).toUpperCase(),
     terakhirUpdate: formatDate(user.updated_at),
   }));
@@ -267,9 +267,7 @@ export default async function RiwayatDosenPage({ searchParams }: PageProps) {
                     <td className="px-6 py-4 text-sm text-slate-500 font-mono">{dosen.nip}</td>
                     <td className="px-6 py-4 text-sm text-slate-600">{dosen.jurusan}</td>
                     <td className="px-6 py-4">
-                      <span className={`inline-block px-2.5 py-1 text-[11px] font-semibold rounded-full ${getStatusBadgeClass(dosen.badgeStatus)}`}>
-                        {dosen.status}
-                      </span>
+                      <StatusBadge status={dosen.statusAkun} domain="akun" size="sm" dot />
                     </td>
                     <td className="px-6 py-4 text-sm text-slate-400">{dosen.terakhirUpdate}</td>
                     <td className="px-6 py-4 text-center">

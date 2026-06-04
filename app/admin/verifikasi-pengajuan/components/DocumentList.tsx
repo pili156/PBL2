@@ -2,6 +2,7 @@
 
 import { DokumenDetail } from "../types";
 import { FileText, Check, AlertCircle, Clock } from "lucide-react";
+import StatusBadge from "@/src/components/StatusBadge";
 
 interface DocumentListProps {
   documents: DokumenDetail[];
@@ -24,35 +25,6 @@ export default function DocumentList({
         return <Clock size={16} className="text-yellow-500" />;
       default:
         return <FileText size={16} className="text-gray-500" />;
-    }
-  };
-
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case "terverifikasi":
-        return (
-          <span className="inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-medium bg-green-100 text-green-700">
-            <Check size={12} /> TERVERIFIKASI
-          </span>
-        );
-      case "revisi":
-        return (
-          <span className="inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-medium bg-red-100 text-red-700">
-            <AlertCircle size={12} /> REVISI
-          </span>
-        );
-      case "pending":
-        return (
-          <span className="inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-medium bg-yellow-100 text-yellow-700">
-            <Clock size={12} /> PENDING
-          </span>
-        );
-      default:
-        return (
-          <span className="inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-medium bg-gray-100 text-gray-700">
-            {status}
-          </span>
-        );
     }
   };
 
@@ -85,7 +57,7 @@ export default function DocumentList({
               </div>
             </div>
             <div className="mt-2 ml-7">
-              {getStatusBadge(doc.status_verifikasi)}
+              <StatusBadge status={doc.status_verifikasi} domain="verifikasi" size="sm" />
             </div>
           </div>
         ))}

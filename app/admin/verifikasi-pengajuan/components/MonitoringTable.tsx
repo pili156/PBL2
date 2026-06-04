@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { PengajuanMonitoring } from "../types";
 import { MoreVertical } from "lucide-react";
+import StatusBadge from "@/src/components/StatusBadge";
 
 interface MonitoringTableProps {
   data: PengajuanMonitoring[];
@@ -17,19 +18,6 @@ export default function MonitoringTable({
   totalPages,
   onPageChange,
 }: MonitoringTableProps) {
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "Terverifikasi":
-        return "text-emerald-700 bg-emerald-50 border border-emerald-200";
-      case "Revisi":
-        return "text-rose-700 bg-rose-50 border border-rose-200";
-      case "Pending":
-        return "text-amber-700 bg-amber-50 border border-amber-200";
-      default:
-        return "text-slate-600 bg-slate-50 border border-slate-200";
-    }
-  };
-
   return (
     <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
       <div className="overflow-x-auto">
@@ -67,13 +55,7 @@ export default function MonitoringTable({
                   {item.tanggal_pengajuan}
                 </td>
                 <td className="px-6 py-4">
-                  <span
-                    className={`inline-block px-3 py-1.5 rounded-lg text-xs font-bold ${getStatusColor(
-                      item.status
-                    )}`}
-                  >
-                    {item.status}
-                  </span>
+                  <StatusBadge status={item.status} domain="pengajuan" size="md" />
                 </td>
                 <td className="px-6 py-4">
                   <div className="flex items-center justify-between">

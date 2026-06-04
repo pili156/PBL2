@@ -5,20 +5,13 @@ import { notFound } from 'next/navigation';
 import { acceptKeuangan, rejectKeuangan, uploadBuktiTransfer } from '../../../actions';
 import DocumentViewerSection from './DocumentViewerSection';
 import { formatRupiah, formatDateLong, formatDateTime } from '@/src/lib/formatters';
+import StatusBadge from "@/src/components/StatusBadge";
 
 export const dynamic = 'force-dynamic';
 
 interface Props {
   params: Promise<{ id_dosen: string; id: string }>;
 }
-
-const statusStyle = (status: string | null | undefined) => {
-  const s = status?.toUpperCase() || 'PENDING';
-  if (s === 'DICAIRKAN' || s === 'SELESAI') return { label: 'Dicairkan', color: 'bg-emerald-100 text-emerald-700' };
-  if (s === 'DITOLAK') return { label: 'Ditolak', color: 'bg-red-100 text-red-700' };
-  if (s === 'DIPROSES') return { label: 'Diproses', color: 'bg-blue-100 text-blue-700' };
-  return { label: 'Menunggu', color: 'bg-amber-100 text-amber-700' };
-};
 
 const TrackingStep = ({
   icon: Icon, label, sub, date, active, done,
@@ -68,13 +61,13 @@ export default async function DetailKeuanganPage({ params }: Props) {
 
   if (!keuangan) notFound();
 
-  const status = keuangan.status_pencairan?.toUpperCase() || 'PENDING';
-  const isSelesai = status === 'DICAIRKAN' || status === 'SELESAI';
-  const isVerifikasi = status === 'DICAIRKAN' || status === 'DIPROSES' || status === 'SELESAI';
+  const status = keuangan.status_pencairan?.toLowerCase() || 'pending';
+  const isSelesai = status === 'dicairkan' || status === 'selesai';
+  const isVerifikasi = status === 'dicairkan' || status === 'pending' || status === 'selesai';
   const hasBuktiTransfer = keuangan.file_bukti_bayar !== null;
   const bank = keuangan.nama_bank || '-';
   const norek = keuangan.nomor_rekening || '-';
-  const s = statusStyle(status);
+
 
   const steps = [
     { icon: Check, label: 'Upload Bukti', sub: 'Dokumen pembayaran diunggah', date: keuangan.created_at, active: true, done: true },
@@ -91,9 +84,7 @@ export default async function DetailKeuanganPage({ params }: Props) {
             <h2 className="text-lg font-bold text-slate-900">Detail Pencairan</h2>
             <p className="text-sm text-slate-400 mt-0.5">Semester {keuangan.semester_ke || '-'}</p>
           </div>
-          <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold ${s.color}`}>
-            <span className="w-1.5 h-1.5 rounded-full bg-current" />{s.label}
-          </span>
+          <StatusBadge status={keuangan.status_pencairan} domain="pencairan" size="md" dot />
         </div>
         <Link href={`/admin/riwayat-dosen/${idDosen}/keuangan`}
           className="inline-flex items-center gap-2 text-xs font-semibold text-slate-500 hover:text-blue-600 transition-colors">

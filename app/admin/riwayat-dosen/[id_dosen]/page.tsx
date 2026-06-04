@@ -67,7 +67,7 @@ export default async function DashboardDosen({ params }: Props) {
   const skKementerian = pengajuan.sk_kementerian?.[0] ?? null;
   const khsList = pengajuan.monitoring_khs;
   const semesterAktif = khsList.length;
-  const isSelesai = ['lulus', 'selesai', 'completed'].includes(pengajuan.status?.nama_status?.toLowerCase() ?? '');
+  const isSelesai = ['studi_selesai', 'selesai'].includes(pengajuan.status?.nama_status?.toLowerCase() ?? '');
   const lastKhs = semesterAktif > 0 ? khsList[khsList.length - 1] : null;
   const isDisetujui = ['disetujui', 'diterima', 'aktif', 'sedang berjalan'].includes(pengajuan.status?.nama_status?.toLowerCase() ?? '');
 
@@ -78,7 +78,7 @@ export default async function DashboardDosen({ params }: Props) {
 
   const totalBantuan = pengajuan.pengajuan_reimbursement.reduce((s, r) => s + Number(r.nominal || 0), 0);
   const totalCair = pengajuan.pengajuan_reimbursement
-    .filter((r) => r.status_pencairan === 'DICAIRKAN')
+    .filter((r) => r.status_pencairan === 'dicairkan')
     .reduce((s, r) => s + Number(r.nominal || 0), 0);
 
   const steps = [

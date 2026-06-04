@@ -72,7 +72,7 @@ export async function POST(
         pengajuan_id: parsedPengajuanId,
         master_dokumen_id: parsedMasterDokumenId,
         file_path: relativePath,
-        status_verifikasi: 'menunggu',
+        status_verifikasi: 'pending',
         pengajuan_reimbursement_id: parsedReimbursementId,
       },
     });

@@ -5,7 +5,8 @@ import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, CheckCircle2, Download, FileText, Loader2 } from "lucide-react";
 import { formatDateLong } from "@/src/lib/formatters";
-import { normalizeStatus, statusBadgeClass } from "@/src/lib/status-utils";
+import { normalizeStatus } from "@/src/lib/status-utils";
+import StatusBadge from "@/src/components/StatusBadge";
 
 type DetailData = {
   id: number;
@@ -149,7 +150,7 @@ export default function AdminBantuanStudiDetailPage() {
 
   const statusLabel = normalizeStatus(data.status_pencairan);
   const dokumenFiles = data.pengajuan_studi?.dokumen_pengajuan ?? [];
-  const isPending = data.status_pencairan?.toLowerCase() === "pending" || data.status_pencairan?.toLowerCase() === "menunggu";
+  const isPending = data.status_pencairan === 'pending';
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
@@ -163,9 +164,7 @@ export default function AdminBantuanStudiDetailPage() {
             <p className="text-sm text-slate-500">Detail pengajuan bantuan studi.</p>
           </div>
         </div>
-        <div className={`rounded-3xl px-5 py-4 text-sm font-semibold ${statusBadgeClass(statusLabel)}`}>
-          {statusLabel}
-        </div>
+        <StatusBadge status={data.status_pencairan} domain="pencairan" size="xl" dot />
       </div>
 
       <div className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm">
@@ -278,7 +277,7 @@ export default function AdminBantuanStudiDetailPage() {
 
               <div className="flex flex-col gap-3">
                 <button
-                  onClick={() => handleVerification("Disetujui")}
+                  onClick={() => handleVerification("disetujui")}
                   disabled={actionLoading || !isPending}
                   className="inline-flex items-center justify-center gap-2 rounded-full bg-emerald-600 px-6 py-3 text-sm font-semibold text-white hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
@@ -286,7 +285,7 @@ export default function AdminBantuanStudiDetailPage() {
                   Setujui
                 </button>
                 <button
-                  onClick={() => handleVerification("Revisi")}
+                  onClick={() => handleVerification("revisi")}
                   disabled={actionLoading || !isPending}
                   className="inline-flex items-center justify-center gap-2 rounded-full bg-orange-500 px-6 py-3 text-sm font-semibold text-white hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
@@ -294,7 +293,7 @@ export default function AdminBantuanStudiDetailPage() {
                   Minta Revisi
                 </button>
                 <button
-                  onClick={() => handleVerification("Ditolak")}
+                  onClick={() => handleVerification("ditolak")}
                   disabled={actionLoading || !isPending}
                   className="inline-flex items-center justify-center gap-2 rounded-full bg-red-600 px-6 py-3 text-sm font-semibold text-white hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
                 >

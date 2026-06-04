@@ -45,11 +45,15 @@ async function main() {
   const jalurMandiri = await prisma.masterJalurPendanaan.create({ data: { id: 1, nama_pendanaan: 'Mandiri' } });
   const jalurLPDP = await prisma.masterJalurPendanaan.create({ data: { id: 2, nama_pendanaan: 'Beasiswa LPDP' } });
 
-  // --- 2.4 Master Status Pengajuan Studi ---
-  await prisma.masterStatusPengajuan.create({ data: { id: 1, nama_status: 'Draft' } });
-  const statusMenunggu = await prisma.masterStatusPengajuan.create({ data: { id: 2, nama_status: 'Menunggu Verifikasi (Admin)' } });
-  const statusRevisi = await prisma.masterStatusPengajuan.create({ data: { id: 3, nama_status: 'Perlu Revisi (Dosen)' } });
-  const statusLulus = await prisma.masterStatusPengajuan.create({ data: { id: 6, nama_status: 'Studi Selesai (Lulus)' } });
+  // --- 2.4 Master Status Pengajuan Studi (snake_case, konsisten) ---
+  await prisma.masterStatusPengajuan.create({ data: { id: 1, nama_status: 'draft' } });
+  const statusMenunggu = await prisma.masterStatusPengajuan.create({ data: { id: 2, nama_status: 'menunggu_verifikasi' } });
+  const statusRevisi = await prisma.masterStatusPengajuan.create({ data: { id: 3, nama_status: 'perlu_revisi' } });
+  await prisma.masterStatusPengajuan.create({ data: { id: 4, nama_status: 'pending' } });
+  await prisma.masterStatusPengajuan.create({ data: { id: 5, nama_status: 'diterima' } });
+  const statusLulus = await prisma.masterStatusPengajuan.create({ data: { id: 6, nama_status: 'studi_selesai' } });
+  await prisma.masterStatusPengajuan.create({ data: { id: 7, nama_status: 'terverifikasi' } });
+  await prisma.masterStatusPengajuan.create({ data: { id: 8, nama_status: 'revisi' } });
 
   // --- 2.5 Master Dokumen (Untuk Syarat Awal) ---
   await prisma.masterDokumen.create({ data: { id: 1, nama_dokumen: 'SK CPNS', is_mandatory: true, syarat_wilayah: 'Semua' } });
@@ -161,7 +165,7 @@ async function main() {
       semester_ke: 1,
       file_khs_path: 'uploads/khs/khs_budi_s1_12345.pdf',
       ipk: 3.85,
-      status_evaluasi: 'Valid',
+      status_evaluasi: 'valid',
       catatan_evaluasi: 'Awal yang sangat bagus, pertahankan performa studi.',
       tanggal_evaluasi: new Date('2024-01-10T15:45:00+07:00'),
       tanggal_unggah: new Date('2024-01-05'),
@@ -178,7 +182,7 @@ async function main() {
       semester_ke: 2,
       file_khs_path: 'uploads/khs/khs_budi_s2_12345.pdf',
       ipk: 3.75,
-      status_evaluasi: 'Valid',
+      status_evaluasi: 'valid',
       catatan_evaluasi: 'Aman, performa stabil.',
       tanggal_evaluasi: new Date('2024-06-15T15:45:00+07:00'),
       tanggal_unggah: new Date('2024-06-01'),
@@ -195,7 +199,7 @@ async function main() {
       semester_ke: 3,
       file_khs_path: 'uploads/khs/khs_budi_s3_12345.pdf',
       ipk: 3.00,
-      status_evaluasi: 'Revisi',
+      status_evaluasi: 'revisi',
       catatan_evaluasi: 'Ada nilai C, tolong perbaiki progres studi.',
       tanggal_evaluasi: new Date('2025-01-10T15:45:00+07:00'),
       tanggal_unggah: new Date('2025-01-01'),
@@ -212,7 +216,7 @@ async function main() {
       semester_ke: 4,
       file_khs_path: null,
       ipk: null,
-      status_evaluasi: 'Pending',
+      status_evaluasi: 'pending',
       catatan_evaluasi: null,
       tanggal_evaluasi: null,
       tanggal_unggah: null,
@@ -232,7 +236,7 @@ async function main() {
       semester_ke: 1,
       file_bukti_bayar: 'uploads/reimbursement/bukti_budi_s1_12345.pdf',
       nominal: 5000000,
-      status_pencairan: 'Dicairkan',
+      status_pencairan: 'dicairkan',
       catatan_keuangan: 'Audit pembayaran dana Tugas Belajar Sem 1 lulus.',
       tanggal_pencairan: new Date('2024-02-15T15:45:00+07:00'),
       created_at: new Date('2024-01-15'),
@@ -248,7 +252,7 @@ async function main() {
       semester_ke: 2,
       file_bukti_bayar: 'uploads/reimbursement/bukti_budi_s2_12345.pdf',
       nominal: 5000000,
-      status_pencairan: 'Dicairkan',
+      status_pencairan: 'dicairkan',
       catatan_keuangan: 'Audit pembayaran dana Tugas Belajar Sem 2 lulus.',
       tanggal_pencairan: new Date('2024-07-20T15:45:00+07:00'),
       created_at: new Date('2024-06-20'),
@@ -264,7 +268,7 @@ async function main() {
       semester_ke: 3,
       file_bukti_bayar: 'uploads/reimbursement/bukti_budi_s3_12345.pdf',
       nominal: 5000000,
-      status_pencairan: 'Pending',
+      status_pencairan: 'pending',
       catatan_keuangan: null,
       tanggal_pencairan: null,
       created_at: new Date('2025-01-15'),

@@ -65,7 +65,7 @@ export async function GET(
         id: d.id,
         nama_dokumen: d.master_dokumen?.nama_dokumen || 'Unknown',
         file_path: d.file_path || '',
-        status_verifikasi: d.status_verifikasi || 'pending',
+        status_verifikasi: d.status_verifikasi,
         catatan_revisi: d.catatan_revisi,
         updated_at: d.updated_at?.toISOString() || '',
       })),
@@ -128,11 +128,11 @@ export async function PUT(
 
     let newStatus: string;
     if (allTerverifikasi) {
-      newStatus = 'Terverifikasi';
+      newStatus = 'terverifikasi';
     } else if (hasRevisi) {
-      newStatus = 'Revisi';
+      newStatus = 'revisi';
     } else {
-      newStatus = 'Pending';
+      newStatus = 'pending';
     }
 
     const statusMaster = await prisma.masterStatusPengajuan.findFirst({

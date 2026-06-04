@@ -5,7 +5,8 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { ArrowLeft, CheckCircle2, FileText, AlertCircle, Loader2, Check, Clock, Upload } from "lucide-react";
 import { formatDateLong, formatDateTime } from "@/src/lib/formatters";
-import { normalizeStatus, statusBadgeClass } from "@/src/lib/status-utils";
+import { normalizeStatus } from "@/src/lib/status-utils";
+import StatusBadge from "@/src/components/StatusBadge";
 
 type BantuanStudiDetail = {
   id: number;
@@ -147,7 +148,7 @@ export default function BantuanStudiDetailPage() {
             ...prev.pengajuan_studi,
             dokumen_pengajuan: prev.pengajuan_studi.dokumen_pengajuan.map(d =>
               d.id === docId
-                ? { ...d, file_path: result.filePath, status_verifikasi: 'Pending', catatan_revisi: null }
+                ? { ...d, file_path: result.filePath, status_verifikasi: 'pending', catatan_revisi: null }
                 : d
             ),
           } : null,
@@ -200,9 +201,7 @@ export default function BantuanStudiDetailPage() {
             <p className="text-sm text-slate-500">Lihat detail dan progres pengajuan bantuan studi Anda.</p>
           </div>
         </div>
-        <div className={`rounded-3xl px-5 py-4 text-sm font-semibold ${statusBadgeClass(statusLabel)}`}>
-          {statusLabel}
-        </div>
+        <StatusBadge status={data.status_pencairan} domain="pencairan" size="xl" dot />
       </div>
 
       <div className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm">

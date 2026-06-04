@@ -3,7 +3,7 @@ import { headers } from "next/headers";
 import { prisma } from "@/src/lib/prisma";
 import { Clock3, CheckCircle2, FileText, Plus, AlertCircle } from "lucide-react";
 import { formatRupiah } from "@/src/lib/formatters";
-import { normalizeStatus, statusBadgeClass } from "@/src/lib/status-utils";
+import StatusBadge from "@/src/components/StatusBadge";
 
 const STATUS_CARDS = [
   { label: "Total Pengajuan", key: "total", icon: FileText },
@@ -42,15 +42,15 @@ export default async function BantuanStudiPage() {
     total: bantuanStudiList.length,
     diproses: bantuanStudiList.filter((item) => {
       const status = item.status_pencairan?.toLowerCase() ?? "";
-      return ["pending", "diproses", "menunggu", "draft"].includes(status);
+      return ["pending", "draft"].includes(status);
     }).length,
     disetujui: bantuanStudiList.filter((item) => {
       const status = item.status_pencairan?.toLowerCase() ?? "";
-      return ["disetujui", "diterima", "dicairkan", "selesai"].includes(status);
+      return ["disetujui", "dicairkan", "selesai"].includes(status);
     }).length,
     revisi: bantuanStudiList.filter((item) => {
       const status = item.status_pencairan?.toLowerCase() ?? "";
-      return ["ditolak", "dibatalkan"].includes(status) || status.includes("revisi");
+      return ["ditolak", "dibatalkan", "revisi"].includes(status);
     }).length,
   };
 
@@ -114,7 +114,6 @@ export default async function BantuanStudiPage() {
                 </tr>
               ) : (
                 bantuanStudiList.map((item, index) => {
-                  const status = normalizeStatus(item.status_pencairan);
                   return (
                     <tr key={item.id} className="bg-slate-50/80 rounded-[18px] border border-slate-100">
                       <td className="px-4 py-4 text-sm font-medium text-slate-700">{index + 1}.</td>
@@ -129,9 +128,7 @@ export default async function BantuanStudiPage() {
                           : "-"}
                       </td>
                       <td className="px-4 py-4">
-                        <span className={`inline-flex rounded-lg px-3 py-1.5 text-xs font-bold ${statusBadgeClass(status)}`}>
-                          {status}
-                        </span>
+                        <StatusBadge status={item.status_pencairan} domain="pencairan" size="md" />
                       </td>
                       <td className="px-4 py-4 text-center">
                         <Link

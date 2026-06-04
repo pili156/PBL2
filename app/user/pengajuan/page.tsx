@@ -32,7 +32,7 @@ const initialDocuments = Object.keys(DOCUMENT_GROUPS).reduce((acc, group) => {
 type FlowStep = "step1" | "step2" | "step3" | "completed";
 type DocumentGroup = keyof typeof DOCUMENT_GROUPS;
 
-const COMPLETED_STATUSES = ['DITERIMA', 'Terverifikasi'];
+const COMPLETED_STATUSES = ['diterima', 'terverifikasi'];
 
 export default function PengajuanPage() {
   const [flowStep, setFlowStep] = useState<FlowStep>("step1");

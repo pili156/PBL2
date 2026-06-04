@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { FileText, Check, AlertCircle, Clock, Download, Award, Upload, Loader2 } from "lucide-react";
+import { getStatusBadgeClass } from "@/src/lib/status-utils";
 
 type Dokumen = {
   id: number;
@@ -96,7 +97,7 @@ export default function DocumentStatusList() {
           ...prev,
           dokumen: prev.dokumen.map(d =>
             d.id === docId
-              ? { ...d, file_path: result.filePath, status_verifikasi: 'menunggu', catatan_revisi: null }
+              ? { ...d, file_path: result.filePath, status_verifikasi: 'pending', catatan_revisi: null }
               : d
           ),
         };
@@ -115,33 +116,29 @@ export default function DocumentStatusList() {
     }
   };
 
-  const getStatusBadge = (status: string) => {
+  const statusBadge = (status: string) => {
+    const cls = getStatusBadgeClass(status, 'verifikasi');
+    let icon;
+    let label;
     switch (status) {
       case "terverifikasi":
-        return (
-          <span className="inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-medium bg-green-100 text-green-700">
-            <Check size={12} /> TERVERIFIKASI
-          </span>
-        );
+        icon = <Check size={12} />;
+        label = "TERVERIFIKASI";
+        break;
       case "revisi":
-        return (
-          <span className="inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-medium bg-red-100 text-red-700">
-            <AlertCircle size={12} /> REVISI
-          </span>
-        );
-      case "pending":
-        return (
-          <span className="inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-medium bg-yellow-100 text-yellow-700">
-            <Clock size={12} /> PENDING
-          </span>
-        );
+        icon = <AlertCircle size={12} />;
+        label = "REVISI";
+        break;
       default:
-        return (
-          <span className="inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-medium bg-gray-100 text-gray-700">
-            {status.toUpperCase()}
-          </span>
-        );
+        icon = <Clock size={12} />;
+        label = "PENDING";
     }
+    return (
+      <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-semibold uppercase ${cls}`}>
+        {icon}
+        {label}
+      </span>
+    );
   };
 
   const getStatusOverall = () => {
@@ -150,9 +147,9 @@ export default function DocumentStatusList() {
     if (submittedDokumen.length === 0) return null;
     const allTerverifikasi = submittedDokumen.every((d) => d.status_verifikasi === 'terverifikasi');
     const hasRevisi = submittedDokumen.some((d) => d.status_verifikasi === 'revisi');
-    if (allTerverifikasi) return 'Terverifikasi';
-    if (hasRevisi) return 'Revisi';
-    return 'Pending';
+    if (allTerverifikasi) return 'terverifikasi';
+    if (hasRevisi) return 'revisi';
+    return 'pending';
   };
 
   if (loading) {
@@ -186,7 +183,7 @@ export default function DocumentStatusList() {
           </div>
           <div className="text-right">
             <p className="text-xs text-slate-400 mb-1">Status Keseluruhan</p>
-            {getStatusBadge(overallStatus || 'pending')}
+            {statusBadge(overallStatus || 'pending')}
           </div>
         </div>
 
@@ -271,7 +268,7 @@ export default function DocumentStatusList() {
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  {getStatusBadge(doc.status_verifikasi)}
+                  {statusBadge(doc.status_verifikasi)}
                   {doc.file_path && (
                     <a
                       href={doc.file_path}

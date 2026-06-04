@@ -51,21 +51,21 @@ export default function VerifikasiPengajuanPage() {
   const stats = [
     {
       label: "Belum Direview",
-      count: data.filter((d) => d.status === "Pending").length,
+      count: data.filter((d) => d.status === "pending").length,
       color: "bg-slate-100",
       icon: ClipboardList,
       iconColor: "text-slate-600",
     },
     {
       label: "Revisi",
-      count: data.filter((d) => d.status === "Revisi").length,
+      count: data.filter((d) => d.status === "revisi").length,
       color: "bg-red-100",
       icon: AlertTriangle,
       iconColor: "text-red-600",
     },
     {
       label: "Terverifikasi",
-      count: data.filter((d) => d.status === "Terverifikasi").length,
+      count: data.filter((d) => d.status === "terverifikasi").length,
       color: "bg-green-100",
       icon: CheckCircle,
       iconColor: "text-green-600",

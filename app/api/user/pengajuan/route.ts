@@ -50,7 +50,7 @@ export async function GET() {
         id: d.id,
         nama_dokumen: d.master_dokumen?.nama_dokumen || 'Unknown',
         file_path: d.file_path || null,
-        status_verifikasi: d.status_verifikasi || 'pending',
+        status_verifikasi: d.status_verifikasi,
         catatan_revisi: d.catatan_revisi || null,
       })),
       sk: pengajuan.sk_kementerian && pengajuan.sk_kementerian.length > 0 ? {

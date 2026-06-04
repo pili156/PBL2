@@ -8,6 +8,7 @@ import {
   LineChart, Line
 } from "recharts";
 import { formatRupiah } from "@/src/lib/formatters";
+import StatusBadge from "@/src/components/StatusBadge";
 
 // --- Interfaces Data ---
 interface DashboardData {
@@ -58,24 +59,6 @@ export default function DashboardPage() {
   }
 
   if (!data) return null;
-
-  // --- Utility Functions ---
-  const getStatusBadgeClass = (status: string) => {
-    switch(status?.toLowerCase()) {
-      case 'valid': 
-      case 'disetujui': 
-      case 'selesai': 
-        return 'text-emerald-700 bg-emerald-50 border border-emerald-200';
-      case 'revisi': 
-      case 'ditolak': 
-        return 'text-rose-700 bg-rose-50 border border-rose-200';
-      case 'pending': 
-      case 'menunggu': 
-        return 'text-amber-700 bg-amber-50 border border-amber-200';
-      default: 
-        return 'text-slate-600 bg-slate-50 border border-slate-200';
-    }
-  };
 
   return (
     <div className="w-full h-full p-6 bg-slate-50 rounded-2xl overflow-y-auto space-y-8">
@@ -176,9 +159,7 @@ export default function DashboardPage() {
                     <p className="font-bold text-sm text-slate-700">Semester {khs.semester}</p>
                     <p className="text-xs text-slate-500 mt-0.5 font-medium">Indeks Prestasi: {khs.ipk.toFixed(2)}</p>
                   </div>
-                  <span className={`px-2.5 py-1 rounded-lg text-xs font-bold ${getStatusBadgeClass(khs.status)}`}>
-                    {khs.status}
-                  </span>
+                  <StatusBadge status={khs.status} domain="evaluasi" size="sm" />
                 </div>
               ))}
             </div>
@@ -232,9 +213,7 @@ export default function DashboardPage() {
                       </div>
                     )}
                   </div>
-                  <span className={`px-2 py-0.5 rounded text-[10px] font-bold whitespace-nowrap ${getStatusBadgeClass(doc.status)}`}>
-                    {doc.status}
-                  </span>
+                  <StatusBadge status={doc.status} domain="verifikasi" size="sm" />
                 </div>
               ))}
             </div>

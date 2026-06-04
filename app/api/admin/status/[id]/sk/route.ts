@@ -22,7 +22,8 @@ export async function POST(
     const formData = await request.formData();
     const file = formData.get('file') as File | null;
     const nomorSk = formData.get('nomor_sk') as string | null;
-    const statusStudi = formData.get('status_studi') as string | null;
+    const statusStudiRaw = formData.get('status_studi') as string | null;
+    const statusStudi = statusStudiRaw?.toLowerCase() as 'aktif' | 'belum_ada_sk' | null;
     const statusPengajuan = formData.get('status_pengajuan') as string | null;
 
     if (!file) {

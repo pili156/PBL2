@@ -10,22 +10,22 @@ import { logActivity } from '@/src/lib/activity-log';
 export async function acceptKhs(formData: FormData) {
   const khsId = Number(formData.get('khsId'));
   const catatan = formData.get('catatan') as string;
-  await evaluateKhs(khsId, 'DITERIMA', catatan);
+  await evaluateKhs(khsId, 'diterima', catatan);
 }
 
 export async function rejectKhs(formData: FormData) {
   const khsId = Number(formData.get('khsId'));
   const catatan = formData.get('catatan') as string;
-  await evaluateKhs(khsId, 'DITOLAK', catatan);
+  await evaluateKhs(khsId, 'ditolak', catatan);
 }
 
 export async function submitRevisionKhs(formData: FormData) {
   const khsId = Number(formData.get('khsId'));
   const catatan = formData.get('catatan') as string;
-  await evaluateKhs(khsId, 'DITERIMA', catatan);
+  await evaluateKhs(khsId, 'diterima', catatan);
 }
 
-async function evaluateKhs(khsId: number, keputusan: 'DITERIMA' | 'DITOLAK', catatan: string) {
+async function evaluateKhs(khsId: number, keputusan: 'diterima' | 'ditolak', catatan: string) {
   const khs = await prisma.monitoringKhs.findUnique({
     where: { id: khsId },
     include: { pengajuan_studi: { select: { user_id: true } } },
@@ -63,13 +63,13 @@ export async function acceptKeuangan(formData: FormData) {
     throw new Error('Upload bukti transfer terlebih dahulu sebelum menyetujui pencairan');
   }
 
-  await evaluateKeuangan(id, 'DICAIRKAN', catatan);
+  await evaluateKeuangan(id, 'dicairkan', catatan);
 }
 
 export async function rejectKeuangan(formData: FormData) {
   const id = Number(formData.get('keuanganId'));
   const catatan = formData.get('catatan') as string;
-  await evaluateKeuangan(id, 'DITOLAK', catatan);
+  await evaluateKeuangan(id, 'ditolak', catatan);
 }
 
 export async function uploadBuktiTransfer(formData: FormData) {
@@ -100,7 +100,7 @@ export async function uploadBuktiTransfer(formData: FormData) {
   revalidatePath(`/admin/riwayat-dosen/${idDosen}/keuangan/${keuanganId}`);
 }
 
-async function evaluateKeuangan(keuanganId: number, keputusan: 'DICAIRKAN' | 'DITOLAK', catatan: string) {
+async function evaluateKeuangan(keuanganId: number, keputusan: 'dicairkan' | 'ditolak', catatan: string) {
   const reimbursement = await prisma.pengajuanReimbursement.findUnique({
     where: { id: keuanganId },
     include: { pengajuan_studi: { select: { user_id: true } } },
@@ -111,7 +111,7 @@ async function evaluateKeuangan(keuanganId: number, keputusan: 'DICAIRKAN' | 'DI
     data: {
       status_pencairan: keputusan,
       catatan_keuangan: catatan,
-      tanggal_pencairan: keputusan === 'DICAIRKAN' ? new Date() : undefined,
+      tanggal_pencairan: keputusan === 'dicairkan' ? new Date() : undefined,
     },
   });
 
@@ -153,7 +153,7 @@ export async function addManualKhs(formData: FormData) {
       ipk: ipk || undefined,
       file_khs_path: filePath,
       tanggal_unggah: new Date(),
-      status_evaluasi: 'DITERIMA',
+      status_evaluasi: 'diterima',
     },
     include: { pengajuan_studi: { select: { user_id: true } } },
   });
@@ -196,7 +196,7 @@ export async function addManualKeuangan(formData: FormData) {
       file_bukti_bayar: fileBukti,
       nama_bank: bank || undefined,
       nomor_rekening: norek || undefined,
-      status_pencairan: 'DICAIRKAN',
+      status_pencairan: 'dicairkan',
       tanggal_pencairan: new Date(),
     },
     include: { pengajuan_studi: { select: { user_id: true } } },
@@ -246,7 +246,7 @@ export async function addManualDokumen(formData: FormData) {
       pengajuan_id: pengajuanId,
       master_dokumen_id: masterDokumenId || undefined,
       file_path: filePath,
-      status_verifikasi: 'Pending',
+      status_verifikasi: 'pending',
     },
     include: { pengajuan_studi: { select: { user_id: true } } },
   });

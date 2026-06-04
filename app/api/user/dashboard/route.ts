@@ -43,7 +43,7 @@ export async function GET(request: Request) {
     const khsList = pengajuan?.monitoring_khs || [];
     const timelineKHS = khsList.map(khs => ({
       semester: khs.semester_ke,
-      status: khs.status_evaluasi || 'Pending',
+      status: khs.status_evaluasi || 'pending',
       ipk: khs.ipk ? Number(khs.ipk) : 0,
       tanggal: khs.tanggal_unggah,
     }));
@@ -65,8 +65,8 @@ export async function GET(request: Request) {
     }));
     const summaryReimbursement = reimbursements.reduce((acc, curr) => {
       const nominal = Number(curr.nominal) || 0;
-      if (curr.status_pencairan === 'Dicairkan' || curr.status_pencairan === 'Selesai') acc.dicairkan += nominal;
-      else if (curr.status_pencairan === 'Pending') acc.pending += nominal;
+      if (curr.status_pencairan === 'dicairkan' || curr.status_pencairan === 'selesai') acc.dicairkan += nominal;
+      else if (curr.status_pencairan === 'pending') acc.pending += nominal;
       acc.diajukan += nominal;
       return acc;
     }, { diajukan: 0, dicairkan: 0, pending: 0 });
@@ -74,7 +74,7 @@ export async function GET(request: Request) {
     // 4. Checklist Dokumen
     const checklistDokumen = pengajuan?.dokumen_pengajuan.map(doc => ({
       nama: doc.master_dokumen?.nama_dokumen || 'Dokumen',
-      status: doc.status_verifikasi || 'Pending',
+      status: doc.status_verifikasi || 'pending',
       isMandatory: doc.master_dokumen?.is_mandatory || false,
       catatan: doc.catatan_revisi || null
     })) || [];

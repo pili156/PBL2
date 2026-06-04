@@ -4,6 +4,7 @@ import { prisma } from '@/src/lib/prisma';
 import { Plus, Eye, Pencil, Upload, Info } from 'lucide-react';
 import Link from 'next/link';
 import { headers } from 'next/headers';
+import StatusBadge from "@/src/components/StatusBadge";
 
 export const dynamic = 'force-dynamic';
 
@@ -141,7 +142,7 @@ export default async function LaporanKHSUserPage() {
               {tabelKHS.map((item, index) => {
                 const isUploaded = !!item.data;
                 const statusKHS = isUploaded 
-                  ? (item.data!.status_evaluasi?.toUpperCase() || 'PENDING') 
+                  ? (item.data!.status_evaluasi || 'pending') 
                   : 'BELUM UPLOAD';
                 
                 return (
@@ -164,36 +165,17 @@ export default async function LaporanKHSUserPage() {
                     </td>
                     
                     <td className="py-4 px-4">
-                      {statusKHS === 'VALID' && (
-                        <span className="inline-flex items-center gap-1.5 text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-md">
-                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> VALID
-                        </span>
-                      )}
-                      {statusKHS === 'PENDING' && (
-                        <span className="inline-flex items-center gap-1.5 text-[10px] font-bold text-blue-600 bg-blue-50 px-2.5 py-1 rounded-md">
-                          <span className="w-1.5 h-1.5 rounded-full bg-blue-500"></span> PENDING
-                        </span>
-                      )}
-                      {statusKHS === 'REVISI' && (
-                        <span className="inline-flex items-center gap-1.5 text-[10px] font-bold text-amber-600 bg-amber-50 px-2.5 py-1 rounded-md">
-                          <span className="w-1.5 h-1.5 rounded-full bg-amber-500"></span> REVISI
-                        </span>
-                      )}
-                      {statusKHS === 'BELUM UPLOAD' && (
-                        <span className="inline-flex items-center gap-1.5 text-[10px] font-bold text-slate-500 bg-slate-100 px-2.5 py-1 rounded-md">
-                          <span className="w-1.5 h-1.5 rounded-full bg-slate-400"></span> BELUM UPLOAD
-                        </span>
-                      )}
+                      <StatusBadge status={statusKHS} domain="evaluasi" />
                     </td>
                     
                     <td className="py-4 px-4">
                       <div className="flex justify-center">
-                        {statusKHS === 'VALID' && item.data && (
+                        {statusKHS === 'valid' && item.data && (
                           <Link href={`/user/laporanKHS/${item.data.id}`} className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-blue-600 text-blue-600 rounded-lg text-xs font-bold hover:bg-blue-50 w-[110px] justify-center transition-all">
                             <Eye size={14} /> Lihat Detail
                           </Link>
                         )}
-                        {(statusKHS === 'REVISI' || statusKHS === 'PENDING') && item.data && (
+                        {(statusKHS === 'revisi' || statusKHS === 'pending') && item.data && (
                           <Link href={`/user/laporanKHS/${item.data.id}/edit`} className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-blue-600 text-blue-600 rounded-lg text-xs font-bold hover:bg-blue-50 w-[110px] justify-center transition-all">
                             <Pencil size={14} /> Edit
                           </Link>

@@ -109,7 +109,7 @@ export async function POST(request: Request) {
         tahun_akademik: tahunAkademik || null,
         tahun_ke: tahunKe ? parseInt(tahunKe) : null,
         nominal: nominalNumber,
-        status_pencairan: "Pending",
+        status_pencairan: "pending",
         catatan_keuangan: catatan || null,
       },
     });

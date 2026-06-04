@@ -50,7 +50,7 @@ export default async function DetailDosenLayout({ children, params }: LayoutProp
   const semesterAktif = khsList.length;
 
   const totalCair = latestPengajuan?.pengajuan_reimbursement
-    ?.filter((r) => r.status_pencairan === 'DICAIRKAN')
+    ?.filter((r) => r.status_pencairan === 'dicairkan')
     .reduce((sum, r) => sum + Number(r.nominal || 0), 0) || 0;
 
   return (

@@ -3,6 +3,7 @@
 import { DokumenDetail } from "../types";
 import { Download, ZoomIn, ZoomOut, Maximize } from "lucide-react";
 import { useState } from "react";
+import StatusBadge from "@/src/components/StatusBadge";
 
 interface DocumentViewerProps {
   document: DokumenDetail | null;
@@ -91,7 +92,7 @@ export default function DocumentViewer({ document }: DocumentViewerProps) {
         <div className="grid grid-cols-2 gap-4">
           <div>
             <p className="font-medium text-slate-700">Status</p>
-            <p className="mt-1 capitalize">{document.status_verifikasi}</p>
+            <StatusBadge status={document.status_verifikasi} domain="verifikasi" size="md" dot className="mt-1" />
           </div>
           <div>
             <p className="font-medium text-slate-700">Updated</p>
