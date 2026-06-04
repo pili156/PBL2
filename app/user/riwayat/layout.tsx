@@ -1,6 +1,7 @@
 import { headers } from 'next/headers';
 import { prisma } from '@/src/lib/prisma';
 import { notFound } from 'next/navigation';
+import { Building2, GraduationCap } from 'lucide-react';
 import TabNavigation from './TabNavigation';
 
 export const dynamic = 'force-dynamic';
@@ -16,7 +17,11 @@ export default async function RiwayatLayout({ children }: { children: React.Reac
     include: {
       master_dosen: true,
       pengajuan_studi: {
-        include: { status: true },
+        include: {
+          status: true,
+          jenis_studi: true,
+          jalur_pendanaan: true,
+        },
         orderBy: { created_at: 'desc' },
         take: 1,
       },
@@ -29,7 +34,12 @@ export default async function RiwayatLayout({ children }: { children: React.Reac
   const inisial = namaLengkap.charAt(0).toUpperCase();
   const nip = user.master_dosen?.nip || '-';
   const jurusan = user.master_dosen?.jurusan || '-';
-  const statusStudi = user.pengajuan_studi[0]?.status?.nama_status || 'Belum Mengajukan';
+
+  const latestPengajuan = user.pengajuan_studi[0];
+  const statusStudi = latestPengajuan?.status?.nama_status || 'Belum Mengajukan';
+  const jenisStudi = latestPengajuan?.jenis_studi?.nama_jenis || null;
+  const jalurPendanaan = latestPengajuan?.jalur_pendanaan?.nama_pendanaan || null;
+  const perguruanTinggi = latestPengajuan?.perguruan_tinggi || null;
 
   return (
     <div className="space-y-6">
@@ -61,6 +71,25 @@ export default async function RiwayatLayout({ children }: { children: React.Reac
               {statusStudi}
             </span>
           </div>
+          {perguruanTinggi && (
+            <div>
+              <p className="text-[10px] text-slate-400 uppercase tracking-wider">PT Tujuan</p>
+              <p className="font-bold text-slate-800 flex items-center gap-1">
+                <Building2 size={12} className="text-slate-400" />
+                {perguruanTinggi}
+              </p>
+            </div>
+          )}
+          {jenisStudi && (
+            <div>
+              <p className="text-[10px] text-slate-400 uppercase tracking-wider">Jenis Studi</p>
+              <p className="font-bold text-slate-800 flex items-center gap-1">
+                <GraduationCap size={12} className="text-slate-400" />
+                {jenisStudi}
+                {jalurPendanaan && <span className="text-slate-400 font-normal"> &bull; {jalurPendanaan}</span>}
+              </p>
+            </div>
+          )}
         </div>
       </div>
 

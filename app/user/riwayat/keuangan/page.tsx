@@ -1,7 +1,7 @@
 import { headers } from "next/headers";
 import Link from "next/link";
 import { prisma } from "@/src/lib/prisma";
-import { Plus, Download } from "lucide-react";
+import { Plus, Download, Wallet, DollarSign, CheckCircle2 } from "lucide-react";
 import { formatRupiah } from "@/src/lib/formatters";
 import StatusBadge from "@/src/components/StatusBadge";
 
@@ -23,7 +23,7 @@ export default async function RiwayatKeuanganPage() {
     return <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-10 text-center text-slate-500">User tidak ditemukan</div>;
   }
 
-  const pengajuan = await prisma.pengajuanStudi.findFirst({
+  const allPengajuan = await prisma.pengajuanStudi.findMany({
     where: { user_id: currentUser.id },
     orderBy: { created_at: "desc" },
     include: {
@@ -33,7 +33,25 @@ export default async function RiwayatKeuanganPage() {
     },
   });
 
-  const riwayatList = pengajuan?.pengajuan_reimbursement ?? [];
+  const allRiwayat = allPengajuan.flatMap((p) =>
+    p.pengajuan_reimbursement.map((r) => ({
+      ...r,
+      perguruan_tinggi: p.perguruan_tinggi || "Universitas",
+      pengajuan_id: p.id,
+    }))
+  );
+
+  let totalBantuan = 0;
+  let totalCair = 0;
+  for (const r of allRiwayat) {
+    if (r.nominal) {
+      totalBantuan += Number(r.nominal);
+      if (r.status_pencairan === "selesai") {
+        totalCair += Number(r.nominal);
+      }
+    }
+  }
+  const sisa = totalBantuan - totalCair;
 
   return (
     <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-6 space-y-6">
@@ -50,11 +68,42 @@ export default async function RiwayatKeuanganPage() {
         </Link>
       </div>
 
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="bg-slate-50 rounded-lg p-4 flex items-center gap-3">
+          <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center">
+            <Wallet size={20} className="text-blue-600" />
+          </div>
+          <div>
+            <p className="text-[10px] text-slate-400 uppercase tracking-wider">Total Bantuan</p>
+            <p className="text-lg font-bold text-slate-800">{formatRupiah(totalBantuan)}</p>
+          </div>
+        </div>
+        <div className="bg-slate-50 rounded-lg p-4 flex items-center gap-3">
+          <div className="w-10 h-10 rounded-lg bg-emerald-100 flex items-center justify-center">
+            <CheckCircle2 size={20} className="text-emerald-600" />
+          </div>
+          <div>
+            <p className="text-[10px] text-slate-400 uppercase tracking-wider">Sudah Cair</p>
+            <p className="text-lg font-bold text-emerald-600">{formatRupiah(totalCair)}</p>
+          </div>
+        </div>
+        <div className="bg-slate-50 rounded-lg p-4 flex items-center gap-3">
+          <div className="w-10 h-10 rounded-lg bg-amber-100 flex items-center justify-center">
+            <DollarSign size={20} className="text-amber-600" />
+          </div>
+          <div>
+            <p className="text-[10px] text-slate-400 uppercase tracking-wider">Sisa Belum Cair</p>
+            <p className="text-lg font-bold text-amber-600">{formatRupiah(sisa)}</p>
+          </div>
+        </div>
+      </div>
+
       <div className="overflow-x-auto">
         <table className="w-full text-left">
           <thead>
             <tr className="border-b border-slate-200 text-xs font-bold text-slate-800">
               <th className="py-4 px-2 w-12 text-center">No</th>
+              <th className="py-4 px-4">Pengajuan</th>
               <th className="py-4 px-4">Semester</th>
               <th className="py-4 px-4">Tahun Akademik</th>
               <th className="py-4 px-4">Nominal</th>
@@ -65,17 +114,18 @@ export default async function RiwayatKeuanganPage() {
             </tr>
           </thead>
           <tbody>
-            {riwayatList.length === 0 ? (
+            {allRiwayat.length === 0 ? (
               <tr>
-                <td colSpan={8} className="text-center py-10 text-slate-500">
+                <td colSpan={9} className="text-center py-10 text-slate-500">
                   Belum ada riwayat pencairan bantuan studi.
                 </td>
               </tr>
             ) : (
-              riwayatList.map((item, index) => {
+              allRiwayat.map((item, index) => {
                 return (
                   <tr key={item.id} className="border-b border-slate-50 hover:bg-slate-50 transition-colors">
                     <td className="py-4 px-2 text-sm text-slate-600 text-center">{index + 1}.</td>
+                    <td className="py-4 px-4 text-sm text-slate-600">{item.perguruan_tinggi}</td>
                     <td className="py-4 px-4 text-sm text-slate-800">Semester {item.semester_ke}</td>
                     <td className="py-4 px-4 text-sm text-slate-600">{item.tahun_akademik || "-"}</td>
                     <td className="py-4 px-4 text-sm font-bold text-slate-800">{formatRupiah(item.nominal)}</td>
@@ -112,11 +162,11 @@ export default async function RiwayatKeuanganPage() {
         </table>
       </div>
 
-      {riwayatList.some((r) => r.catatan_keuangan) && (
+      {allRiwayat.some((r) => r.catatan_keuangan) && (
         <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 text-xs text-amber-800">
           <p className="font-bold mb-1">Catatan:</p>
-          {riwayatList.filter((r) => r.catatan_keuangan).map((r) => (
-            <p key={r.id} className="mb-0.5">• Semester {r.semester_ke}: {r.catatan_keuangan}</p>
+          {allRiwayat.filter((r) => r.catatan_keuangan).map((r) => (
+            <p key={r.id} className="mb-0.5">&bull; {r.perguruan_tinggi} - Semester {r.semester_ke}: {r.catatan_keuangan}</p>
           ))}
         </div>
       )}

@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { BookOpen, Wallet } from 'lucide-react';
+import { BookOpen, Wallet, History } from 'lucide-react';
 
 interface Tab {
   name: string;
@@ -16,6 +16,7 @@ export default function TabNavigation() {
   const tabs: Tab[] = [
     { name: 'Riwayat Studi', href: '/user/riwayat/studi', icon: BookOpen },
     { name: 'Riwayat Keuangan', href: '/user/riwayat/keuangan', icon: Wallet },
+    { name: 'Log Aktivitas', href: '/user/riwayat/log', icon: History },
   ];
 
   const isActive = (tab: Tab) => {
