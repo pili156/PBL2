@@ -1,8 +1,9 @@
 import { prisma } from '@/src/lib/prisma';
-import { ArrowLeft, Download, FileText, Check, Send, Star, Info, XCircle, CheckSquare, Banknote, Calendar, Building, User } from 'lucide-react';
+import { ArrowLeft, FileText, Check, Send, Star, Info, XCircle, CheckSquare, Banknote, Calendar, Building, User } from 'lucide-react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { acceptKeuangan, rejectKeuangan } from '../../../actions';
+import { acceptKeuangan, rejectKeuangan, uploadBuktiTransfer } from '../../../actions';
+import DocumentViewerSection from './DocumentViewerSection';
 import { formatRupiah, formatDateLong, formatDateTime } from '@/src/lib/formatters';
 
 export const dynamic = 'force-dynamic';
@@ -57,7 +58,12 @@ export default async function DetailKeuanganPage({ params }: Props) {
 
   const keuangan = await prisma.pengajuanReimbursement.findUnique({
     where: { id: keuanganId },
-    include: { pengajuan_studi: { include: { user: { include: { master_dosen: true } } } } },
+    include: {
+      pengajuan_studi: { include: { user: { include: { master_dosen: true } } } },
+      dokumen_pengajuan: {
+        include: { master_dokumen: true },
+      },
+    },
   });
 
   if (!keuangan) notFound();
@@ -65,6 +71,7 @@ export default async function DetailKeuanganPage({ params }: Props) {
   const status = keuangan.status_pencairan?.toUpperCase() || 'PENDING';
   const isSelesai = status === 'DICAIRKAN' || status === 'SELESAI';
   const isVerifikasi = status === 'DICAIRKAN' || status === 'DIPROSES' || status === 'SELESAI';
+  const hasBuktiTransfer = keuangan.file_bukti_bayar !== null;
   const bank = keuangan.nama_bank || '-';
   const norek = keuangan.nomor_rekening || '-';
   const s = statusStyle(status);
@@ -72,7 +79,7 @@ export default async function DetailKeuanganPage({ params }: Props) {
   const steps = [
     { icon: Check, label: 'Upload Bukti', sub: 'Dokumen pembayaran diunggah', date: keuangan.created_at, active: true, done: true },
     { icon: Check, label: 'Verifikasi Admin', sub: 'Berkas dan nominal diverifikasi', date: isVerifikasi ? keuangan.updated_at : null, active: isVerifikasi, done: isVerifikasi },
-    { icon: Send, label: 'Dana Ditransfer', sub: 'Transfer ke rekening tujuan', date: isSelesai ? keuangan.tanggal_pencairan : null, active: isSelesai, done: isSelesai },
+    { icon: Send, label: 'Dana Ditransfer', sub: hasBuktiTransfer ? (isSelesai ? 'Transfer ke rekening tujuan' : 'Menunggu konfirmasi') : 'Upload bukti transfer', date: isSelesai ? keuangan.tanggal_pencairan : null, active: hasBuktiTransfer, done: hasBuktiTransfer && isSelesai },
     { icon: Star, label: 'Selesai', sub: isSelesai ? 'Pencairan berhasil' : 'Menunggu', date: isSelesai ? keuangan.tanggal_pencairan : null, active: isSelesai, done: isSelesai },
   ];
 
@@ -125,51 +132,74 @@ export default async function DetailKeuanganPage({ params }: Props) {
           </div>
 
           <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-6">
-            <h4 className="text-sm font-semibold text-slate-800 mb-4">Verifikasi Admin</h4>
-            <form className="space-y-4">
-              <input type="hidden" name="keuanganId" value={keuanganId} />
-              <textarea name="catatan"
-                className="w-full text-sm p-3 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 min-h-[80px] transition-all"
-                placeholder="Catatan verifikasi..."
-                defaultValue={keuangan.catatan_keuangan || ''} />
-              <div className="grid grid-cols-2 gap-3">
-                <button type="submit" formAction={acceptKeuangan}
-                  className="py-2.5 bg-emerald-500 text-white rounded-lg text-xs font-bold hover:bg-emerald-600 transition-all flex items-center justify-center gap-2">
-                  <CheckSquare size={15} /> Terima
-                </button>
-                <button type="submit" formAction={rejectKeuangan}
-                  className="py-2.5 bg-white text-red-600 border border-red-200 rounded-lg text-xs font-bold hover:bg-red-50 transition-all flex items-center justify-center gap-2">
-                  <XCircle size={15} /> Tolak
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-
-        <div className="xl:col-span-3 bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden flex flex-col min-h-[500px]">
-          <div className="flex items-center justify-between px-5 py-3.5 border-b border-slate-100">
-            <h4 className="text-sm font-semibold text-slate-800 flex items-center gap-2">
-              <FileText size={15} className="text-slate-400" />
-              Bukti Transfer
-            </h4>
-            <a href={keuangan.file_bukti_bayar || '#'} target="_blank"
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-blue-600 rounded-lg text-xs font-semibold hover:bg-blue-100 transition-colors">
-              <Download size={13} /> Download
-            </a>
-          </div>
-          <div className="flex-1 bg-slate-50 p-6 flex items-center justify-center">
+            <h4 className="text-sm font-semibold text-slate-800 mb-4">Upload Bukti Transfer</h4>
             {keuangan.file_bukti_bayar ? (
-              <div className="w-full h-full bg-white rounded-xl shadow-inner border border-slate-200 overflow-hidden">
-                <iframe src={keuangan.file_bukti_bayar} className="w-full h-full min-h-[500px]" title="Bukti Transfer" />
+              <div className="space-y-3">
+                <div className="flex items-center gap-3 p-3 bg-emerald-50 rounded-lg">
+                  <CheckSquare size={16} className="text-emerald-600 flex-shrink-0" />
+                  <div>
+                    <p className="text-xs font-semibold text-emerald-700">Bukti transfer sudah diunggah</p>
+                    <a href={keuangan.file_bukti_bayar} target="_blank" rel="noopener noreferrer"
+                      className="text-xs text-blue-600 hover:underline mt-0.5 inline-block font-medium">
+                      Lihat file
+                    </a>
+                  </div>
+                </div>
               </div>
             ) : (
-              <div className="text-center text-slate-400">
-                <FileText size={64} className="mx-auto mb-4 opacity-20" strokeWidth={1.5} />
-                <p className="text-sm font-medium text-slate-400">File bukti belum diunggah</p>
+              <form action={uploadBuktiTransfer} encType="multipart/form-data" className="space-y-4">
+                <input type="hidden" name="keuanganId" value={keuanganId} />
+                <input type="hidden" name="idDosen" value={idDosen} />
+                <div>
+                  <input
+                    type="file"
+                    name="fileBukti"
+                    accept=".pdf,.jpg,.jpeg,.png"
+                    required
+                    className="w-full text-sm p-2 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 transition-all"
+                  />
+                  <p className="text-[10px] text-slate-400 mt-1.5">Format: PDF, JPG, PNG. Maks 5MB.</p>
+                </div>
+                <button type="submit"
+                  className="w-full py-2.5 bg-blue-600 text-white rounded-lg text-xs font-bold hover:bg-blue-700 transition-all flex items-center justify-center gap-2">
+                  <Send size={15} /> Upload Bukti Transfer
+                </button>
+              </form>
+            )}
+          </div>
+
+          <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-6">
+            <h4 className="text-sm font-semibold text-slate-800 mb-4">Verifikasi Admin</h4>
+            {keuangan.file_bukti_bayar ? (
+              <form className="space-y-4">
+                <input type="hidden" name="keuanganId" value={keuanganId} />
+                <textarea name="catatan"
+                  className="w-full text-sm p-3 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 min-h-[80px] transition-all"
+                  placeholder="Catatan verifikasi..."
+                  defaultValue={keuangan.catatan_keuangan || ''} />
+                <div className="grid grid-cols-2 gap-3">
+                  <button type="submit" formAction={acceptKeuangan}
+                    className="py-2.5 bg-emerald-500 text-white rounded-lg text-xs font-bold hover:bg-emerald-600 transition-all flex items-center justify-center gap-2">
+                    <CheckSquare size={15} /> Terima
+                  </button>
+                  <button type="submit" formAction={rejectKeuangan}
+                    className="py-2.5 bg-white text-red-600 border border-red-200 rounded-lg text-xs font-bold hover:bg-red-50 transition-all flex items-center justify-center gap-2">
+                    <XCircle size={15} /> Tolak
+                  </button>
+                </div>
+              </form>
+            ) : (
+              <div className="p-4 bg-amber-50 border border-amber-100 rounded-lg flex items-center gap-3">
+                <Info size={16} className="text-amber-600 flex-shrink-0" />
+                <p className="text-xs text-amber-800 font-medium">
+                  Upload bukti transfer terlebih dahulu sebelum melakukan verifikasi.
+                </p>
               </div>
             )}
           </div>
         </div>
+
+        <DocumentViewerSection documents={keuangan.dokumen_pengajuan} />
       </div>
 
       <div className="bg-blue-50 border border-blue-100 rounded-xl px-5 py-3.5 flex items-start gap-3">
