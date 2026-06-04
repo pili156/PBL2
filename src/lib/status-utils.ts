@@ -1,11 +1,15 @@
 export function normalizeStatus(status?: string | null): string {
-  if (!status) return "Pending";
-  const text = status.toLowerCase();
-  if (text.includes("selesai") || text.includes("completed")) return "Selesai";
-  if (text.includes("disetujui") || text.includes("approved") || text.includes("diterima")) return "Disetujui";
-  if (text.includes("revisi") || text.includes("ditolak")) return "Perlu Revisi";
-  if (text.includes("diproses") || text.includes("pending") || text.includes("menunggu")) return "Diproses";
-  return "Diproses";
+  if (!status) return "Menunggu";
+  const text = status.toLowerCase().trim();
+  if (["dicairkan", "selesai", "completed"].includes(text)) return "Selesai";
+  if (["ditolak", "dibatalkan"].includes(text)) return "Perlu Revisi";
+  if (["diproses", "draft", "pending", "menunggu"].includes(text)) return "Diproses";
+  if (["disetujui", "diterima", "approved"].includes(text)) return "Disetujui";
+  if (text.includes("selesai") || text.includes("cair")) return "Selesai";
+  if (text.includes("tolak") || text.includes("batal") || text.includes("revisi")) return "Perlu Revisi";
+  if (text.includes("proses") || text.includes("tunggu") || text.includes("draft") || text.includes("pending")) return "Diproses";
+  if (text.includes("setuju") || text.includes("terima") || text.includes("approv")) return "Disetujui";
+  return "Menunggu";
 }
 
 export function statusBadgeClass(status: string): string {

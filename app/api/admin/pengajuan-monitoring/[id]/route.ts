@@ -44,6 +44,7 @@ export async function GET(
     const dokumenPengajuan = await prisma.dokumenPengajuan.findMany({
       where: {
         pengajuan_id: pengajuanId,
+        pengajuan_reimbursement_id: null,
       },
       include: {
         master_dokumen: true,

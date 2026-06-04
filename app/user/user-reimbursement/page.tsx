@@ -42,15 +42,15 @@ export default async function BantuanStudiPage() {
     total: bantuanStudiList.length,
     diproses: bantuanStudiList.filter((item) => {
       const status = item.status_pencairan?.toLowerCase() ?? "";
-      return status === "pending" || status === "diproses" || status === "menunggu";
+      return ["pending", "diproses", "menunggu", "draft"].includes(status);
     }).length,
     disetujui: bantuanStudiList.filter((item) => {
       const status = item.status_pencairan?.toLowerCase() ?? "";
-      return status.includes("disetujui") || status.includes("diterima");
+      return ["disetujui", "diterima", "dicairkan", "selesai"].includes(status);
     }).length,
     revisi: bantuanStudiList.filter((item) => {
       const status = item.status_pencairan?.toLowerCase() ?? "";
-      return status.includes("revisi") || status.includes("ditolak");
+      return ["ditolak", "dibatalkan"].includes(status) || status.includes("revisi");
     }).length,
   };
 

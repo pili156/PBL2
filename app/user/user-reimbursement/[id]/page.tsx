@@ -15,6 +15,7 @@ type BantuanStudiDetail = {
   nominal: string | number;
   status_pencairan: string | null;
   catatan_keuangan: string | null;
+  file_bukti_bayar: string | null;
   created_at: string | null;
   pengajuan_studi: {
     id: number;
@@ -88,11 +89,21 @@ export default function BantuanStudiDetailPage() {
     );
   }
 
-  const statusLabel = normalizeStatus(data.status_pencairan);
-  const isApproved = statusLabel === "Disetujui" || statusLabel === "Selesai";
-  const isDone = statusLabel === "Selesai";
-  const isRevision = statusLabel === "Perlu Revisi";
   const dokumenFiles = data.pengajuan_studi?.dokumen_pengajuan ?? [];
+
+  const getDocOverallStatus = () => {
+    if (dokumenFiles.length === 0) return null;
+    const allTerverifikasi = dokumenFiles.every((d) => d.status_verifikasi === 'terverifikasi');
+    const hasRevisi = dokumenFiles.some((d) => d.status_verifikasi === 'revisi');
+    if (allTerverifikasi) return 'terverifikasi';
+    if (hasRevisi) return 'revisi';
+    return 'pending';
+  };
+  const docOverallStatus = getDocOverallStatus();
+  const allVerified = docOverallStatus === 'terverifikasi';
+  const anyRevisi = docOverallStatus === 'revisi';
+
+  const statusLabel = normalizeStatus(data.status_pencairan);
 
   const handleFileSelect = (docId: number, file: File) => {
     if (file.type !== 'application/pdf') {
@@ -126,6 +137,8 @@ export default function BantuanStudiDetailPage() {
         throw new Error(err.error || 'Gagal mengunggah');
       }
 
+      const result = await response.json();
+
       setData(prev => {
         if (!prev) return prev;
         return {
@@ -134,7 +147,7 @@ export default function BantuanStudiDetailPage() {
             ...prev.pengajuan_studi,
             dokumen_pengajuan: prev.pengajuan_studi.dokumen_pengajuan.map(d =>
               d.id === docId
-                ? { ...d, file_path: null, status_verifikasi: 'Pending', catatan_revisi: null }
+                ? { ...d, file_path: result.filePath, status_verifikasi: 'Pending', catatan_revisi: null }
                 : d
             ),
           } : null,
@@ -154,30 +167,24 @@ export default function BantuanStudiDetailPage() {
     }
   };
 
-  const progressSteps = [
+  const docProgressSteps = [
     {
-      label: "Pengajuan Dikirim",
-      sub: formatDateLong(data.created_at),
-      done: true,
-      description: "Pengajuan bantuan studi berhasil dikirim",
+      label: "Dokumen Diupload",
+      sub: dokumenFiles.length > 0 ? `${dokumenFiles.length} dokumen` : "Belum ada",
+      done: dokumenFiles.length > 0,
+      description: "Dokumen pendukung telah diunggah",
     },
     {
       label: "Diverifikasi Admin",
-      sub: isApproved || isRevision ? formatDateLong(data.created_at) : "Menunggu verifikasi",
-      done: isApproved || isRevision || isDone,
-      description: isRevision ? "Dokumen perlu diperbaiki" : "Dokumen sedang diverifikasi",
-    },
-    {
-      label: "Disetujui",
-      sub: isApproved ? formatDateLong(data.created_at) : isRevision ? "Perlu revisi" : "Menunggu persetujuan",
-      done: isApproved || isDone,
-      description: isApproved ? "Pengajuan disetujui" : "Menunggu persetujuan",
+      sub: allVerified ? "Semua terverifikasi" : anyRevisi ? "Ada dokumen perlu revisi" : "Menunggu verifikasi",
+      done: allVerified || anyRevisi,
+      description: allVerified ? "Semua dokumen telah diverifikasi" : anyRevisi ? "Beberapa dokumen perlu diperbaiki" : "Dokumen sedang diverifikasi",
     },
     {
       label: "Selesai",
-      sub: isDone ? formatDateLong(data.created_at) : "Menunggu",
-      done: isDone,
-      description: isDone ? "Proses selesai" : "Menunggu penyelesaian",
+      sub: allVerified ? "Pengajuan disetujui" : "Menunggu",
+      done: allVerified,
+      description: allVerified ? "Semua dokumen telah terverifikasi" : "Menunggu verifikasi semua dokumen",
     },
   ];
 
@@ -223,9 +230,20 @@ export default function BantuanStudiDetailPage() {
 
       <div className="grid gap-6 xl:grid-cols-[1.6fr_1fr]">
         <div className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm">
-          <h2 className="text-lg font-semibold text-slate-900">Progres Pengajuan</h2>
+          <div className="flex items-center justify-between mb-2">
+            <h2 className="text-lg font-semibold text-slate-900">Status Dokumen</h2>
+            <span className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold ${
+              docOverallStatus === 'terverifikasi' ? 'bg-green-100 text-green-700' :
+              docOverallStatus === 'revisi' ? 'bg-red-100 text-red-700' :
+              'bg-yellow-100 text-yellow-700'
+            }`}>
+              {docOverallStatus === 'terverifikasi' ? <><Check size={12} /> TERVERIFIKASI</> :
+               docOverallStatus === 'revisi' ? <><AlertCircle size={12} /> REVISI</> :
+               <><Clock size={12} /> PENDING</>}
+            </span>
+          </div>
           <div className="mt-6 space-y-4">
-            {progressSteps.map((step) => (
+            {docProgressSteps.map((step) => (
               <div key={step.label} className="flex gap-4">
                 <div className="mt-1 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full">
                   {step.done ? (
@@ -278,6 +296,19 @@ export default function BantuanStudiDetailPage() {
                   Rp {Number(data.nominal ?? 0).toLocaleString("id-ID", { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
                 </p>
               </div>
+              {data.file_bukti_bayar && (
+                <div className="sm:col-span-2">
+                  <p className="text-xs text-slate-500 mb-1">Bukti Transfer Dana</p>
+                  <a
+                    href={data.file_bukti_bayar}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-2.5 text-xs font-semibold text-emerald-700 hover:bg-emerald-100 transition-all"
+                  >
+                    <FileText size={16} /> Download Bukti Transfer
+                  </a>
+                </div>
+              )}
               <div className="sm:col-span-2">
                 <p className="text-xs text-slate-500">Catatan</p>
                 <p className="rounded-3xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700">
@@ -399,7 +430,7 @@ export default function BantuanStudiDetailPage() {
             </div>
           </div>
 
-          {isRevision && (
+          {anyRevisi && (
             <Link
               href={`/user/user-reimbursement/ajukan`}
               className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-blue-600 px-6 py-3 text-sm font-semibold text-white hover:bg-blue-700"

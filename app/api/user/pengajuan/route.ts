@@ -20,6 +20,9 @@ export async function GET() {
         wilayah: true,
         status: true,
         dokumen_pengajuan: {
+          where: {
+            pengajuan_reimbursement_id: null,
+          },
           include: {
             master_dokumen: true,
           },

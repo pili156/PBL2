@@ -53,6 +53,16 @@ async function evaluateKhs(khsId: number, keputusan: 'DITERIMA' | 'DITOLAK', cat
 export async function acceptKeuangan(formData: FormData) {
   const id = Number(formData.get('keuanganId'));
   const catatan = formData.get('catatan') as string;
+
+  const reimbursement = await prisma.pengajuanReimbursement.findUnique({
+    where: { id },
+    select: { file_bukti_bayar: true },
+  });
+
+  if (!reimbursement?.file_bukti_bayar) {
+    throw new Error('Upload bukti transfer terlebih dahulu sebelum menyetujui pencairan');
+  }
+
   await evaluateKeuangan(id, 'DICAIRKAN', catatan);
 }
 
@@ -60,6 +70,34 @@ export async function rejectKeuangan(formData: FormData) {
   const id = Number(formData.get('keuanganId'));
   const catatan = formData.get('catatan') as string;
   await evaluateKeuangan(id, 'DITOLAK', catatan);
+}
+
+export async function uploadBuktiTransfer(formData: FormData) {
+  const keuanganId = Number(formData.get('keuanganId'));
+  const idDosen = Number(formData.get('idDosen'));
+  const file = formData.get('fileBukti') as File | null;
+
+  if (!file || file.size === 0) {
+    throw new Error('File bukti transfer harus dipilih');
+  }
+
+  let fileBukti: string;
+  try {
+    const result = await uploadFile(file, idDosen, 'keuangan');
+    fileBukti = result.filePath;
+  } catch (e) {
+    if (e instanceof UploadError) throw e;
+    throw new Error('Gagal mengupload file bukti transfer');
+  }
+
+  await prisma.pengajuanReimbursement.update({
+    where: { id: keuanganId },
+    data: { file_bukti_bayar: fileBukti },
+  });
+
+  revalidatePath('/admin/riwayat-dosen');
+  revalidatePath(`/admin/riwayat-dosen/${idDosen}/keuangan`);
+  revalidatePath(`/admin/riwayat-dosen/${idDosen}/keuangan/${keuanganId}`);
 }
 
 async function evaluateKeuangan(keuanganId: number, keputusan: 'DICAIRKAN' | 'DITOLAK', catatan: string) {

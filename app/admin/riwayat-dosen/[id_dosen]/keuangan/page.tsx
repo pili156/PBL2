@@ -103,28 +103,6 @@ export default async function RiwayatKeuangan({ params }: Props) {
           <p className="text-xl font-bold text-slate-800">{jumlahPencairan}x</p>
         </div>
       </div>
-
-      {keuanganList.length > 0 && (
-        <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-6">
-          <h4 className="text-sm font-semibold text-slate-800 mb-5">Tracking Pencairan</h4>
-          <div className="flex items-center justify-center gap-2 overflow-x-auto py-2">
-            {(() => {
-              const s = latestStatus;
-              const isSelesai = s === 'DICAIRKAN' || s === 'SELESAI';
-              const isDiproses = s === 'DIPROSES';
-              return (
-                <>
-                  <TrackingStep label="Pengajuan" icon={FileText} active={true} />
-                  <TrackingStep label="Verifikasi" icon={Check} active={isDiproses || isSelesai} />
-                  <TrackingStep label="Pencairan" icon={Send} active={isSelesai} />
-                  <TrackingStep label="Selesai" icon={Check} active={isSelesai} last />
-                </>
-              );
-            })()}
-          </div>
-        </div>
-      )}
-
       <div className="bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden">
         <div className="p-5 border-b border-slate-100 flex items-center justify-between">
           <div>

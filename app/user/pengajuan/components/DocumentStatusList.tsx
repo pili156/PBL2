@@ -146,8 +146,10 @@ export default function DocumentStatusList() {
 
   const getStatusOverall = () => {
     if (!data) return null;
-    const allTerverifikasi = data.dokumen.every((d) => d.status_verifikasi === 'terverifikasi');
-    const hasRevisi = data.dokumen.some((d) => d.status_verifikasi === 'revisi');
+    const submittedDokumen = data.dokumen.filter((d) => d.file_path);
+    if (submittedDokumen.length === 0) return null;
+    const allTerverifikasi = submittedDokumen.every((d) => d.status_verifikasi === 'terverifikasi');
+    const hasRevisi = submittedDokumen.some((d) => d.status_verifikasi === 'revisi');
     if (allTerverifikasi) return 'Terverifikasi';
     if (hasRevisi) return 'Revisi';
     return 'Pending';
@@ -237,11 +239,11 @@ export default function DocumentStatusList() {
 
       <div className="bg-white rounded-xl border border-slate-200 p-6">
         <h3 className="text-lg font-semibold mb-4">
-          Daftar Dokumen submitted <span className="text-slate-400">({data.dokumen.length} items)</span>
+          Daftar Dokumen yang diupload <span className="text-slate-400">({data.dokumen.filter(d => d.file_path).length} items)</span>
         </h3>
         
         <div className="space-y-3 max-h-[500px] overflow-y-auto">
-          {data.dokumen.map((doc) => (
+          {data.dokumen.filter(doc => doc.file_path).map((doc) => (
             <div
               key={doc.id}
               className="p-4 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 transition-all"
