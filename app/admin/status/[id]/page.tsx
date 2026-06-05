@@ -2,7 +2,8 @@
 
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import { ChevronLeft, UploadCloud, Check, Loader2 } from "lucide-react";
+import BackLink from "@/app/components/BackLink";
+import { ArrowLeft, UploadCloud, Check, Loader2 } from "lucide-react";
 
 type Props = {
   params: Promise<{ id: string }>;
@@ -122,9 +123,7 @@ export default function ManajemenStatusPage({ params }: Props) {
       <div className="p-8 bg-[#F8FAFC] min-h-screen">
         <div className="text-center">
           <p className="text-red-500">Data tidak ditemukan</p>
-          <Link href="/admin/status" className="text-blue-600 hover:underline mt-2 inline-block">
-            Kembali ke daftar
-          </Link>
+          <BackLink href="/admin/status" />
         </div>
       </div>
     );
@@ -135,8 +134,8 @@ export default function ManajemenStatusPage({ params }: Props) {
       {/* Header Section dengan Judul Baru */}
       <div className="mb-10">
         <div className="flex items-center gap-4 mb-2">
-          <Link href="/admin/status" className="p-2 hover:bg-gray-200 rounded-full transition-all">
-            <ChevronLeft size={28} className="text-[#0A192F]" />
+          <Link href="/admin/status" className="p-2 hover:bg-gray-200 rounded-full transition-all" aria-label="Kembali">
+            <ArrowLeft size={28} className="text-[#0A192F]" />
           </Link>
           <h1 className="text-3xl font-bold text-[#0A192F]">Upload SK</h1>
         </div>

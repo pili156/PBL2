@@ -1,5 +1,5 @@
 import { prisma } from '@/src/lib/prisma';
-import { ArrowLeft, Download, FileText, Calendar, BookOpen, Target, User } from 'lucide-react';
+import { Download, FileText, Calendar, BookOpen, Target, User } from 'lucide-react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { formatDateLong } from '@/src/lib/formatters';
@@ -49,12 +49,6 @@ export default async function DetailKhsPage({ params }: Props) {
           <h2 className="text-xl font-bold text-slate-900 tracking-tight">Preview KHS</h2>
           <p className="text-sm text-slate-400 mt-0.5">Semester {khs.semester_ke || '-'} — {khs.tahun_akademik || 'Tahun tidak tersedia'}</p>
         </div>
-        <Link
-          href={`/admin/riwayat-dosen/${idDosen}/khs`}
-          className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 text-slate-600 rounded-lg text-sm font-medium hover:bg-slate-50 transition-colors shadow-sm"
-        >
-          <ArrowLeft size={16} /> Kembali
-        </Link>
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-5 gap-6 items-start">

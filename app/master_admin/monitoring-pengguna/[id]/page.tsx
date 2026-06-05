@@ -1,10 +1,11 @@
 import { prisma } from '@/src/lib/prisma';
 import { notFound, redirect } from 'next/navigation';
 import {
-  User, Shield, KeyRound, ArrowLeft, Save,
+  User, Shield, KeyRound, Save,
   Activity,
 } from 'lucide-react';
 import Link from 'next/link';
+import BackLink from '@/app/components/BackLink';
 import { revalidatePath } from 'next/cache';
 import { updateUserById, resetPassword } from '../actions';
 import DeleteUserButton from './DeleteUserButton';
@@ -76,13 +77,7 @@ export default async function EditUserPage({ params }: Props) {
     <div className="max-w-4xl space-y-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <Link
-            href="/master_admin/monitoring-pengguna"
-            className="flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-700 transition-colors"
-          >
-            <ArrowLeft size={16} />
-            Kembali
-          </Link>
+          <BackLink href="/master_admin/monitoring-pengguna" />
           <div className="h-5 w-px bg-slate-200" />
           <div>
             <h2 className="text-2xl font-bold text-slate-900 tracking-tight">

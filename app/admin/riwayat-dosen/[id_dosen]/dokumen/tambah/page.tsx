@@ -1,5 +1,5 @@
 import { prisma } from '@/src/lib/prisma';
-import { ArrowLeft, Upload } from 'lucide-react';
+import { Upload } from 'lucide-react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { addManualDokumen } from '../../../actions';
@@ -40,10 +40,6 @@ export default async function TambahDokumenPage({ params }: Props) {
           <h2 className="text-xl font-bold text-slate-900">Upload Dokumen</h2>
           <p className="text-sm text-slate-400 mt-0.5">Upload dokumen untuk {nama}</p>
         </div>
-        <Link href={`/admin/riwayat-dosen/${idDosen}/dokumen`}
-          className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 text-slate-600 rounded-lg text-sm font-medium hover:bg-slate-50 transition-colors">
-          <ArrowLeft size={16} /> Kembali
-        </Link>
       </div>
 
       <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-6">

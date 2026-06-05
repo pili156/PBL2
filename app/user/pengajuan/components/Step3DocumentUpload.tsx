@@ -231,6 +231,7 @@ export default function Step3DocumentUpload({
         <button
           onClick={onPrev}
           className="px-8 py-3 rounded-lg font-semibold text-gray-700 bg-gray-200 hover:bg-gray-300 transition-all flex items-center gap-2"
+          aria-label="Kembali"
         >
           <ArrowLeft size={20} />
           Kembali

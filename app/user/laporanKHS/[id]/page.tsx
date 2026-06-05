@@ -46,6 +46,7 @@ export default async function DetailKHSUserPage({
         <Link 
           href="/user/laporanKHS" 
           className="p-2 hover:bg-slate-100 rounded-full transition-colors text-slate-600"
+          aria-label="Kembali"
         >
           <ArrowLeft size={20} />
         </Link>
@@ -186,12 +187,6 @@ export default async function DetailKHSUserPage({
                   <UploadCloud size={18} /> Upload Ulang
                 </Link>
               )}
-              <Link 
-                href="/user/laporanKHS"
-                className="flex-1 flex items-center justify-center py-3 border border-slate-200 text-slate-600 text-sm font-bold rounded-lg hover:bg-slate-50 transition-colors"
-              >
-                Kembali
-              </Link>
             </div>
 
           </div>

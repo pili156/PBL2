@@ -3,7 +3,8 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Upload, Loader2, CheckCircle } from "lucide-react";
+import BackLink from "@/app/components/BackLink";
+import { Upload, Loader2, CheckCircle } from "lucide-react";
 
 type FileUploadState = {
   file: File | null;
@@ -183,9 +184,7 @@ export default function BantuanStudiCreatePage() {
     <div className="space-y-8 animate-in fade-in duration-500">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="space-y-2">
-          <Link href="/user/user-reimbursement" className="inline-flex items-center gap-2 text-sm font-semibold text-slate-700 hover:text-slate-900">
-            <ArrowLeft size={18} /> Kembali
-          </Link>
+          <BackLink href="/user/user-reimbursement" />
           <div>
             <h1 className="text-3xl font-bold text-slate-900">Ajukan Bantuan Studi</h1>
             <p className="text-sm text-slate-500">Lengkapi data berikut untuk mengajukan bantuan studi lanjut.</p>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import { AlertCircle, CheckCircle } from "lucide-react";
 import Step1JenisStudi from "./components/Step1JenisStudi";
 import Step2Dokumen from "./components/Step2Dokumen";
@@ -35,6 +36,7 @@ type DocumentGroup = keyof typeof DOCUMENT_GROUPS;
 const COMPLETED_STATUSES = ['diterima', 'terverifikasi'];
 
 export default function PengajuanPage() {
+  const router = useRouter();
   const [flowStep, setFlowStep] = useState<FlowStep>("step1");
   const [currentDocumentGroup, setCurrentDocumentGroup] = useState<DocumentGroup>("kesehatan");
   const [formData, setFormData] = useState<PengajuanFormData>({
@@ -84,7 +86,7 @@ export default function PengajuanPage() {
 
         if (response.status === 401) {
           //
-          window.location.href = '/login';
+          router.push('/login');
           return;
         }
 
@@ -346,11 +348,11 @@ export default function PengajuanPage() {
               <div className="flex gap-4 justify-center pt-4">
                 <button
                   onClick={() => {
-                    window.location.href = "/user/dashboard";
+                    router.push("/user/dashboard");
                   }}
                   className="inline-flex items-center gap-2 px-6 py-3 bg-slate-200 text-slate-700 rounded-lg font-semibold hover:bg-slate-300 transition-all"
                 >
-                  Kembali ke Dashboard
+                  Kembali
                 </button>
               </div>
             </div>

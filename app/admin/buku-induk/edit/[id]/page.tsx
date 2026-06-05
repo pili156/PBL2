@@ -128,6 +128,7 @@ export default function EditBukuIndukExcelPage() {
         <Link
           href="/admin/buku-induk"
           className="p-2 bg-white rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-50 shadow-sm transition-all"
+          aria-label="Kembali"
         >
           <ArrowLeft size={20} />
         </Link>

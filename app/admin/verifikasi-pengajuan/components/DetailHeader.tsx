@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { PengajuanDetail } from "../types";
-import { ChevronLeft } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 
 interface DetailHeaderProps {
   pengajuan: PengajuanDetail | null;
@@ -39,8 +39,9 @@ export default function DetailHeader({ pengajuan }: DetailHeaderProps) {
         <Link
           href="/admin/verifikasi-pengajuan"
           className="flex items-center gap-2 px-4 py-2 rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-50 transition-colors"
+          aria-label="Kembali"
         >
-          <ChevronLeft size={18} />
+          <ArrowLeft size={18} />
           Kembali
         </Link>
       </div>

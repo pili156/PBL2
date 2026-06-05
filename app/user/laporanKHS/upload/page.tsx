@@ -32,6 +32,7 @@ export default async function UploadKHSPage({
         <Link
           href="/user/laporanKHS"
           className="p-2 hover:bg-slate-100 rounded-full transition-colors text-slate-600"
+          aria-label="Kembali"
         >
           <ArrowLeft size={20} />
         </Link>

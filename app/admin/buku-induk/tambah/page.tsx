@@ -74,6 +74,7 @@ export default function TambahBukuIndukPage() {
         <Link
           href="/admin/buku-induk"
           className="p-2 bg-white rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors shadow-sm"
+          aria-label="Kembali"
         >
           <ArrowLeft size={20} />
         </Link>

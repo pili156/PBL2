@@ -1,4 +1,4 @@
-import { AlertCircle, ChevronLeft } from "lucide-react";
+import { AlertCircle, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { headers } from "next/headers";
 import { prisma } from "@/src/lib/prisma";
@@ -62,7 +62,7 @@ export default async function StatusProsesUser() {
             href="/user/dashboard" 
             className="inline-flex items-center gap-2 text-slate-500 font-bold text-sm hover:text-blue-600 transition-all group"
           >
-            <ChevronLeft size={20} className="group-hover:-translate-x-1 transition-transform" />
+            <ArrowLeft size={20} className="group-hover:-translate-x-1 transition-transform" />
             Kembali
           </Link>
         </div>
