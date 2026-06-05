@@ -1,12 +1,14 @@
-import Image from "next/image";
 import { headers } from "next/headers";
 
-import ProfileDropdown from "../components/ProfileDropdown"; 
+import Header from "../components/Header";
+import { SidebarProvider } from "../components/SidebarProvider";
 import { getUserFromToken } from "../../src/lib/auth-user";
 import { ROLES } from "@/src/lib/constants/roles";
 
 function getPageTitle(pathname: string): string {
   if (pathname.includes('/dashboard')) return 'Dashboard';
+  if (pathname.includes('/profile')) return 'Profile';
+  if (pathname.includes('/change-password')) return 'Ubah Password';
   return 'Dashboard';
 }
 
@@ -23,22 +25,15 @@ export default async function KeuanganLayout({
   const pageTitle = getPageTitle(pathname);
 
   return (
-    <div className="flex h-screen bg-[#F4F7F6] font-sans">
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col overflow-hidden">
-        {/* Topbar */}
-        <header className="h-[80px] bg-[#0A192F] text-white flex items-center justify-between px-8 flex-shrink-0">
-          <h2 className="text-2xl font-bold tracking-wide">{pageTitle}</h2>
-          
-          <ProfileDropdown user={userData} />
-
-        </header>
-
-        {/* Page Content */}
-        <main className="flex-1 overflow-auto p-8 bg-[#F8FAFC]">
-          {children}
-        </main>
+    <SidebarProvider>
+      <div className="flex h-screen bg-[#F4F7F6] font-sans">
+        <div className="flex-1 flex flex-col overflow-hidden">
+          <Header user={userData} />
+          <main className="flex-1 overflow-auto p-8 bg-[#F8FAFC]">
+            {children}
+          </main>
+        </div>
       </div>
-    </div>
+    </SidebarProvider>
   );
 }
