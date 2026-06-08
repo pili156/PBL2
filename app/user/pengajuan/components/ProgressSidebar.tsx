@@ -160,12 +160,12 @@ export default function ProgressSidebar({ currentStep, currentGroup, uploadedFil
                   <div className="flex items-center gap-2 mt-2">
                     <div className="flex-1 bg-gray-200 rounded-full h-1.5 overflow-hidden">
                       <div
-                        className={`h-full transition-all duration-500 ${
+                        className={`h-full transition-all duration-500 w-[var(--progress)] ${
                           isGroupCompleted
                             ? "bg-green-500"
                             : "bg-blue-500"
                         }`}
-                        style={{ width: `${(stats.uploaded / stats.total) * 100}%` }}
+                        style={{ '--progress': `${(stats.uploaded / stats.total) * 100}%` } as React.CSSProperties}
                       />
                     </div>
                     <span className="text-xs text-gray-500">
@@ -192,8 +192,8 @@ export default function ProgressSidebar({ currentStep, currentGroup, uploadedFil
           <div className="flex items-center gap-3">
             <div className="flex-1 bg-gray-200 rounded-full h-2.5 overflow-hidden">
               <div
-                className="bg-gradient-to-r from-blue-500 to-blue-600 h-full transition-all duration-500"
-                style={{ width: `${totalProgress}%` }}
+                className="bg-gradient-to-r from-blue-500 to-blue-600 h-full transition-all duration-500 w-[var(--progress)]"
+                style={{ '--progress': `${totalProgress}%` } as React.CSSProperties}
               />
             </div>
             <span className="text-lg font-bold text-blue-600 min-w-[3rem] text-right">

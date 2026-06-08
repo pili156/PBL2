@@ -6,7 +6,9 @@ export type IconName =
   | "UserCheck"
   | "UserCog"
   | "Shield"
-  | "ClipboardList";
+  | "ClipboardList"
+  | "FileText"
+  | "HandCoins";
 
 export type MenuItem = {
   href: string;

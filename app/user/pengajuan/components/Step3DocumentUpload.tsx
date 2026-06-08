@@ -186,8 +186,8 @@ export default function Step3DocumentUpload({
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-1.5 mt-1 overflow-hidden">
                     <div
-                      className="bg-blue-600 h-full transition-all duration-300"
-                      style={{ width: `${uploadState?.progress || 0}%` }}
+                      className="bg-blue-600 h-full transition-all duration-300 w-[var(--progress)]"
+                      style={{ '--progress': `${uploadState?.progress || 0}%` } as React.CSSProperties}
                     />
                   </div>
                 </div>

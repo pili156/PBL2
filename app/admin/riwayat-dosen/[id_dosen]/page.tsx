@@ -101,10 +101,8 @@ export default async function DashboardDosen({ params }: Props) {
         <div className="relative">
           <div className="absolute top-6 left-0 right-0 h-0.5 bg-slate-100" />
           <div
-            className="absolute top-6 left-0 h-0.5 bg-emerald-500 transition-all duration-700"
-            style={{
-              width: isSelesai ? '100%' : semesterAktif > 0 ? '75%' : skKementerian ? '50%' : isDisetujui ? '25%' : '0%',
-            }}
+            className="absolute top-6 left-0 h-0.5 bg-emerald-500 transition-all duration-700 w-[var(--progress)]"
+            style={{ '--progress': isSelesai ? '100%' : semesterAktif > 0 ? '75%' : skKementerian ? '50%' : isDisetujui ? '25%' : '0%' } as React.CSSProperties}
           />
           <div className="grid grid-cols-5 gap-2">
             {steps.map((step, i) => (

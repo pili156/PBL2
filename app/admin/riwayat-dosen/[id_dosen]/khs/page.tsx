@@ -17,7 +17,7 @@ const IpkBar = ({ ipk, semester }: { ipk: number; semester: number }) => {
     <div className="flex items-center gap-3">
       <span className="text-[10px] text-slate-400 w-16 flex-shrink-0">Sem {semester}</span>
       <div className="flex-1 h-2.5 bg-slate-100 rounded-full overflow-hidden">
-        <div className={`h-full rounded-full ${color} transition-all`} style={{ width: `${pct}%` }} />
+        <div className={`h-full rounded-full ${color} transition-all w-[var(--progress)]`} style={{ '--progress': `${pct}%` } as React.CSSProperties} />
       </div>
       <span className="text-[11px] font-semibold text-slate-700 w-10 text-right tabular-nums">{ipk.toFixed(2)}</span>
     </div>

@@ -75,7 +75,7 @@ export default function DashboardPage() {
             <span className="text-blue-600">Semester {data.semester} / 8 ({data.progress_studi}%)</span>
           </div>
           <div className="w-full bg-slate-100 rounded-full h-2">
-            <div className="bg-blue-600 h-2 rounded-full transition-all duration-500" style={{ width: `${data.progress_studi}%` }}></div>
+            <div className="bg-blue-600 h-2 rounded-full transition-all duration-500 w-[var(--progress)]" style={{ '--progress': `${data.progress_studi}%` } as React.CSSProperties}></div>
           </div>
         </div>
       </div>
