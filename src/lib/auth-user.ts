@@ -18,6 +18,7 @@ export interface UserLayoutData {
   roleDisplay: string;
   unitKerja?: string;
   jabatan?: string;
+  no_telp?: string;
 }
 
 const ROLE_DISPLAY_MAP: Record<string, string> = {
@@ -50,6 +51,7 @@ export async function getUserFromToken(role: string, fallbackRoles?: string[]): 
             nip: true,
             unit_kerja: true,
             jabatan: true,
+            no_telp: true,
           },
         },
       },
@@ -65,6 +67,7 @@ export async function getUserFromToken(role: string, fallbackRoles?: string[]): 
       roleDisplay: ROLE_DISPLAY_MAP[payload.role] || payload.role,
       unitKerja: user.master_dosen?.unit_kerja || undefined,
       jabatan: user.master_dosen?.jabatan || undefined,
+      no_telp: user.master_dosen?.no_telp || undefined,
     };
   }
 

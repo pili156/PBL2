@@ -12,9 +12,9 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
-    const { jenis_studi_id, jalur_pendanaan_id, wilayah_studi } = body;
+    const { jenis_studi_id, jalur_pendanaan_id, wilayah_studi, perguruan_tinggi } = body;
 
-    console.log('[API] Input received:', { jenis_studi_id, jalur_pendanaan_id, wilayah_studi });
+    console.log('[API] Input received:', { jenis_studi_id, jalur_pendanaan_id, wilayah_studi, perguruan_tinggi });
     console.log('[API] jalur_pendanaan_id type:', typeof jalur_pendanaan_id, 'value:', jalur_pendanaan_id);
 
     let statusMenunggu = await prisma.masterStatusPengajuan.findFirst({
@@ -57,6 +57,7 @@ export async function POST(request: Request) {
         jenis_studi_id: jenis_studi_id || null,
         jalur_pendanaan_id: jalur_pendanaan_id || null,
         wilayah_studi: wilayah_studi || null,
+        perguruan_tinggi: perguruan_tinggi || null,
         status_id: statusMenunggu.id,
         tanggal_pengajuan: new Date(),
       },

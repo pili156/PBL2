@@ -17,8 +17,10 @@ export default function TambahBukuIndukPage() {
     email: "",
     pangkat_golongan: "",
     jabatan: "",
+    unit_kerja: "",
     jurusan: "",
     program_studi: "",
+    no_telp: "",
   });
 
   // Fungsi untuk handle perubahan input form
@@ -170,6 +172,36 @@ export default function TambahBukuIndukPage() {
                 value={formData.jabatan}
                 onChange={handleChange}
                 placeholder="Contoh: Lektor / Asisten Ahli"
+                className="p-3 border border-gray-200 rounded-xl text-sm font-medium focus:outline-none focus:border-[#0085FF] focus:ring-1 focus:ring-[#0085FF] transition-all bg-[#F8FAFC]"
+              />
+            </div>
+
+            {/* Input Unit Kerja */}
+            <div className="flex flex-col gap-2">
+              <label className="text-xs font-bold text-[#0A192F] uppercase tracking-wider">
+                Unit Kerja
+              </label>
+              <input
+                type="text"
+                name="unit_kerja"
+                value={formData.unit_kerja}
+                onChange={handleChange}
+                placeholder="Contoh: Jurusan Teknik Elektro"
+                className="p-3 border border-gray-200 rounded-xl text-sm font-medium focus:outline-none focus:border-[#0085FF] focus:ring-1 focus:ring-[#0085FF] transition-all bg-[#F8FAFC]"
+              />
+            </div>
+
+            {/* Input No. Telp */}
+            <div className="flex flex-col gap-2">
+              <label className="text-xs font-bold text-[#0A192F] uppercase tracking-wider">
+                No. Telepon
+              </label>
+              <input
+                type="text"
+                name="no_telp"
+                value={formData.no_telp}
+                onChange={handleChange}
+                placeholder="Contoh: 08123456789"
                 className="p-3 border border-gray-200 rounded-xl text-sm font-medium focus:outline-none focus:border-[#0085FF] focus:ring-1 focus:ring-[#0085FF] transition-all bg-[#F8FAFC]"
               />
             </div>

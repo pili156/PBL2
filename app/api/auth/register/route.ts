@@ -5,11 +5,11 @@ import bcrypt from 'bcryptjs';
 
 export async function POST(request: Request) {
   try {
-    const { username, email, password, nip, nama_lengkap } = await request.json();
+    const { email, password, nip, nama_lengkap } = await request.json();
 
-    // 1. Validasi Input Kosong (Username sekarang Wajib!)
-    if (!username || !email || !password || !nip || !nama_lengkap) {
-      return NextResponse.json({ error: "Semua kolom (termasuk username) wajib diisi." }, { status: 400 });
+    // 1. Validasi Input Kosong
+    if (!email || !password || !nip || !nama_lengkap) {
+      return NextResponse.json({ error: "Semua kolom wajib diisi." }, { status: 400 });
     }
 
     // 2. Validasi Panjang Password Backend
@@ -27,14 +27,13 @@ export async function POST(request: Request) {
       where: {
         OR: [
           { email: email },
-          { username: username },
           { master_dosen: { nip: nip } }
         ]
       }
     });
 
     if (existingUser) {
-      return NextResponse.json({ error: "Email, Username, atau NIP tersebut sudah terdaftar." }, { status: 400 });
+      return NextResponse.json({ error: "Email atau NIP tersebut sudah terdaftar." }, { status: 400 });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -43,9 +42,10 @@ export async function POST(request: Request) {
     const roleDosen = await prisma.masterRole.findFirst({ where: { nama_role: "dosen" } });
 
     // 5. Buat Akun & Profil dengan Status Konsisten ("pending")
+    const autoUsername = email.split('@')[0];
     const newUser = await prisma.user.create({
       data: {
-        username: username,
+        username: autoUsername,
         email: email,
         password_hash: hashedPassword,
         role_id: roleDosen?.id || 2, 

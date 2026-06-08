@@ -1,12 +1,12 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Book, GraduationCap, Award, Wallet, MapPin, Save, ArrowRight, Loader2, Check } from "lucide-react";
+import { Book, GraduationCap, Award, Wallet, MapPin, Save, ArrowRight, Loader2, Check, Building2 } from "lucide-react";
 import { StudyType, FundingType, StudyRegion } from "../type";
 import { STUDY_TYPES, FUNDING_TYPES, STUDY_REGIONS } from "../constants";
 
 type Props = {
-  onNext: (data: { studyType: StudyType; fundingType: FundingType; studyRegion: StudyRegion }) => void;
+  onNext: (data: { studyType: StudyType; fundingType: FundingType; studyRegion: StudyRegion; perguruanTinggi: string }) => void;
 };
 
 const ICON_MAP = {
@@ -27,6 +27,7 @@ export default function Step1JenisStudi({ onNext }: Props) {
   const [studyType, setStudyType] = useState<StudyType | null>(null);
   const [fundingType, setFundingType] = useState<FundingType | null>(null);
   const [studyRegion, setStudyRegion] = useState<StudyRegion | null>(null);
+  const [perguruanTinggi, setPerguruanTinggi] = useState("");
   const [selections, setSelections] = useState<SelectionState>({ studyType: false, fundingType: false, studyRegion: false });
   const [autoSaveStatus, setAutoSaveStatus] = useState<"idle" | "saving" | "saved">("idle");
   const [isAnimating, setIsAnimating] = useState(false);
@@ -51,7 +52,7 @@ export default function Step1JenisStudi({ onNext }: Props) {
     if (studyType && fundingType && studyRegion) {
       setAutoSaveStatus("saving");
       const timer = setTimeout(() => {
-        localStorage.setItem("pengajuan_step1_draft", JSON.stringify({ studyType, fundingType, studyRegion }));
+        localStorage.setItem("pengajuan_step1_draft", JSON.stringify({ studyType, fundingType, studyRegion, perguruanTinggi }));
         setAutoSaveStatus("saved");
         setTimeout(() => setAutoSaveStatus("idle"), 2000);
       }, 1000);
@@ -63,7 +64,7 @@ export default function Step1JenisStudi({ onNext }: Props) {
     setIsAnimating(true);
     setTimeout(() => {
       if (studyType && fundingType && studyRegion) {
-        onNext({ studyType, fundingType, studyRegion });
+        onNext({ studyType, fundingType, studyRegion, perguruanTinggi });
       }
       setIsAnimating(false);
     }, 300);
@@ -307,6 +308,30 @@ export default function Step1JenisStudi({ onNext }: Props) {
               </button>
             );
           })}
+        </div>
+      </div>
+
+      <div className="mb-10">
+        <div className="flex items-center gap-3 mb-6">
+          <div className="flex items-center justify-center w-10 h-10 bg-blue-600 text-white rounded-full font-semibold">
+            04
+          </div>
+          <h2 className="text-xl font-bold text-gray-900">
+            Perguruan Tinggi Tujuan
+          </h2>
+        </div>
+        <div className="relative">
+          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
+            <Building2 size={20} />
+          </span>
+          <input
+            type="text"
+            value={perguruanTinggi}
+            onChange={(e) => setPerguruanTinggi(e.target.value)}
+            placeholder="Masukkan nama perguruan tinggi tujuan"
+            className="w-full border border-gray-200 rounded-xl pl-12 pr-4 py-3 text-sm text-gray-700 outline-none focus:border-blue-500 transition-colors bg-white"
+            required
+          />
         </div>
       </div>
 

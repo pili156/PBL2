@@ -7,6 +7,11 @@ export default async function BukuIndukPage() {
   const daftarDosen = await prisma.masterDosen.findMany({
     orderBy: { 
       nama_lengkap: "asc" 
+    },
+    include: {
+      user: {
+        select: { email: true }
+      }
     }
   });
 
@@ -39,6 +44,7 @@ export default async function BukuIndukPage() {
                 <th className="p-5 text-center w-16">No</th>
                 <th className="p-5">NIP / NIDN</th>
                 <th className="p-5">Nama Lengkap</th>
+                <th className="p-5">Email</th>
                 <th className="p-5">Pangkat / Golongan</th>
                 <th className="p-5">Jabatan</th>
                 <th className="p-5">Jurusan / Prodi</th>
@@ -48,7 +54,7 @@ export default async function BukuIndukPage() {
             <tbody className="divide-y divide-gray-100 text-sm font-medium">
               {daftarDosen.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="p-10 text-center text-gray-400 italic">
+                  <td colSpan={8} className="p-10 text-center text-gray-400 italic">
                     Belum ada data pegawai di dalam sistem. Klik "Tambah Data Pegawai" untuk mengisi.
                   </td>
                 </tr>
@@ -58,7 +64,7 @@ export default async function BukuIndukPage() {
                     <td className="p-5 text-center font-mono text-gray-400">{index + 1}</td>
                     <td className="p-5 font-mono text-sm">{dosen.nip || "-"}</td>
                     <td className="p-5 font-bold text-[#0A192F]">{dosen.nama_lengkap || "-"}</td>
-                    {/* Menggunakan pangkat_golongan sesuai isi file schema.prisma */}
+                    <td className="p-5 text-gray-600 text-xs">{dosen.user?.email || "-"}</td>
                     <td className="p-5 text-gray-600">{dosen.pangkat_golongan || "-"}</td>
                     <td className="p-5 text-gray-600">{dosen.jabatan || "-"}</td>
                     <td className="p-5 text-gray-500">

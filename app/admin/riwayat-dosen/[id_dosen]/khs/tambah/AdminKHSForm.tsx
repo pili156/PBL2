@@ -3,6 +3,7 @@
 import { useActionState } from 'react';
 import { Upload, AlertCircle } from 'lucide-react';
 import { addManualKhs } from '../../../actions';
+import { getTahunAkademikOptions } from '@/src/lib/tahun-akademik';
 
 export default function AdminKHSForm({
   pengajuanId,
@@ -57,12 +58,9 @@ export default function AdminKHSForm({
               className="w-full px-4 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
             >
               <option value="">Pilih Tahun Akademik</option>
-              <option value="2023/2024 Ganjil">2023/2024 Ganjil</option>
-              <option value="2023/2024 Genap">2023/2024 Genap</option>
-              <option value="2024/2025 Ganjil">2024/2025 Ganjil</option>
-              <option value="2024/2025 Genap">2024/2025 Genap</option>
-              <option value="2025/2026 Ganjil">2025/2026 Ganjil</option>
-              <option value="2025/2026 Genap">2025/2026 Genap</option>
+              {getTahunAkademikOptions().map((tahun) => (
+                <option key={tahun} value={tahun}>{tahun}</option>
+              ))}
             </select>
           </div>
 

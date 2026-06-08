@@ -140,6 +140,7 @@ export default function PengajuanPage() {
     studyType: string;
     fundingType: string;
     studyRegion: string;
+    perguruanTinggi: string;
   }) => {
     setLoading(true);
     setError(null);
@@ -171,6 +172,7 @@ export default function PengajuanPage() {
           jenis_studi_id: selectedJenisStudi?.id,
           jalur_pendanaan_id: selectedJalurPendanaan?.id,
           wilayah_studi: selectedWilayah?.id,
+          perguruan_tinggi: data.perguruanTinggi,
         }),
       });
 
