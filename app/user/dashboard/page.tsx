@@ -180,7 +180,6 @@ export default function DashboardPage() {
                   <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
                   <XAxis dataKey="semester" tick={{ fontSize: 11, fill: '#64748b' }} />
                   <YAxis domain={[0, 4.0]} tickCount={5} tick={{ fontSize: 11, fill: '#64748b' }} />
-                  {/* @ts-ignore: Bypass bug type bawaan dari Recharts */}
                   <RechartsTooltip formatter={(value: any) => [Number(value).toFixed(2), "IPK"]} />
                   <Line type="monotone" dataKey="ipk" stroke="#10b981" strokeWidth={3} dot={{ r: 4, strokeWidth: 2, fill: '#fff' }} activeDot={{ r: 6 }} />
                 </LineChart>
@@ -249,13 +248,11 @@ export default function DashboardPage() {
                 <BarChart data={data.grafikReimbursement} margin={{ top: 10, right: 10, left: -15, bottom: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
                   <XAxis dataKey="semester" tick={{ fontSize: 11, fill: '#64748b' }} />
-                  {/* @ts-ignore: Bypass bug type bawaan dari Recharts */}
                   <YAxis 
                     tickFormatter={(val: any) => `Rp${(Number(val)/1000000).toFixed(0)}Jt`} 
                     width={55} 
                     tick={{ fontSize: 11, fill: '#64748b' }} 
                   />
-                  {/* @ts-ignore: Bypass bug type bawaan dari Recharts */}
                   <RechartsTooltip formatter={(value: any) => [formatRupiah(Number(value)), "Nominal"]} />
                   <Bar dataKey="nominal" fill="#3b82f6" radius={[4, 4, 0, 0]} maxBarSize={40} />
                 </BarChart>
