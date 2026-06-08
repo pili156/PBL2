@@ -169,14 +169,7 @@ export default function ProfileDropdown({ user }: { user: UserData }) {
                 <span>Ubah Password</span>
               </button>
               <button
-                onClick={() => {}}
-                className="flex items-center gap-3 px-3 py-2.5 text-sm text-slate-700 hover:bg-slate-100 rounded-lg transition-colors w-full text-left"
-              >
-                <Bell size={16} className="text-slate-400" />
-                <span>Notifikasi</span>
-              </button>
-              <button
-                onClick={() => {}}
+                onClick={() => router.push(`${rolePathMap[user.role]}/profile`)}
                 className="flex items-center gap-3 px-3 py-2.5 text-sm text-slate-700 hover:bg-slate-100 rounded-lg transition-colors w-full text-left"
               >
                 <Settings size={16} className="text-slate-400" />

@@ -46,6 +46,27 @@ export async function PUT(
       },
     });
 
+    // Cascade: update status pengajuan jika semua dokumen terverifikasi
+    if (existingDoc.pengajuan_id) {
+      const allDocs = await prisma.dokumenPengajuan.findMany({
+        where: { pengajuan_id: existingDoc.pengajuan_id },
+      });
+      const semuaTerverifikasi = allDocs.length > 0 && allDocs.every(
+        (doc) => doc.status_verifikasi === 'terverifikasi'
+      );
+      if (semuaTerverifikasi) {
+        const statusTerverifikasi = await prisma.masterStatusPengajuan.findFirst({
+          where: { nama_status: 'terverifikasi' },
+        });
+        if (statusTerverifikasi) {
+          await prisma.pengajuanStudi.update({
+            where: { id: existingDoc.pengajuan_id },
+            data: { status_id: statusTerverifikasi.id },
+          });
+        }
+      }
+    }
+
     return NextResponse.json(updated, { status: 200 });
   } catch (error) {
     console.error('Error updating dokumen:', error);

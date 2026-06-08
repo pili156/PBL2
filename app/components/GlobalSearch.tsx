@@ -1,13 +1,13 @@
 "use client";
 import { useState, useRef, useEffect } from "react";
-import { Search, Command, FileText, User, FileSpreadsheet, Menu, X } from "lucide-react";
+import { Search, Command, FileText, User, Menu, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 const menuItems = [
   { label: "Dashboard", href: "/admin/dashboard", icon: Menu },
   { label: "Verifikasi Pengajuan", href: "/admin/verifikasi-pengajuan", icon: FileText },
   { label: "Monitoring Dosen", href: "/admin/riwayat-dosen", icon: User },
-  { label: "Buku Induk", href: "/admin/buku-induk", icon: FileSpreadsheet },
+  { label: "Buku Induk", href: "/admin/buku-induk", icon: FileText },
   { label: "Monitoring Pengguna", href: "/master_admin/monitoring-pengguna", icon: User },
   { label: "Peran & Hak Akses", href: "/master_admin/role-permission", icon: Menu },
   { label: "Log Aktivitas", href: "/master_admin/audit-log", icon: FileText },
@@ -32,6 +32,7 @@ export default function GlobalSearch() {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<SearchResult[]>([]);
+  const [loading, setLoading] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
 
@@ -62,11 +63,24 @@ export default function GlobalSearch() {
       return;
     }
     const q = query.toLowerCase();
+
+    // Filter menu items locally
     const allItems = [...menuItems, ...userMenuItems];
-    const filtered: SearchResult[] = allItems
+    const menuResults: SearchResult[] = allItems
       .filter((item) => item.label.toLowerCase().includes(q))
       .map((item) => ({ type: "menu", label: item.label, href: item.href }));
-    setResults(filtered);
+
+    // Fetch dosen from API
+    setLoading(true);
+    fetch(`/api/search?q=${encodeURIComponent(q)}`)
+      .then((res) => res.json())
+      .then((data: { results: SearchResult[] }) => {
+        setResults([...data.results, ...menuResults]);
+      })
+      .catch(() => {
+        setResults(menuResults);
+      })
+      .finally(() => setLoading(false));
   }, [query]);
 
   const handleSelect = (result: SearchResult) => {
@@ -83,7 +97,7 @@ export default function GlobalSearch() {
         className="flex items-center gap-2 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-400 rounded-lg transition-colors text-sm w-80"
       >
         <Search size={16} className="text-slate-400" />
-        <span className="flex-1 text-left text-slate-400">Cari dosen, NIP, SK, menu...</span>
+        <span className="flex-1 text-left text-slate-400">Cari menu, dosen, NIP...</span>
         <kbd className="hidden sm:inline-flex items-center gap-1 px-1.5 py-0.5 bg-[#0A192F] border border-slate-700 rounded text-[10px] font-medium text-slate-400">
           <Command size={10} />K
         </kbd>
@@ -100,7 +114,7 @@ export default function GlobalSearch() {
                 type="text"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="Cari dosen, NIP, SK, atau menu..."
+                placeholder="Cari menu, dosen, NIP..."
                 className="flex-1 bg-transparent border-none outline-none text-sm text-slate-700 placeholder:text-slate-400"
               />
               {query && (
@@ -108,25 +122,50 @@ export default function GlobalSearch() {
                   <X size={16} />
                 </button>
               )}
+              {loading && <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />}
             </div>
 
             {results.length > 0 && (
               <div className="max-h-72 overflow-y-auto p-2">
-                <p className="px-3 py-1.5 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Menu</p>
-                {results.map((result, i) => (
-                  <button
-                    key={i}
-                    onClick={() => handleSelect(result)}
-                    className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-slate-700 hover:bg-slate-100 rounded-lg transition-colors text-left"
-                  >
-                    {result.type === "menu" ? <Menu size={16} className="text-slate-400" /> : <User size={16} className="text-slate-400" />}
-                    <span>{result.label}</span>
-                  </button>
-                ))}
+                {results.some((r) => r.type === "dosen") && (
+                  <>
+                    <p className="px-3 py-1.5 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Dosen</p>
+                    {results.filter((r) => r.type === "dosen").map((result, i) => (
+                      <button
+                        key={`dosen-${i}`}
+                        onClick={() => handleSelect(result)}
+                        className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-slate-700 hover:bg-slate-100 rounded-lg transition-colors text-left"
+                      >
+                        <User size={16} className="text-slate-400 flex-shrink-0" />
+                        <div className="min-w-0">
+                          <span className="block truncate">{result.label}</span>
+                          {result.subtitle && (
+                            <span className="block text-[11px] text-slate-400 truncate">{result.subtitle}</span>
+                          )}
+                        </div>
+                      </button>
+                    ))}
+                  </>
+                )}
+                {results.some((r) => r.type === "menu") && (
+                  <>
+                    <p className="px-3 py-1.5 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Menu</p>
+                    {results.filter((r) => r.type === "menu").map((result, i) => (
+                      <button
+                        key={`menu-${i}`}
+                        onClick={() => handleSelect(result)}
+                        className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-slate-700 hover:bg-slate-100 rounded-lg transition-colors text-left"
+                      >
+                        <Menu size={16} className="text-slate-400 flex-shrink-0" />
+                        <span>{result.label}</span>
+                      </button>
+                    ))}
+                  </>
+                )}
               </div>
             )}
 
-            {query && results.length === 0 && (
+            {query && results.length === 0 && !loading && (
               <div className="p-8 text-center text-sm text-slate-400">
                 Tidak ditemukan hasil untuk "{query}"
               </div>

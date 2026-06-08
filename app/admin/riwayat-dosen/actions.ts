@@ -125,14 +125,17 @@ async function evaluateKeuangan(keuanganId: number, keputusan: 'dicairkan' | 'di
 
 // ── Manual Input Actions ──
 
-export async function addManualKhs(formData: FormData) {
+export async function addManualKhs(prevState: { error?: string } | null, formData: FormData): Promise<{ error?: string } | null> {
   const pengajuanId = Number(formData.get('pengajuanId'));
   const idDosen = Number(formData.get('idDosen'));
   const semesterKe = Number(formData.get('semesterKe'));
   const tahunAkademik = formData.get('tahunAkademik') as string;
   const ipk = Number(formData.get('ipk'));
-  const sks = Number(formData.get('sks')) || 20;
   const file = formData.get('file') as File | null;
+
+  if (!semesterKe || !tahunAkademik) {
+    return { error: 'Semester dan tahun akademik wajib diisi' };
+  }
 
   let filePath: string | undefined;
   if (file && file.size > 0) {
@@ -140,8 +143,8 @@ export async function addManualKhs(formData: FormData) {
       const result = await uploadFile(file, idDosen, 'khs');
       filePath = result.filePath;
     } catch (e) {
-      if (e instanceof UploadError) throw e;
-      throw new Error('Gagal mengupload file KHS');
+      if (e instanceof UploadError) return { error: e.message };
+      return { error: 'Gagal mengupload file KHS' };
     }
   }
 
@@ -166,6 +169,7 @@ export async function addManualKhs(formData: FormData) {
     const uid = khs.pengajuan_studi.user_id;
     revalidatePath(`/admin/riwayat-dosen/${uid}/khs`);
   }
+  return null;
 }
 
 export async function addManualKeuangan(formData: FormData) {

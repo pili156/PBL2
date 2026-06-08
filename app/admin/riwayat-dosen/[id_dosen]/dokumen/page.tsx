@@ -3,6 +3,7 @@ import { FileText, Download, Landmark, Eye, File, FileSpreadsheet, FileImage, Pl
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { formatDateLong } from '@/src/lib/formatters';
+import GenerateSurat, { GenerateSuratButton } from './GenerateSurat';
 
 export const dynamic = 'force-dynamic';
 
@@ -118,9 +119,7 @@ export default async function DokumenSuratPage({ params }: Props) {
             className="inline-flex items-center gap-2 px-4 py-2 border border-slate-200 text-slate-600 text-sm font-medium rounded-lg hover:bg-slate-50 transition-colors">
             <Plus size={15} /> Upload Dokumen
           </Link>
-          <button className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors shadow-sm">
-            <FileText size={15} /> Generate Surat
-          </button>
+          <GenerateSuratButton />
         </div>
       </div>
 
@@ -175,18 +174,7 @@ export default async function DokumenSuratPage({ params }: Props) {
         </div>
       )}
 
-      <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-6">
-        <h4 className="text-sm font-semibold text-slate-800 mb-4">Generate Surat Otomatis</h4>
-        <p className="text-xs text-slate-500 mb-5">Buat surat berdasarkan data studi {namaDosen}.</p>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          {['Surat Aktif Studi', 'Surat Rekomendasi', 'SK Bantuan Studi'].map((surat) => (
-            <button key={surat}
-              className="flex items-center justify-center gap-2 px-4 py-3 border border-slate-200 rounded-xl text-xs font-semibold text-slate-600 hover:bg-blue-50 hover:border-blue-200 hover:text-blue-600 transition-all">
-              <FileText size={15} /> {surat}
-            </button>
-          ))}
-        </div>
-      </div>
+      <GenerateSurat namaDosen={namaDosen} />
     </div>
   );
 }
