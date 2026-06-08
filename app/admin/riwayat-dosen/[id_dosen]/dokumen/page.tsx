@@ -3,7 +3,7 @@ import { FileText, Download, Landmark, Eye, File, FileSpreadsheet, FileImage, Pl
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { formatDateLong } from '@/src/lib/formatters';
-import GenerateSurat, { GenerateSuratButton } from './GenerateSurat';
+
 
 export const dynamic = 'force-dynamic';
 
@@ -53,7 +53,6 @@ export default async function DokumenSuratPage({ params }: Props) {
 
   if (!dosen) notFound();
 
-  const namaDosen = dosen.master_dosen?.nama_lengkap || dosen.username || 'Dosen';
   const pengajuan = dosen.pengajuan_studi[0] ?? null;
 
   interface DokumenCategory {
@@ -119,7 +118,6 @@ export default async function DokumenSuratPage({ params }: Props) {
             className="inline-flex items-center gap-2 px-4 py-2 border border-slate-200 text-slate-600 text-sm font-medium rounded-lg hover:bg-slate-50 transition-colors">
             <Plus size={15} /> Upload Dokumen
           </Link>
-          <GenerateSuratButton />
         </div>
       </div>
 
@@ -174,7 +172,6 @@ export default async function DokumenSuratPage({ params }: Props) {
         </div>
       )}
 
-      <GenerateSurat namaDosen={namaDosen} />
     </div>
   );
 }
