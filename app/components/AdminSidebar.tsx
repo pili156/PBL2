@@ -61,7 +61,7 @@ export default function AdminSidebar({
         {!collapsed && (
           <div className="flex flex-col">
             <h1 className="text-2xl font-bold tracking-wide leading-none">SIGAP</h1>
-            <p className="text-[8px] text-slate-300 mt-1 leading-tight uppercase tracking-wider">
+            <p className="text-[10px] text-slate-400 mt-1 leading-tight uppercase tracking-wider">
               Sistem Informasi Gelar Akademik Polines
             </p>
           </div>
@@ -78,7 +78,7 @@ export default function AdminSidebar({
               className={`flex items-center transition-colors ${
                 collapsed ? "justify-center px-0 py-4" : "gap-3 px-8 py-3.5"
               } ${
-                isActive ? "bg-[#1A56DB] text-white" : "text-slate-300 hover:bg-slate-800"
+                isActive ? "bg-[#1A56DB] text-white" : "text-slate-100 hover:bg-slate-800"
               }`}
               title={collapsed ? item.label : undefined}
             >

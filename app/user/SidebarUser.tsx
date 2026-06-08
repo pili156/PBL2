@@ -42,7 +42,7 @@ export default function SidebarUser() {
         {!collapsed && (
           <div className="flex flex-col">
             <h1 className="text-2xl font-bold tracking-wide leading-none">SIGAP</h1>
-            <p className="text-[8px] text-slate-300 mt-1 leading-tight uppercase tracking-wider">
+            <p className="text-[10px] text-slate-400 mt-1 leading-tight uppercase tracking-wider">
               Sistem Informasi Gelar Akademik Polines
             </p>
           </div>
@@ -62,7 +62,7 @@ export default function SidebarUser() {
               } ${
                 isActive
                   ? "bg-[#1A56DB] text-white"
-                  : "text-slate-300 hover:bg-slate-800"
+                  : "text-slate-100 hover:bg-slate-800"
               }`}
               title={collapsed ? item.label : undefined}
             >
