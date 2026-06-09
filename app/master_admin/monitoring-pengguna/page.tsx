@@ -20,26 +20,20 @@ export const dynamic = 'force-dynamic';
 
 const ROLE_ID_MAP: Record<number, string> = {
   1: 'master_admin',
-  2: 'admin_fakultas',
+  2: 'admin',
   3: 'dosen',
-  4: 'keuangan',
-  5: 'admin',
 };
 
 const ROLE_DISPLAY: Record<string, string> = {
   master_admin: 'Master Admin',
   admin: 'Admin',
-  admin_fakultas: 'Admin',
   dosen: 'Dosen',
-  keuangan: 'Keuangan',
 };
 
 const ROLE_BADGE: Record<string, string> = {
   master_admin: 'bg-purple-100 text-purple-700',
   admin: 'bg-blue-100 text-blue-700',
-  admin_fakultas: 'bg-blue-100 text-blue-700',
   dosen: 'bg-emerald-100 text-emerald-700',
-  keuangan: 'bg-amber-100 text-amber-700',
 };
 
 const statusBadge = (status: string | null) => {
@@ -221,7 +215,6 @@ export default async function MonitoringPenggunaPage({ searchParams }: PageProps
               <option value="3">Dosen</option>
               <option value="2">Admin</option>
               <option value="1">Master Admin</option>
-              <option value="4">Keuangan</option>
             </select>
             <select
               name="status"

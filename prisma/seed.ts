@@ -33,9 +33,8 @@ async function main() {
 
   // --- 2.1 Master Role ---
   const roleMaster = await prisma.masterRole.create({ data: { id: 1, nama_role: 'master_admin' } });
-  const roleAdmin = await prisma.masterRole.create({ data: { id: 2, nama_role: 'admin_fakultas' } });
+  const roleAdmin = await prisma.masterRole.create({ data: { id: 2, nama_role: 'admin' } });
   const roleDosen = await prisma.masterRole.create({ data: { id: 3, nama_role: 'dosen' } });
-  const roleKeuangan = await prisma.masterRole.create({ data: { id: 4, nama_role: 'keuangan' } });
 
   // --- 2.2 Master Jenis Studi ---
   const jenisTugasBelajar = await prisma.masterJenisStudi.create({ data: { id: 1, nama_jenis: 'Tugas Belajar' } });
@@ -81,7 +80,7 @@ async function main() {
     },
   });
 
-  // --- 3.2 Buat Akun Admin Fakultas ---
+  // --- 3.2 Buat Akun Admin ---
   const userAdmin = await prisma.user.create({
     data: {
       id: 2,
@@ -93,22 +92,10 @@ async function main() {
     },
   });
 
-  // --- 3.3 Buat Akun Keuangan ---
-  const userKeuangan = await prisma.user.create({
-    data: {
-      id: 3,
-      username: 'Admin Keuangan',
-      email: 'keuangan@polines.ac.id',
-      password_hash: hashedPassword,
-      role_id: roleKeuangan.id,
-      status_akun: 'aktif',
-    },
-  });
-
-  // --- 3.4 Buat Akun Dosen PBL (Budi Doremi) ---
+  // --- 3.3 Buat Akun Dosen PBL (Budi Doremi) ---
   const userDosenBudi = await prisma.user.create({
     data: {
-      id: 4,
+      id: 3,
       username: 'Budi Doremi',
       email: 'dosen@polines.ac.id',
       password_hash: hashedPassword,
@@ -292,8 +279,9 @@ async function main() {
   console.log('Proses Seeding (SIGAP PBL2) Berhasil!');
   console.log('-----------------------------------');
   console.log('Skenario Data Hidup:');
-  console.log('- Akun Admin:   admin@polines.ac.id');
-  console.log('- Akun Dosen:   dosen@polines.ac.id (Budi Doremi)');
+  console.log('- Akun Master Admin: master_admin@polines.ac.id');
+  console.log('- Akun Admin:        admin@polines.ac.id');
+  console.log('- Akun Dosen:        dosen@polines.ac.id (Budi Doremi)');
   console.log('- Password Semuanya: rahasia123');
   console.log('-----------------------------------');
   console.log('Histori Studi per Semester Budi telah siap di database.');

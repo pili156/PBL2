@@ -16,7 +16,7 @@ export default async function AdminBantuanStudiPage() {
   const headersList = await headers();
   const role = headersList.get("x-user-role");
 
-  if (!role || (role !== "admin_fakultas" && role !== "master_admin" && role !== "admin")) {
+  if (!role || (role !== "master_admin" && role !== "admin")) {
     return (
       <div className="rounded-3xl bg-white p-10 shadow-sm border border-slate-200">
         <h1 className="text-2xl font-bold text-slate-900">Akses Ditolak</h1>

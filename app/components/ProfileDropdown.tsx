@@ -45,17 +45,13 @@ export default function ProfileDropdown({ user }: { user: UserData }) {
   const roleCookieMap: Record<string, string> = {
     dosen: 'token_dosen',
     admin: 'token_admin',
-    admin_fakultas: 'token_admin_fakultas',
     master_admin: 'token_master_admin',
-    keuangan: 'token_keuangan',
   };
 
   const rolePathMap: Record<string, string> = {
     dosen: '/user',
     admin: '/admin',
-    admin_fakultas: '/admin',
     master_admin: '/master_admin',
-    keuangan: '/keuangan',
   };
 
   const handleLogout = () => {

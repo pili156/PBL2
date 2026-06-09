@@ -5,9 +5,7 @@ import { prisma } from './prisma';
 const ROLE_COOKIE_MAP: Record<string, string> = {
   dosen: 'token_dosen',
   admin: 'token_admin',
-  admin_fakultas: 'token_admin_fakultas',
   master_admin: 'token_master_admin',
-  keuangan: 'token_keuangan',
 };
 
 export interface UserLayoutData {
@@ -24,9 +22,7 @@ export interface UserLayoutData {
 const ROLE_DISPLAY_MAP: Record<string, string> = {
   dosen: 'Dosen',
   admin: 'Admin',
-  admin_fakultas: 'Admin',
   master_admin: 'Master Admin',
-  keuangan: 'Keuangan',
 };
 
 export async function getUserFromToken(role: string, fallbackRoles?: string[]): Promise<UserLayoutData> {

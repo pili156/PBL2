@@ -53,12 +53,8 @@ export async function POST(request: Request) {
 
     let targetUrl = "/user/dashboard";
 
-    if (roleName === "master_admin") {
+    if (roleName === "master_admin" || roleName === "admin") {
       targetUrl = "/admin/dashboard";
-    } else if (roleName === "admin" || roleName === "admin_fakultas") {
-      targetUrl = "/admin/dashboard";
-    } else if (roleName === "keuangan") {
-      targetUrl = "/keuangan/dashboard";
     }
 
     const token = signToken({
