@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { headers } from 'next/headers';
 import { prisma } from './prisma';
+import { profileSchema } from './validation';
 
 export async function getProfile() {
   const headersList = await headers();
@@ -46,7 +47,13 @@ export async function updateProfile(request: Request) {
   }
 
   const body = await request.json();
-  const { username, nip, nama_lengkap, pangkat_golongan, jabatan, unit_kerja, jurusan, program_studi, no_telp } = body;
+  const parsed = profileSchema.safeParse(body);
+
+  if (!parsed.success) {
+    return NextResponse.json({ error: parsed.error.issues[0].message }, { status: 400 });
+  }
+
+  const { username, nip, nama_lengkap, pangkat_golongan, jabatan, unit_kerja, jurusan, program_studi, no_telp } = parsed.data;
 
   const user = await prisma.user.findUnique({
     where: { email: userEmail },

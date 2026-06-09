@@ -1,14 +1,18 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/src/lib/prisma';
 import bcrypt from 'bcryptjs';
+import { bukuIndukSchema } from '@/src/lib/validation';
 
 export async function POST(request: Request) {
   try {
-    const { nip, nama_lengkap, email, pangkat_golongan, jabatan, unit_kerja, jurusan, program_studi, no_telp } = await request.json();
+    const body = await request.json();
+    const parsed = bukuIndukSchema.safeParse(body);
 
-    if (!nip || !nama_lengkap || !email) {
-      return NextResponse.json({ error: "NIP, Nama Lengkap, dan Email wajib diisi." }, { status: 400 });
+    if (!parsed.success) {
+      return NextResponse.json({ error: parsed.error.issues[0].message }, { status: 400 });
     }
+
+    const { nip, nama_lengkap, email, pangkat_golongan, jabatan, unit_kerja, jurusan, program_studi, no_telp } = parsed.data;
 
     const existingUser = await prisma.user.findFirst({
       where: {

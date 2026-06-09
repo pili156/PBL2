@@ -4,9 +4,17 @@ import { prisma } from '@/src/lib/prisma';
 import bcrypt from 'bcryptjs';
 import { signToken } from '@/src/lib/jwt';
 import { loginSchema } from '@/src/lib/validation';
+import { checkRateLimit } from '@/src/lib/rate-limit';
 
 export async function POST(request: Request) {
   try {
+    const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+    const { allowed, remaining } = checkRateLimit(ip);
+
+    if (!allowed) {
+      return NextResponse.json({ error: "Terlalu banyak percobaan login. Silakan coba lagi dalam 1 menit." }, { status: 429 });
+    }
+
     const body = await request.json();
     const parsed = loginSchema.safeParse(body);
 

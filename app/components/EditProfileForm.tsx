@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { ROLE_DISPLAY } from "@/src/lib/constants/roles";
 import { User, Mail, Shield, Briefcase, BadgeCheck, Save, ArrowLeft, Loader2, Hash } from "lucide-react";
 
 type ProfileData = {
@@ -20,11 +21,7 @@ type ProfileData = {
   } | null;
 };
 
-const roleDisplayMap: Record<string, string> = {
-  dosen: "Dosen",
-  admin: "Admin",
-  master_admin: "Master Admin",
-};
+
 
 type EditProfileFormProps = {
   backUrl: string;
@@ -157,7 +154,7 @@ export default function EditProfileForm({ backUrl, apiUrl = "/api/user/profile" 
             <div>
               <h1 className="text-xl font-bold">Edit Profil</h1>
               <p className="text-sm text-blue-100 mt-0.5">
-                Role: <span className="font-semibold text-white">{profileData?.role ? roleDisplayMap[profileData.role] || profileData.role : "-"}</span>
+                Role: <span className="font-semibold text-white">{profileData?.role ? ROLE_DISPLAY[profileData.role] || profileData.role : "-"}</span>
               </p>
             </div>
           </div>
@@ -186,7 +183,7 @@ export default function EditProfileForm({ backUrl, apiUrl = "/api/user/profile" 
                   </div>
                 </label>
                 <div className="px-3 py-2 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-700 font-medium">
-                  {profileData?.role ? roleDisplayMap[profileData.role] || profileData.role : "-"}
+                  {profileData?.role ? ROLE_DISPLAY[profileData.role] || profileData.role : "-"}
                 </div>
               </div>
             </div>

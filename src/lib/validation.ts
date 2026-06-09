@@ -32,8 +32,9 @@ export const pengajuanSchema = z.object({
 });
 
 export const profileSchema = z.object({
-  nama_lengkap: z.string().min(1, "Nama lengkap wajib diisi").optional(),
+  username: z.string().optional(),
   nip: z.string().optional(),
+  nama_lengkap: z.string().min(1, "Nama lengkap wajib diisi").optional(),
   pangkat_golongan: z.string().optional(),
   jabatan: z.string().optional(),
   unit_kerja: z.string().optional(),
@@ -41,3 +42,29 @@ export const profileSchema = z.object({
   program_studi: z.string().optional(),
   no_telp: z.string().optional(),
 });
+
+export const bukuIndukSchema = z.object({
+  nip: z.string().min(1, "NIP wajib diisi"),
+  nama_lengkap: z.string().min(1, "Nama lengkap wajib diisi"),
+  email: z.string().email("Email tidak valid").refine(
+    (email) => email.endsWith("@polines.ac.id"),
+    "Gunakan email institusi @polines.ac.id"
+  ),
+  pangkat_golongan: z.string().optional(),
+  jabatan: z.string().optional(),
+  unit_kerja: z.string().optional(),
+  jurusan: z.string().optional(),
+  program_studi: z.string().optional(),
+  no_telp: z.string().optional(),
+});
+
+export const reimbursementSchema = z.object({
+  jenis_pengajuan: z.string().optional(),
+  semester_ke: z.string().min(1, "Semester wajib diisi"),
+  tahun_akademik: z.string().optional(),
+  tahun_ke: z.string().optional(),
+  nominal: z.string().min(1, "Nominal wajib diisi"),
+  catatan_keuangan: z.string().optional(),
+});
+
+export const ipkSchema = z.number().min(0).max(4.00, "IPK tidak boleh lebih dari 4.00");

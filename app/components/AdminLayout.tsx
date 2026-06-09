@@ -4,7 +4,7 @@ import Header from "./Header";
 import AdminSidebar from "./AdminSidebar";
 import { getUserFromToken } from "@/src/lib/auth-user";
 import { ROLES } from "@/src/lib/constants/roles";
-import { hasRole } from "@/src/lib/auth/permissions";
+
 import type { MenuItem } from "@/src/types";
 
 function getPageTitle(pathname: string, role: string): string {
@@ -16,9 +16,9 @@ function getPageTitle(pathname: string, role: string): string {
   if (pathname.includes('/bantuan-studi')) return 'Bantuan Studi';
   if (pathname.includes('/status')) return 'Status';
   if (pathname.includes('/dashboard')) return 'Dashboard';
-  if (hasRole(role, ROLES.MASTER_ADMIN) && pathname.includes('/monitoring-pengguna')) return 'Monitoring Pengguna';
-  if (hasRole(role, ROLES.MASTER_ADMIN) && pathname.includes('/role-permission')) return 'Peran & Hak Akses';
-  if (hasRole(role, ROLES.MASTER_ADMIN) && pathname.includes('/audit-log')) return 'Log Aktivitas';
+  if (role === ROLES.MASTER_ADMIN && pathname.includes('/monitoring-pengguna')) return 'Monitoring Pengguna';
+  if (role === ROLES.MASTER_ADMIN && pathname.includes('/role-permission')) return 'Peran & Hak Akses';
+  if (role === ROLES.MASTER_ADMIN && pathname.includes('/audit-log')) return 'Log Aktivitas';
   return 'Dashboard';
 }
 

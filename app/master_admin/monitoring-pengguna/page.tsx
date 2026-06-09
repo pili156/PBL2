@@ -15,6 +15,7 @@ import {
 import Link from "next/link";
 import ToggleSwitch from "./ToggleSwitch";
 import { formatDate } from '@/src/lib/formatters';
+import { ROLE_DISPLAY } from '@/src/lib/constants/roles';
 
 export const dynamic = 'force-dynamic';
 
@@ -22,12 +23,6 @@ const ROLE_ID_MAP: Record<number, string> = {
   1: 'master_admin',
   2: 'admin',
   3: 'dosen',
-};
-
-const ROLE_DISPLAY: Record<string, string> = {
-  master_admin: 'Master Admin',
-  admin: 'Admin',
-  dosen: 'Dosen',
 };
 
 const ROLE_BADGE: Record<string, string> = {

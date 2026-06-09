@@ -6,6 +6,7 @@ import { redirect } from 'next/navigation';
 import { writeFile, mkdir, unlink } from 'fs/promises';
 import { join } from 'path';
 import { v4 as uuidv4 } from 'uuid';
+import { ipkSchema } from '@/src/lib/validation';
 const MAX_FILE_SIZE = 2 * 1024 * 1024;
 const ALLOWED_TYPES = ['application/pdf'];
 
@@ -25,6 +26,12 @@ export async function uploadKHS(prevState: { error?: string } | null, formData: 
 
   if (!semester || !tahunAkademik || !ipk || !file || file.size === 0) {
     return { error: 'Semua field wajib diisi dengan benar' };
+  }
+
+  const ipkNum = parseFloat(ipk);
+  const ipkResult = ipkSchema.safeParse(ipkNum);
+  if (!ipkResult.success) {
+    return { error: ipkResult.error.issues[0].message };
   }
 
   const fileError = validateFile(file);
@@ -97,6 +104,12 @@ export async function updateKHS(id: number, formData: FormData) {
 
   if (!semester || !tahunAkademik || !ipk) {
     throw new Error('Field semester, tahun akademik, dan IPK wajib diisi');
+  }
+
+  const ipkNum = parseFloat(ipk);
+  const ipkResult = ipkSchema.safeParse(ipkNum);
+  if (!ipkResult.success) {
+    throw new Error(ipkResult.error.issues[0].message);
   }
 
   const updateData: any = {
