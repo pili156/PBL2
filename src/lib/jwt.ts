@@ -1,6 +1,12 @@
 import jwt from 'jsonwebtoken';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret';
+function requireEnv(name: string): string {
+  const value = process.env[name];
+  if (!value) throw new Error(`${name} environment variable is required`);
+  return value;
+}
+
+const JWT_SECRET = requireEnv('JWT_SECRET');
 const JWT_EXPIRES_IN = '1h';
 
 export interface JwtPayload {

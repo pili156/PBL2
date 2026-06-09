@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { headers } from 'next/headers';
 import { prisma } from '@/src/lib/prisma';
 import bcrypt from 'bcryptjs';
+import { changePasswordSchema } from '@/src/lib/validation';
 
 export async function PUT(request: Request) {
   try {
@@ -13,19 +14,13 @@ export async function PUT(request: Request) {
     }
 
     const body = await request.json();
-    const { currentPassword, newPassword, confirmPassword } = body;
+    const parsed = changePasswordSchema.safeParse(body);
 
-    if (!currentPassword || !newPassword || !confirmPassword) {
-      return NextResponse.json({ error: "Semua field wajib diisi" }, { status: 400 });
+    if (!parsed.success) {
+      return NextResponse.json({ error: parsed.error.issues[0].message }, { status: 400 });
     }
 
-    if (newPassword !== confirmPassword) {
-      return NextResponse.json({ error: "Password baru dan konfirmasi tidak cocok" }, { status: 400 });
-    }
-
-    if (newPassword.length < 6) {
-      return NextResponse.json({ error: "Password baru minimal 6 karakter" }, { status: 400 });
-    }
+    const { currentPassword, newPassword } = parsed.data;
 
     const user = await prisma.user.findUnique({
       where: { email: userEmail }

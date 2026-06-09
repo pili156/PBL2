@@ -15,12 +15,6 @@ export async function POST(
     const file = formData.get('file') as File;
     const pengajuan_reimbursement_id = formData.get('pengajuan_reimbursement_id') as string;
 
-    console.log('=== DEBUG UPLOAD ===');
-    console.log('pengajuan_id:', id);
-    console.log('master_dokumen_id:', master_dokumen_id);
-    console.log('pengajuan_reimbursement_id:', pengajuan_reimbursement_id);
-    console.log('file:', file?.name, file?.size);
-
     if (!file) {
       return NextResponse.json({ error: 'File is required' }, { status: 400 });
     }
@@ -50,21 +44,16 @@ export async function POST(
     });
 
     if (!pengajuan) {
-      console.error('Pengajuan not found:', parsedPengajuanId);
       return NextResponse.json({ error: 'Pengajuan not found' }, { status: 404 });
     }
 
-    // Check if master_dokumen exists
     const masterDokumen = await prisma.masterDokumen.findUnique({
       where: { id: parsedMasterDokumenId },
     });
 
     if (!masterDokumen) {
-      console.error('Master dokumen not found:', parsedMasterDokumenId);
       return NextResponse.json({ error: 'Master dokumen not found. Please run seed first.' }, { status: 404 });
     }
-
-    console.log('Creating dokumenPengajuan...');
     const parsedReimbursementId = pengajuan_reimbursement_id ? parseInt(pengajuan_reimbursement_id) : null;
 
     const dokumen = await prisma.dokumenPengajuan.create({
@@ -77,11 +66,9 @@ export async function POST(
       },
     });
 
-    console.log('Dokumen created:', dokumen);
     return NextResponse.json({ dokumen, filePath: relativePath }, { status: 201 });
   } catch (error) {
-    console.error('=== ERROR UPLOAD ===');
-    console.error(error);
+    console.error('=== ERROR UPLOAD ===', error);
     return NextResponse.json({ error: String(error) }, { status: 500 });
   }
 }

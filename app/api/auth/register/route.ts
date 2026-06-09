@@ -1,28 +1,19 @@
-// app/api/auth/register/route.ts
 import { NextResponse } from 'next/server';
 import { prisma } from '@/src/lib/prisma';
 import bcrypt from 'bcryptjs';
+import { registerSchema } from '@/src/lib/validation';
 
 export async function POST(request: Request) {
   try {
-    const { email, password, nip, nama_lengkap } = await request.json();
+    const body = await request.json();
+    const parsed = registerSchema.safeParse(body);
 
-    // 1. Validasi Input Kosong
-    if (!email || !password || !nip || !nama_lengkap) {
-      return NextResponse.json({ error: "Semua kolom wajib diisi." }, { status: 400 });
+    if (!parsed.success) {
+      return NextResponse.json({ error: parsed.error.issues[0].message }, { status: 400 });
     }
 
-    // 2. Validasi Panjang Password Backend
-    if (password.length < 8) {
-      return NextResponse.json({ error: "Keamanan lemah: Password minimal harus 8 karakter." }, { status: 400 });
-    }
+    const { email, password, nip, nama_lengkap } = parsed.data;
 
-    // 3. Validasi Domain Email
-    if (!email.endsWith('@polines.ac.id')) {
-      return NextResponse.json({ error: "Gagal: Gunakan email institusi @polines.ac.id" }, { status: 400 });
-    }
-
-    // 4. Cek Duplikasi Data
     const existingUser = await prisma.user.findFirst({
       where: {
         OR: [
@@ -38,12 +29,10 @@ export async function POST(request: Request) {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Cari ID Role Dosen
     const roleDosen = await prisma.masterRole.findFirst({ where: { nama_role: "dosen" } });
 
-    // 5. Buat Akun & Profil dengan Status Konsisten ("pending")
     const autoUsername = email.split('@')[0];
-    const newUser = await prisma.user.create({
+    await prisma.user.create({
       data: {
         username: autoUsername,
         email: email,

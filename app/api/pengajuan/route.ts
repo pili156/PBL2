@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/src/lib/prisma';
 import { headers } from 'next/headers';
+import { pengajuanSchema } from '@/src/lib/validation';
 
 export async function POST(request: Request) {
   try {
@@ -12,16 +13,17 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
-    const { jenis_studi_id, jalur_pendanaan_id, wilayah_studi, perguruan_tinggi } = body;
+    const parsed = pengajuanSchema.safeParse(body);
 
-    console.log('[API] Input received:', { jenis_studi_id, jalur_pendanaan_id, wilayah_studi, perguruan_tinggi });
-    console.log('[API] jalur_pendanaan_id type:', typeof jalur_pendanaan_id, 'value:', jalur_pendanaan_id);
+    if (!parsed.success) {
+      return NextResponse.json({ error: parsed.error.issues[0].message }, { status: 400 });
+    }
+
+    const { jenis_studi_id, jalur_pendanaan_id, wilayah_studi, perguruan_tinggi } = parsed.data;
 
     let statusMenunggu = await prisma.masterStatusPengajuan.findFirst({
       where: { nama_status: 'Menunggu Verifikasi (Admin)' },
     });
-
-    console.log('Status menunggu:', statusMenunggu);
 
     if (!statusMenunggu) {
       statusMenunggu = await prisma.masterStatusPengajuan.findFirst({
@@ -54,20 +56,18 @@ export async function POST(request: Request) {
     const pengajuan = await prisma.pengajuanStudi.create({
       data: {
         user_id: userId,
-        jenis_studi_id: jenis_studi_id || null,
-        jalur_pendanaan_id: jalur_pendanaan_id || null,
-        wilayah_studi: wilayah_studi || null,
-        perguruan_tinggi: perguruan_tinggi || null,
+        jenis_studi_id: jenis_studi_id ?? null,
+        jalur_pendanaan_id: jalur_pendanaan_id ?? null,
+        wilayah_studi: wilayah_studi ?? null,
+        perguruan_tinggi: perguruan_tinggi ?? null,
         status_id: statusMenunggu.id,
         tanggal_pengajuan: new Date(),
       },
     });
 
-    console.log('Pengajuan created:', pengajuan.id);
     return NextResponse.json({ pengajuan }, { status: 201 });
   } catch (error: any) {
-    console.error('=== ERROR CREATE PENGajuan ===');
-    console.error(error);
+    console.error('=== ERROR CREATE PENGAJUAN ===', error);
     
     if (error.code === 'P2002') {
       return NextResponse.json(
