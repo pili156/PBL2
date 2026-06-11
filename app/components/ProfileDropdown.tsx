@@ -24,6 +24,7 @@ type UserData = {
   roleDisplay: string;
   unitKerja?: string;
   jabatan?: string;
+  no_telp?: string;
 };
 
 export default function ProfileDropdown({ user }: { user: UserData }) {
@@ -44,17 +45,13 @@ export default function ProfileDropdown({ user }: { user: UserData }) {
   const roleCookieMap: Record<string, string> = {
     dosen: 'token_dosen',
     admin: 'token_admin',
-    admin_fakultas: 'token_admin_fakultas',
     master_admin: 'token_master_admin',
-    keuangan: 'token_keuangan',
   };
 
   const rolePathMap: Record<string, string> = {
     dosen: '/user',
     admin: '/admin',
-    admin_fakultas: '/admin',
     master_admin: '/master_admin',
-    keuangan: '/keuangan',
   };
 
   const handleLogout = () => {
@@ -129,7 +126,7 @@ export default function ProfileDropdown({ user }: { user: UserData }) {
                 <div className="flex items-center gap-3">
                   <Phone size={14} className="text-slate-400 flex-shrink-0" />
                   <span className="text-slate-500 w-24 text-xs">No. HP</span>
-                  <span className="text-slate-700 text-xs font-medium">-</span>
+                  <span className="text-slate-700 text-xs font-medium">{user.no_telp || "-"}</span>
                 </div>
                 <div className="flex items-center gap-3">
                   <Briefcase size={14} className="text-slate-400 flex-shrink-0" />
@@ -169,14 +166,7 @@ export default function ProfileDropdown({ user }: { user: UserData }) {
                 <span>Ubah Password</span>
               </button>
               <button
-                onClick={() => {}}
-                className="flex items-center gap-3 px-3 py-2.5 text-sm text-slate-700 hover:bg-slate-100 rounded-lg transition-colors w-full text-left"
-              >
-                <Bell size={16} className="text-slate-400" />
-                <span>Notifikasi</span>
-              </button>
-              <button
-                onClick={() => {}}
+                onClick={() => router.push(`${rolePathMap[user.role]}/profile`)}
                 className="flex items-center gap-3 px-3 py-2.5 text-sm text-slate-700 hover:bg-slate-100 rounded-lg transition-colors w-full text-left"
               >
                 <Settings size={16} className="text-slate-400" />

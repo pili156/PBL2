@@ -1,6 +1,7 @@
 import { prisma } from '@/src/lib/prisma';
 import { redirect } from 'next/navigation';
-import { ArrowLeft, Save, UserPlus } from "lucide-react";
+import { Save, UserPlus } from "lucide-react";
+import BackLink from "@/app/components/BackLink";
 import Link from "next/link";
 import { createUser } from '../actions';
 
@@ -17,13 +18,7 @@ export default async function CreateUserPage() {
   return (
     <div className="max-w-2xl space-y-6">
       <div className="flex items-center gap-4">
-        <Link
-          href="/master_admin/monitoring-pengguna"
-          className="flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-700 transition-colors"
-        >
-          <ArrowLeft size={16} />
-          Kembali
-        </Link>
+        <BackLink href="/master_admin/monitoring-pengguna" />
         <div className="h-5 w-px bg-slate-200" />
         <div>
           <h2 className="text-2xl font-bold text-slate-900 tracking-tight">Tambah Pengguna Baru</h2>

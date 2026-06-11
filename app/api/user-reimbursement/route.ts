@@ -1,6 +1,7 @@
 import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 import { prisma } from "@/src/lib/prisma";
+import { reimbursementSchema } from "@/src/lib/validation";
 
 export async function GET() {
   try {
@@ -59,16 +60,14 @@ export async function POST(request: Request) {
     }
 
     const formData = await request.formData();
-    const jenisPengajuan = formData.get("jenis_pengajuan")?.toString() || "reimbursement";
-    const semesterKe = formData.get("semester_ke")?.toString();
-    const tahunAkademik = formData.get("tahun_akademik")?.toString();
-    const tahunKe = formData.get("tahun_ke")?.toString();
-    const nominalValue = formData.get("nominal")?.toString();
-    const catatan = formData.get("catatan_keuangan")?.toString();
+    const formObj = Object.fromEntries(formData.entries());
+    const parsed = reimbursementSchema.safeParse(formObj);
 
-    if (!semesterKe || !nominalValue) {
-      return NextResponse.json({ error: "Semester dan nominal wajib diisi." }, { status: 400 });
+    if (!parsed.success) {
+      return NextResponse.json({ error: parsed.error.issues[0].message }, { status: 400 });
     }
+
+    const { semester_ke: semesterKe, tahun_akademik: tahunAkademik, tahun_ke: tahunKe, nominal: nominalValue, catatan_keuangan: catatan, jenis_pengajuan: jenisPengajuan } = parsed.data;
 
     const pengajuan = await prisma.pengajuanStudi.findFirst({
       where: { user_id: userId },

@@ -1,26 +1,33 @@
-// app/api/auth/login/route.ts
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { prisma } from '@/src/lib/prisma';
 import bcrypt from 'bcryptjs';
 import { signToken } from '@/src/lib/jwt';
+import { loginSchema } from '@/src/lib/validation';
+import { checkRateLimit } from '@/src/lib/rate-limit';
 
 export async function POST(request: Request) {
   try {
-    const { identifier, password } = await request.json();
-    
-    console.log("1. Mencoba login dengan identifier:", identifier);
+    const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+    const { allowed, remaining } = checkRateLimit(ip);
 
-    if (!identifier || !password) {
-      return NextResponse.json({ error: "Email/NIP dan password wajib diisi" }, { status: 400 });
+    if (!allowed) {
+      return NextResponse.json({ error: "Terlalu banyak percobaan login. Silakan coba lagi dalam 1 menit." }, { status: 429 });
     }
 
-    // Validasi domain email polines (jika input berupa email)
+    const body = await request.json();
+    const parsed = loginSchema.safeParse(body);
+
+    if (!parsed.success) {
+      return NextResponse.json({ error: parsed.error.issues[0].message }, { status: 400 });
+    }
+
+    const { identifier, password } = parsed.data;
+
     if (identifier.includes('@') && !identifier.endsWith('@polines.ac.id')) {
       return NextResponse.json({ error: "Gagal: Gunakan email @polines.ac.id untuk login." }, { status: 400 });
     }
 
-    // Cari user berdasarkan email atau NIP dosen
     const user = await prisma.user.findFirst({
       where: {
         OR: [
@@ -34,41 +41,29 @@ export async function POST(request: Request) {
       }
     });
 
-    console.log("2. User ditemukan di DB:", user ? "Ya" : "Tidak");
-
     if (!user || !user.password_hash) {
       return NextResponse.json({ error: "Kredensial tidak valid" }, { status: 401 });
     }
 
     const isPasswordValid = await bcrypt.compare(password, user.password_hash);
-    console.log("3. Password cocok:", isPasswordValid);
 
     if (!isPasswordValid) {
       return NextResponse.json({ error: "Kredensial tidak valid" }, { status: 401 });
     }
 
-    // Ambil nama_role dari relasi tabel master_role
     const roleName = user.role?.nama_role;
 
-    // --- PERBAIKAN INKONSISTENSI STATUS (Case-insensitive) ---
     const statusAkun = user.status_akun?.toLowerCase(); 
 
     if (roleName === 'dosen' && (statusAkun === 'pending' || statusAkun === 'menunggu')) {
       return NextResponse.json({ error: "Akun Anda berstatus Pending. Silakan hubungi Admin untuk aktivasi." }, { status: 403 });
     }
 
-    // --- LOGIC REDIRECT DITENTUKAN DI BACKEND ---
-    let targetUrl = "/user/dashboard"; // Default folder untuk dosen
+    let targetUrl = "/user/dashboard";
 
-    if (roleName === "master_admin") {
-      targetUrl = "/master_admin/monitoring-pengguna";
-    } else if (roleName === "admin" || roleName === "admin_fakultas") {
+    if (roleName === "master_admin" || roleName === "admin") {
       targetUrl = "/admin/dashboard";
-    } else if (roleName === "keuangan") {
-      targetUrl = "/keuangan/dashboard";
     }
-
-    console.log(`4. Login SUKSES! Role: ${roleName}, Redirect ke: ${targetUrl}`);
 
     const token = signToken({
       userId: user.id,
@@ -89,7 +84,6 @@ export async function POST(request: Request) {
       path: "/",
     });
 
-    // Kembalikan data sukses beserta redirectUrl
     return NextResponse.json({
       message: "Login berhasil",
       redirectUrl: targetUrl, 

@@ -22,19 +22,19 @@ const roleData = [
     ],
   },
   {
-    id: 'admin_fakultas',
+    id: 'admin',
     name: 'Admin',
     icon: Users,
     color: 'text-blue-600',
     bg: 'bg-blue-50',
     border: 'border-blue-200',
-    description: 'Administrator fakultas yang mengelola operasional sehari-hari terkait studi lanjut dosen.',
+    description: 'Administrator yang mengelola operasional sehari-hari terkait studi lanjut dosen, termasuk verifikasi dan monitoring.',
     permissions: [
       'Verifikasi pengajuan studi lanjut dosen',
       'Monitoring & riwayat studi dosen',
-      'Mengelola data KHS, keuangan, dokumen',
+      'Mengelola data KHS, dokumen',
       'Menerbitkan SK Tugas Belajar',
-      'Mengelola bantuan studi',
+      'Mengelola bantuan studi & pencairan',
       'Melihat dashboard & status pengajuan',
     ],
   },
@@ -55,35 +55,20 @@ const roleData = [
       'Melihat riwayat pengajuan sendiri',
     ],
   },
-  {
-    id: 'keuangan',
-    name: 'Keuangan',
-    icon: Wallet,
-    color: 'text-amber-600',
-    bg: 'bg-amber-50',
-    border: 'border-amber-200',
-    description: 'Bagian keuangan yang mengelola pencairan dana reimbursement studi dosen.',
-    permissions: [
-      'Melihat pengajuan reimbursement',
-      'Memproses pencairan dana',
-      'Mencatat nominal & status pencairan',
-      'Melihat dashboard keuangan',
-    ],
-  },
 ];
 
 const permissionMatrix = [
-  { area: 'Dashboard', master_admin: true, admin: true, dosen: true, keuangan: true },
-  { area: 'Verifikasi Pengajuan', master_admin: true, admin: true, dosen: false, keuangan: false },
-  { area: 'Monitoring Dosen', master_admin: true, admin: true, dosen: false, keuangan: false },
-  { area: 'Buku Induk', master_admin: true, admin: true, dosen: false, keuangan: false },
-  { area: 'Monitoring Pengguna', master_admin: true, admin: false, dosen: false, keuangan: false },
-  { area: 'Kelola Pengguna', master_admin: true, admin: false, dosen: false, keuangan: false },
-  { area: 'Peran & Hak Akses', master_admin: true, admin: false, dosen: false, keuangan: false },
-  { area: 'Log Aktivitas', master_admin: true, admin: false, dosen: false, keuangan: false },
-  { area: 'Pengajuan Studi', master_admin: false, admin: false, dosen: true, keuangan: false },
-  { area: 'Reimbursement', master_admin: false, admin: false, dosen: true, keuangan: true },
-  { area: 'Edit Profil Sendiri', master_admin: true, admin: true, dosen: true, keuangan: true },
+  { area: 'Dashboard', master_admin: true, admin: true, dosen: true },
+  { area: 'Verifikasi Pengajuan', master_admin: true, admin: true, dosen: false },
+  { area: 'Monitoring Dosen', master_admin: true, admin: true, dosen: false },
+  { area: 'Buku Induk', master_admin: true, admin: true, dosen: false },
+  { area: 'Monitoring Pengguna', master_admin: true, admin: false, dosen: false },
+  { area: 'Kelola Pengguna', master_admin: true, admin: false, dosen: false },
+  { area: 'Peran & Hak Akses', master_admin: true, admin: false, dosen: false },
+  { area: 'Log Aktivitas', master_admin: true, admin: false, dosen: false },
+  { area: 'Pengajuan Studi', master_admin: false, admin: false, dosen: true },
+  { area: 'Reimbursement', master_admin: false, admin: true, dosen: true },
+  { area: 'Edit Profil Sendiri', master_admin: true, admin: true, dosen: true },
 ];
 
 export default async function RolePermissionPage() {
@@ -150,7 +135,7 @@ export default async function RolePermissionPage() {
               {permissionMatrix.map((row, i) => (
                 <tr key={i} className="border-b border-slate-50 hover:bg-slate-50/50 transition-colors">
                   <td className="px-6 py-3.5 text-sm font-medium text-slate-700">{row.area}</td>
-                  {['master_admin', 'admin', 'dosen', 'keuangan'].map((role) => (
+                  {['master_admin', 'admin', 'dosen'].map((role) => (
                     <td key={role} className="px-6 py-3.5 text-center">
                       {row[role as keyof typeof row] ? (
                         <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-emerald-100 text-emerald-600">

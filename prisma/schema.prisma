@@ -91,6 +91,7 @@ model MasterDosen {
   updated_at       DateTime? @updatedAt @db.Timestamptz(6)
   jurusan          String?
   program_studi    String?
+  no_telp          String?
   user             User?     @relation(fields: [user_id], references: [id])
 
   @@map("master_dosen")

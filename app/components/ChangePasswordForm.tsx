@@ -77,6 +77,7 @@ export default function ChangePasswordForm({ backUrl }: ChangePasswordFormProps)
       <button
         onClick={() => router.push(backUrl)}
         className="flex items-center gap-2 text-slate-600 hover:text-slate-800 mb-6 transition-colors"
+        aria-label="Kembali"
       >
         <ArrowLeft size={20} />
         <span className="text-sm font-medium">Kembali</span>

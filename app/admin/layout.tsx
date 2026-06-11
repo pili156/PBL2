@@ -1,5 +1,5 @@
 import AdminLayout from "../components/AdminLayout";
-import { menuItems } from "../configs/menu";
+import { adminMenuItems } from "../configs/menu";
 import { ROLES } from "@/src/lib/constants/roles";
 
 export default function AdminLayoutWrapper({
@@ -8,7 +8,7 @@ export default function AdminLayoutWrapper({
   children: React.ReactNode;
 }) {
   return (
-    <AdminLayout role={ROLES.ADMIN_FAKULTAS} menuItems={menuItems} fallbackRoles={[ROLES.MASTER_ADMIN, ROLES.ADMIN]}>
+    <AdminLayout role={ROLES.ADMIN} menuItems={adminMenuItems} fallbackRoles={[ROLES.MASTER_ADMIN]}>
       {children}
     </AdminLayout>
   );

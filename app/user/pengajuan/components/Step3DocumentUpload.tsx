@@ -186,8 +186,8 @@ export default function Step3DocumentUpload({
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-1.5 mt-1 overflow-hidden">
                     <div
-                      className="bg-blue-600 h-full transition-all duration-300"
-                      style={{ width: `${uploadState?.progress || 0}%` }}
+                      className="bg-blue-600 h-full transition-all duration-300 w-[var(--progress)]"
+                      style={{ '--progress': `${uploadState?.progress || 0}%` } as React.CSSProperties}
                     />
                   </div>
                 </div>
@@ -231,6 +231,7 @@ export default function Step3DocumentUpload({
         <button
           onClick={onPrev}
           className="px-8 py-3 rounded-lg font-semibold text-gray-700 bg-gray-200 hover:bg-gray-300 transition-all flex items-center gap-2"
+          aria-label="Kembali"
         >
           <ArrowLeft size={20} />
           Kembali

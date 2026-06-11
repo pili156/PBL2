@@ -1,8 +1,9 @@
 import { prisma } from '@/src/lib/prisma';
-import { ArrowLeft, Download, GraduationCap, BookOpen, Wallet } from 'lucide-react';
+import { Download, GraduationCap, BookOpen, Wallet } from 'lucide-react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import TabNavigation from './TabNavigation';
+import BackButton from '@/app/components/BackButton';
 import { formatRupiah } from '@/src/lib/formatters';
 
 export const dynamic = 'force-dynamic';
@@ -55,16 +56,16 @@ export default async function DetailDosenLayout({ children, params }: LayoutProp
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <nav className="flex items-center gap-2 text-sm text-slate-400 mb-1">
-            <Link href="/admin/riwayat-dosen" className="hover:text-slate-600 transition-colors">Dashboard</Link>
+      <div className="flex items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <BackButton />
+          <nav className="flex items-center gap-2 text-sm text-slate-400">
+            <Link href="/admin/dashboard" className="hover:text-slate-600 transition-colors">Dashboard</Link>
             <span>/</span>
-            <span className="text-slate-600">Data Dosen</span>
+            <Link href="/admin/riwayat-dosen" className="hover:text-slate-600 transition-colors">Data Dosen</Link>
             <span>/</span>
-            <span className="text-slate-800 font-medium">Monitoring Dosen</span>
+            <span className="text-slate-800 font-medium">{namaDosen}</span>
           </nav>
-          <h2 className="text-2xl font-bold text-slate-900 tracking-tight">Monitoring Dosen</h2>
         </div>
         <a
           href={`/api/export/studi/${idDosen}`}
@@ -120,14 +121,7 @@ export default async function DetailDosenLayout({ children, params }: LayoutProp
 
       <div>{children}</div>
 
-      <div className="pt-2">
-        <Link
-          href="/admin/riwayat-dosen"
-          className="inline-flex items-center gap-2 text-sm font-medium text-slate-500 hover:text-slate-800 transition-colors"
-        >
-          <ArrowLeft size={16} /> Kembali ke daftar dosen
-        </Link>
-      </div>
+
     </div>
   );
 }

@@ -1,30 +1,6 @@
 "use client";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-import {
-  LayoutDashboard,
-  ShieldCheck,
-  Users,
-  BookOpen,
-  UserCheck,
-  UserCog,
-  Shield,
-  ClipboardList,
-  type LucideIcon,
-} from "lucide-react";
-import type { MenuItem, IconName } from "@/src/types";
-import { canAccess } from "@/src/lib/auth/permissions";
-
-const iconMap: Record<IconName, LucideIcon> = {
-  LayoutDashboard,
-  ShieldCheck,
-  Users,
-  BookOpen,
-  UserCheck,
-  UserCog,
-  Shield,
-  ClipboardList,
-};
+import type { MenuItem } from "@/src/types";
+import Sidebar from "./Sidebar";
 
 export default function AdminSidebar({
   menuItems,
@@ -33,28 +9,5 @@ export default function AdminSidebar({
   menuItems: MenuItem[];
   currentRole: string;
 }) {
-  const pathname = usePathname();
-  const filteredItems = menuItems.filter((item) =>
-    canAccess(currentRole, item.allowedRoles)
-  );
-
-  return (
-    <nav className="flex-1 py-4 flex flex-col">
-      {filteredItems.map((item) => {
-        const isActive = pathname.startsWith(item.href);
-        const Icon = iconMap[item.icon];
-        if (!Icon) return null;
-        return (
-          <Link key={item.href} href={item.href}
-            className={`flex items-center gap-3 px-8 py-3.5 transition-colors ${
-              isActive ? "bg-[#1A56DB] text-white" : "text-slate-300 hover:bg-slate-800"
-            }`}
-          >
-            <Icon size={20} strokeWidth={2} />
-            <span className="text-sm font-medium">{item.label}</span>
-          </Link>
-        );
-      })}
-    </nav>
-  );
+  return <Sidebar menuItems={menuItems} currentRole={currentRole} />;
 }

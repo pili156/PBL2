@@ -20,7 +20,7 @@ export async function GET(request: Request) {
   try {
     const headersList = await headers();
     const role = headersList.get('x-user-role');
-    if (!role || (role !== 'admin_fakultas' && role !== 'master_admin' && role !== 'admin')) {
+    if (!role || (role !== 'master_admin' && role !== 'admin')) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 

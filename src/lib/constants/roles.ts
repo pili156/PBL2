@@ -1,9 +1,13 @@
 export const ROLES = {
   DOSEN: 'dosen',
   ADMIN: 'admin',
-  ADMIN_FAKULTAS: 'admin_fakultas',
   MASTER_ADMIN: 'master_admin',
-  KEUANGAN: 'keuangan',
 } as const;
+
+export const ROLE_DISPLAY: Record<string, string> = {
+  dosen: 'Dosen',
+  admin: 'Admin',
+  master_admin: 'Master Admin',
+};
 
 export type Role = (typeof ROLES)[keyof typeof ROLES];

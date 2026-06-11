@@ -4,10 +4,11 @@ import { prisma } from "../../../../src/lib/prisma"; // Sesuaikan path prisma cl
 // 1. API UNTUK MENGAMBIL DATA LAMA DOSEN (GET)
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const idDosen = parseInt(params.id);
+    const { id } = await params;
+    const idDosen = parseInt(id);
 
     if (isNaN(idDosen)) {
       return NextResponse.json({ error: "ID tidak valid" }, { status: 400 });
@@ -31,10 +32,11 @@ export async function GET(
 // 2. API UNTUK MENYIMPAN HASIL EDITAN EXCEL (PUT)
 export async function PUT(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const idDosen = parseInt(params.id);
+    const { id } = await params;
+    const idDosen = parseInt(id);
     const body = await request.json();
 
     if (isNaN(idDosen)) {

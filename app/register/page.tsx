@@ -13,7 +13,6 @@ export default function Register() {
   const [successMsg, setSuccessMsg] = useState("");
   
   const [formData, setFormData] = useState({
-    username: "", // TAMBAHAN: Field username yang sebelumnya hilang
     email: "",
     nama_lengkap: "",
     nip: "",
@@ -130,27 +129,6 @@ export default function Register() {
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             
-            {/* Input Username (BARU DITAMBAHKAN) */}
-            <div className="relative">
-              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                  <circle cx="12" cy="7" r="4" />
-                </svg>
-              </span>
-              <input 
-                id="username"
-                name="username"
-                autoComplete="username"
-                type="text" 
-                required
-                placeholder="Username Unik" 
-                value={formData.username}
-                onChange={(e) => setFormData({...formData, username: e.target.value})}
-                className="w-full border border-gray-200 rounded-full pl-12 pr-4 py-3 text-sm text-gray-700 outline-none focus:border-blue-500 transition-colors bg-gray-50/50"
-              />
-            </div>
-
             {/* Input Email */}
             <div className="relative">
               <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">

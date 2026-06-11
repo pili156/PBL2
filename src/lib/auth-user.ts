@@ -1,13 +1,13 @@
+import { cache } from 'react';
 import { cookies } from 'next/headers';
 import { verifyToken } from './jwt';
 import { prisma } from './prisma';
+import { ROLE_DISPLAY } from '@/src/lib/constants/roles';
 
 const ROLE_COOKIE_MAP: Record<string, string> = {
   dosen: 'token_dosen',
   admin: 'token_admin',
-  admin_fakultas: 'token_admin_fakultas',
   master_admin: 'token_master_admin',
-  keuangan: 'token_keuangan',
 };
 
 export interface UserLayoutData {
@@ -18,17 +18,10 @@ export interface UserLayoutData {
   roleDisplay: string;
   unitKerja?: string;
   jabatan?: string;
+  no_telp?: string;
 }
 
-const ROLE_DISPLAY_MAP: Record<string, string> = {
-  dosen: 'Dosen',
-  admin: 'Admin',
-  admin_fakultas: 'Admin',
-  master_admin: 'Master Admin',
-  keuangan: 'Keuangan',
-};
-
-export async function getUserFromToken(role: string, fallbackRoles?: string[]): Promise<UserLayoutData> {
+async function getUserFromTokenImpl(role: string, fallbackRoles?: string[]): Promise<UserLayoutData> {
   const cookieStore = await cookies();
 
   const allAllowedRoles = [role, ...(fallbackRoles || [])];
@@ -50,6 +43,7 @@ export async function getUserFromToken(role: string, fallbackRoles?: string[]): 
             nip: true,
             unit_kerja: true,
             jabatan: true,
+            no_telp: true,
           },
         },
       },
@@ -62,9 +56,10 @@ export async function getUserFromToken(role: string, fallbackRoles?: string[]): 
       name: user.master_dosen?.nama_lengkap || user.username || payload.nama,
       nip: user.master_dosen?.nip || undefined,
       role: payload.role,
-      roleDisplay: ROLE_DISPLAY_MAP[payload.role] || payload.role,
+      roleDisplay: ROLE_DISPLAY[payload.role] || payload.role,
       unitKerja: user.master_dosen?.unit_kerja || undefined,
       jabatan: user.master_dosen?.jabatan || undefined,
+      no_telp: user.master_dosen?.no_telp || undefined,
     };
   }
 
@@ -72,6 +67,8 @@ export async function getUserFromToken(role: string, fallbackRoles?: string[]): 
     email: 'Guest',
     name: 'User',
     role,
-    roleDisplay: ROLE_DISPLAY_MAP[role] || role,
+    roleDisplay: ROLE_DISPLAY[role] || role,
   };
 }
+
+export const getUserFromToken = cache(getUserFromTokenImpl);

@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, CheckCircle2, Download, FileText, Loader2 } from "lucide-react";
+import BackLink from "@/app/components/BackLink";
+import { CheckCircle2, Download, FileText, Loader2 } from "lucide-react";
 import { formatDateLong } from "@/src/lib/formatters";
 import { normalizeStatus } from "@/src/lib/status-utils";
 import StatusBadge from "@/src/components/StatusBadge";
@@ -95,9 +96,8 @@ export default function AdminBantuanStudiDetailPage() {
       if (!reimbursementRes.ok) throw new Error("Gagal memperbarui");
 
       router.refresh();
-      window.location.reload();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Gagal memproses");
+      setError(err instanceof Error ? err.message : "Gagal memperbarui");
     } finally {
       setActionLoading(false);
     }
@@ -120,7 +120,6 @@ export default function AdminBantuanStudiDetailPage() {
       }
 
       router.refresh();
-      window.location.reload();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Gagal memproses");
     } finally {
@@ -141,9 +140,7 @@ export default function AdminBantuanStudiDetailPage() {
       <div className="rounded-3xl border border-slate-200 bg-white p-10 text-center shadow-sm">
         <h1 className="text-2xl font-semibold text-slate-900">Data tidak ditemukan</h1>
         <p className="mt-3 text-slate-600">{error || "Data tidak tersedia."}</p>
-        <Link href="/admin/bantuan-studi" className="mt-6 inline-flex items-center justify-center rounded-full bg-blue-600 px-5 py-3 text-sm font-semibold text-white hover:bg-blue-700">
-          Kembali
-        </Link>
+        <BackLink href="/admin/bantuan-studi" />
       </div>
     );
   }
@@ -156,9 +153,7 @@ export default function AdminBantuanStudiDetailPage() {
     <div className="space-y-8 animate-in fade-in duration-500">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="space-y-3">
-          <Link href="/admin/bantuan-studi" className="inline-flex items-center gap-2 text-sm font-semibold text-slate-700 hover:text-slate-900">
-            <ArrowLeft size={18} /> Kembali
-          </Link>
+          <BackLink href="/admin/bantuan-studi" />
           <div>
             <h1 className="text-3xl font-bold text-slate-900">Verifikasi Bantuan Studi</h1>
             <p className="text-sm text-slate-500">Detail pengajuan bantuan studi.</p>

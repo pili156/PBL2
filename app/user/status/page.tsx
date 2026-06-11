@@ -1,4 +1,4 @@
-import { AlertCircle, ChevronLeft } from "lucide-react";
+import { AlertCircle, ArrowLeft, FileText, Download } from "lucide-react";
 import Link from "next/link";
 import { headers } from "next/headers";
 import { prisma } from "@/src/lib/prisma";
@@ -11,6 +11,7 @@ export default async function StatusProsesUser() {
   const userEmail = headersList.get('x-user-email');
 
   let statusPengajuan = "belum_ada";
+  let skFile: { nomor_sk: string | null; file_sk_path: string | null } | null = null;
   if (userEmail) {
     const currentUser = await prisma.user.findUnique({
       where: { email: userEmail },
@@ -19,9 +20,13 @@ export default async function StatusProsesUser() {
       const pengajuan = await prisma.pengajuanStudi.findFirst({
         where: { user_id: currentUser.id },
         orderBy: { created_at: "desc" },
-        include: { status: true },
+        include: { status: true, sk_kementerian: true },
       });
       statusPengajuan = pengajuan?.status?.nama_status || "belum_ada";
+      if (pengajuan?.sk_kementerian?.length) {
+        const latestSk = pengajuan.sk_kementerian[pengajuan.sk_kementerian.length - 1];
+        skFile = { nomor_sk: latestSk.nomor_sk, file_sk_path: latestSk.file_sk_path };
+      }
     }
   }
 
@@ -38,8 +43,9 @@ export default async function StatusProsesUser() {
 
       <div className="max-w-5xl space-y-8">
         <p className="text-sm text-slate-500 leading-relaxed max-w-4xl">
-          Pengajuan studi lanjut Anda sedang diproses. Admin kepegawaian telah mengunggah Surat Keputusan (SK). 
-          Anda dapat mengunduh file di bawah ini dan memantau status studi aktif Anda.
+          {skFile?.file_sk_path
+            ? "Admin kepegawaian telah mengunggah Surat Keputusan (SK). Anda dapat mengunduh file di bawah ini."
+            : "Pengajuan studi lanjut Anda sedang diproses. Setelah SK diterbitkan, Anda dapat mengunduhnya di halaman ini."}
         </p>
 
         <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm inline-flex items-center gap-4">
@@ -47,22 +53,42 @@ export default async function StatusProsesUser() {
           <StatusBadge status={statusPengajuan} domain="pengajuan" size="md" uppercase />
         </div>
 
-        <div className="bg-amber-50 border border-amber-200 p-6 rounded-xl flex gap-5 max-w-4xl">
-          <div className="bg-amber-500 w-10 h-10 rounded-full flex items-center justify-center shrink-0">
-            <AlertCircle className="text-white" size={24} />
+        {skFile?.file_sk_path ? (
+          <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm max-w-4xl">
+            <h3 className="font-bold text-slate-800 mb-3 flex items-center gap-2">
+              <FileText size={18} className="text-blue-600" />
+              Surat Keputusan (SK)
+            </h3>
+            {skFile.nomor_sk && (
+              <p className="text-sm text-slate-500 mb-3">Nomor SK: {skFile.nomor_sk}</p>
+            )}
+            <Link
+              href={skFile.file_sk_path}
+              target="_blank"
+              className="inline-flex items-center gap-2 px-4 py-2.5 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              <Download size={16} />
+              Unduh File SK
+            </Link>
           </div>
-          <p className="text-sm text-amber-800 leading-relaxed font-medium">
-            Pengajuan Anda sedang diperiksa oleh Admin Kepegawaian. Proses ini memerlukan waktu untuk 
-            validasi dokumen SK dan persiapan studi aktif Anda. Mohon cek halaman ini secara berkala.
-          </p>
-        </div>
+        ) : (
+          <div className="bg-amber-50 border border-amber-200 p-6 rounded-xl flex gap-5 max-w-4xl">
+            <div className="bg-amber-500 w-10 h-10 rounded-full flex items-center justify-center shrink-0">
+              <AlertCircle className="text-white" size={24} />
+            </div>
+            <p className="text-sm text-amber-800 leading-relaxed font-medium">
+              Pengajuan Anda sedang diperiksa oleh Admin Kepegawaian. Proses ini memerlukan waktu untuk 
+              validasi dokumen dan penerbitan SK. Mohon cek halaman ini secara berkala.
+            </p>
+          </div>
+        )}
 
         <div className="pt-10">
           <Link 
             href="/user/dashboard" 
             className="inline-flex items-center gap-2 text-slate-500 font-bold text-sm hover:text-blue-600 transition-all group"
           >
-            <ChevronLeft size={20} className="group-hover:-translate-x-1 transition-transform" />
+            <ArrowLeft size={20} className="group-hover:-translate-x-1 transition-transform" />
             Kembali
           </Link>
         </div>

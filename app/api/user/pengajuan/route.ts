@@ -31,8 +31,6 @@ export async function GET() {
       },
     });
 
-    console.log('[API] Pengajuan found:', pengajuan ? pengajuan.id : 'null');
-
     if (!pengajuan) {
       return NextResponse.json({ message: 'Belum ada pengajuan', exists: false }, { status: 404 });
     }

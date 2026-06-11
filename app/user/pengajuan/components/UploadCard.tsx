@@ -189,8 +189,8 @@ export default function UploadCard({
         <div className="mt-3">
           <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
             <div
-              className="bg-blue-600 h-full transition-all duration-300 rounded-full"
-              style={{ width: `${uploadProgress}%` }}
+              className="bg-blue-600 h-full transition-all duration-300 rounded-full w-[var(--progress)]"
+              style={{ '--progress': `${uploadProgress}%` } as React.CSSProperties}
             />
           </div>
           <p className="text-xs text-center text-gray-500 mt-1">{uploadProgress}%</p>

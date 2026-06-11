@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { headers } from 'next/headers';
 import { prisma } from './prisma';
+import { profileSchema } from './validation';
 
 export async function getProfile() {
   const headersList = await headers();
@@ -32,6 +33,7 @@ export async function getProfile() {
       unit_kerja: user.master_dosen.unit_kerja,
       jurusan: user.master_dosen.jurusan,
       program_studi: user.master_dosen.program_studi,
+      no_telp: user.master_dosen.no_telp,
     } : null,
   });
 }
@@ -45,7 +47,13 @@ export async function updateProfile(request: Request) {
   }
 
   const body = await request.json();
-  const { username, nip, nama_lengkap, pangkat_golongan, jabatan, unit_kerja, jurusan, program_studi } = body;
+  const parsed = profileSchema.safeParse(body);
+
+  if (!parsed.success) {
+    return NextResponse.json({ error: parsed.error.issues[0].message }, { status: 400 });
+  }
+
+  const { username, nip, nama_lengkap, pangkat_golongan, jabatan, unit_kerja, jurusan, program_studi, no_telp } = parsed.data;
 
   const user = await prisma.user.findUnique({
     where: { email: userEmail },
@@ -55,20 +63,6 @@ export async function updateProfile(request: Request) {
   if (!user) {
     return NextResponse.json({ error: "User not found" }, { status: 404 });
   }
-
-  if (username) {
-    const existingUser = await prisma.user.findFirst({
-      where: { username, NOT: { id: user.id } }
-    });
-    if (existingUser) {
-      return NextResponse.json({ error: "Username sudah digunakan" }, { status: 400 });
-    }
-  }
-
-  await prisma.user.update({
-    where: { id: user.id },
-    data: { username: username || user.username }
-  });
 
   if (user.master_dosen) {
     if (nip && nip !== user.master_dosen.nip) {
@@ -90,6 +84,7 @@ export async function updateProfile(request: Request) {
         unit_kerja: unit_kerja || user.master_dosen.unit_kerja,
         jurusan: jurusan || user.master_dosen.jurusan,
         program_studi: program_studi || user.master_dosen.program_studi,
+        no_telp: no_telp || user.master_dosen.no_telp,
       }
     });
   }

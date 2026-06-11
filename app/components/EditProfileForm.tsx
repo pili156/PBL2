@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { ROLE_DISPLAY } from "@/src/lib/constants/roles";
 import { User, Mail, Shield, Briefcase, BadgeCheck, Save, ArrowLeft, Loader2, Hash } from "lucide-react";
 
 type ProfileData = {
@@ -16,16 +17,11 @@ type ProfileData = {
     unit_kerja?: string;
     jurusan?: string;
     program_studi?: string;
+    no_telp?: string;
   } | null;
 };
 
-const roleDisplayMap: Record<string, string> = {
-  dosen: "Dosen",
-  admin: "Admin",
-  admin_fakultas: "Admin Fakultas",
-  master_admin: "Master Admin",
-  keuangan: "Bagian Keuangan",
-};
+
 
 type EditProfileFormProps = {
   backUrl: string;
@@ -42,7 +38,6 @@ export default function EditProfileForm({ backUrl, apiUrl = "/api/user/profile" 
   const [profileData, setProfileData] = useState<ProfileData | null>(null);
 
   const [formData, setFormData] = useState({
-    username: "",
     nip: "",
     nama_lengkap: "",
     pangkat_golongan: "",
@@ -50,6 +45,7 @@ export default function EditProfileForm({ backUrl, apiUrl = "/api/user/profile" 
     unit_kerja: "",
     jurusan: "",
     program_studi: "",
+    no_telp: "",
   });
 
   useEffect(() => {
@@ -64,7 +60,6 @@ export default function EditProfileForm({ backUrl, apiUrl = "/api/user/profile" 
       if (res.ok) {
         setProfileData(data);
         setFormData({
-          username: data.username || "",
           nip: data.master_dosen?.nip || "",
           nama_lengkap: data.master_dosen?.nama_lengkap || "",
           pangkat_golongan: data.master_dosen?.pangkat_golongan || "",
@@ -72,6 +67,7 @@ export default function EditProfileForm({ backUrl, apiUrl = "/api/user/profile" 
           unit_kerja: data.master_dosen?.unit_kerja || "",
           jurusan: data.master_dosen?.jurusan || "",
           program_studi: data.master_dosen?.program_studi || "",
+          no_telp: data.master_dosen?.no_telp || "",
         });
       } else {
         setErrorMsg(data.error || "Gagal memuat data profil");
@@ -108,7 +104,6 @@ export default function EditProfileForm({ backUrl, apiUrl = "/api/user/profile" 
         if (profileData) {
           setProfileData({
             ...profileData,
-            username: formData.username || profileData.username,
             master_dosen: profileData.master_dosen ? {
               ...profileData.master_dosen,
               nama_lengkap: formData.nama_lengkap || profileData.master_dosen.nama_lengkap,
@@ -117,6 +112,7 @@ export default function EditProfileForm({ backUrl, apiUrl = "/api/user/profile" 
               unit_kerja: formData.unit_kerja || profileData.master_dosen.unit_kerja,
               jurusan: formData.jurusan || profileData.master_dosen.jurusan,
               program_studi: formData.program_studi || profileData.master_dosen.program_studi,
+              no_telp: formData.no_telp || profileData.master_dosen.no_telp,
             } : null,
           });
         }
@@ -143,6 +139,7 @@ export default function EditProfileForm({ backUrl, apiUrl = "/api/user/profile" 
       <button
         onClick={() => router.push(backUrl)}
         className="flex items-center gap-2 text-slate-600 hover:text-slate-800 mb-6 transition-colors"
+        aria-label="Kembali"
       >
         <ArrowLeft size={20} />
         <span className="text-sm font-medium">Kembali</span>
@@ -157,7 +154,7 @@ export default function EditProfileForm({ backUrl, apiUrl = "/api/user/profile" 
             <div>
               <h1 className="text-xl font-bold">Edit Profil</h1>
               <p className="text-sm text-blue-100 mt-0.5">
-                Role: <span className="font-semibold text-white">{profileData?.role ? roleDisplayMap[profileData.role] || profileData.role : "-"}</span>
+                Role: <span className="font-semibold text-white">{profileData?.role ? ROLE_DISPLAY[profileData.role] || profileData.role : "-"}</span>
               </p>
             </div>
           </div>
@@ -186,7 +183,7 @@ export default function EditProfileForm({ backUrl, apiUrl = "/api/user/profile" 
                   </div>
                 </label>
                 <div className="px-3 py-2 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-700 font-medium">
-                  {profileData?.role ? roleDisplayMap[profileData.role] || profileData.role : "-"}
+                  {profileData?.role ? ROLE_DISPLAY[profileData.role] || profileData.role : "-"}
                 </div>
               </div>
             </div>
@@ -213,22 +210,6 @@ export default function EditProfileForm({ backUrl, apiUrl = "/api/user/profile" 
               <div>
                 <label className="block text-xs text-slate-500 mb-1.5">
                   <div className="flex items-center gap-1.5">
-                    <User size={12} />
-                    <span>Username</span>
-                  </div>
-                </label>
-                <input
-                  type="text"
-                  name="username"
-                  value={formData.username}
-                  onChange={handleChange}
-                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
-                  placeholder="Masukkan username"
-                />
-              </div>
-              <div>
-                <label className="block text-xs text-slate-500 mb-1.5">
-                  <div className="flex items-center gap-1.5">
                     <Hash size={12} />
                     <span>NIP</span>
                   </div>
@@ -240,6 +221,22 @@ export default function EditProfileForm({ backUrl, apiUrl = "/api/user/profile" 
                   onChange={handleChange}
                   className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
                   placeholder="Masukkan NIP"
+                />
+              </div>
+              <div>
+                <label className="block text-xs text-slate-500 mb-1.5">
+                  <div className="flex items-center gap-1.5">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                    <span>No. Telp</span>
+                  </div>
+                </label>
+                <input
+                  type="text"
+                  name="no_telp"
+                  value={formData.no_telp}
+                  onChange={handleChange}
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
+                  placeholder="Masukkan no. telepon"
                 />
               </div>
             </div>

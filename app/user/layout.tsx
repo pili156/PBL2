@@ -1,8 +1,8 @@
 import { headers } from "next/headers";
 
-// Import komponen Client
 import SidebarUser from "./SidebarUser";
-import ProfileDropdown from "../components/ProfileDropdown"; 
+import Header from "../components/Header";
+import { SidebarProvider } from "../components/SidebarProvider";
 import { getUserFromToken } from "../../src/lib/auth-user";
 import { ROLES } from "@/src/lib/constants/roles";
 
@@ -11,6 +11,9 @@ function getPageTitle(pathname: string): string {
   if (pathname.includes('/riwayat') || pathname.includes('/status')) return 'Riwayat & Monitoring';
   if (pathname.includes('/laporanKHS')) return 'Laporan KHS';
   if (pathname.includes('/user-reimbursement')) return 'Pengajuan Beasiswa';
+  if (pathname.includes('/profile')) return 'Profile';
+  if (pathname.includes('/change-password')) return 'Ubah Password';
+  if (pathname.includes('/dashboard')) return 'Dashboard';
   return 'Dashboard';
 }
 
@@ -27,25 +30,17 @@ export default async function UserLayout({
   const pageTitle = getPageTitle(pathname);
 
   return (
-    <div className="flex h-screen bg-[#F4F7F6] font-sans">
-      {/* Sidebar */}
-       <SidebarUser />
+    <SidebarProvider>
+      <div className="flex h-screen bg-[#F4F7F6] font-sans">
+        <SidebarUser />
 
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col overflow-hidden">
-        {/* Topbar */}
-        <header className="h-[80px] bg-[#0A192F] text-white flex items-center justify-between px-8 flex-shrink-0">
-          <h2 className="text-2xl font-bold tracking-wide">{pageTitle}</h2>
-          
-          <ProfileDropdown user={userData} />
-
-        </header>
-
-         {/* Page Content */}
-         <main className="flex-1 overflow-auto p-8 bg-slate-50">
-          {children}
-        </main>
+        <div className="flex-1 flex flex-col overflow-hidden">
+          <Header user={userData} />
+          <main className="flex-1 overflow-auto p-8 bg-slate-50">
+            {children}
+          </main>
+        </div>
       </div>
-    </div>
+    </SidebarProvider>
   );
 }

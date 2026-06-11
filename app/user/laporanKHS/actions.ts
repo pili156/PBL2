@@ -6,6 +6,7 @@ import { redirect } from 'next/navigation';
 import { writeFile, mkdir, unlink } from 'fs/promises';
 import { join } from 'path';
 import { v4 as uuidv4 } from 'uuid';
+import { ipkSchema } from '@/src/lib/validation';
 const MAX_FILE_SIZE = 2 * 1024 * 1024;
 const ALLOWED_TYPES = ['application/pdf'];
 
@@ -16,7 +17,7 @@ function validateFile(file: File) {
   return null;
 }
 
-export async function uploadKHS(formData: FormData) {
+export async function uploadKHS(prevState: { error?: string } | null, formData: FormData): Promise<{ error?: string } | null> {
   const semester = formData.get('semester') as string;
   const tahunAkademik = formData.get('tahun_akademik') as string;
   const ipk = formData.get('ipk') as string;
@@ -24,18 +25,24 @@ export async function uploadKHS(formData: FormData) {
   const file = formData.get('file') as File;
 
   if (!semester || !tahunAkademik || !ipk || !file || file.size === 0) {
-    throw new Error('Semua field wajib diisi dengan benar');
+    return { error: 'Semua field wajib diisi dengan benar' };
+  }
+
+  const ipkNum = parseFloat(ipk);
+  const ipkResult = ipkSchema.safeParse(ipkNum);
+  if (!ipkResult.success) {
+    return { error: ipkResult.error.issues[0].message };
   }
 
   const fileError = validateFile(file);
-  if (fileError) throw new Error(fileError);
+  if (fileError) return { error: fileError };
 
   const { headers } = await import('next/headers');
   const headersList = await headers();
   const userId = parseInt(headersList.get('x-user-id') || '0');
 
   if (!userId) {
-    throw new Error('User belum login');
+    return { error: 'User belum login' };
   }
 
   const pengajuan = await prisma.pengajuanStudi.findFirst({
@@ -44,7 +51,7 @@ export async function uploadKHS(formData: FormData) {
   });
 
   if (!pengajuan) {
-    throw new Error('Pengajuan studi tidak ditemukan');
+    return { error: 'Anda belum memiliki pengajuan studi. Silakan buat pengajuan terlebih dahulu.' };
   }
 
   const pengajuanId = pengajuan.id;
@@ -57,7 +64,7 @@ export async function uploadKHS(formData: FormData) {
   });
 
   if (existingKHS) {
-    throw new Error('KHS untuk semester ini sudah ada');
+    return { error: 'KHS untuk semester ini sudah ada' };
   }
 
   const bytes = await file.arrayBuffer();
@@ -97,6 +104,12 @@ export async function updateKHS(id: number, formData: FormData) {
 
   if (!semester || !tahunAkademik || !ipk) {
     throw new Error('Field semester, tahun akademik, dan IPK wajib diisi');
+  }
+
+  const ipkNum = parseFloat(ipk);
+  const ipkResult = ipkSchema.safeParse(ipkNum);
+  if (!ipkResult.success) {
+    throw new Error(ipkResult.error.issues[0].message);
   }
 
   const updateData: any = {

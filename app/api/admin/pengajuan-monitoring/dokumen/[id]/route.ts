@@ -9,7 +9,7 @@ export async function PUT(
   try {
     const headersList = await headers();
     const role = headersList.get('x-user-role');
-    if (!role || (role !== 'admin_fakultas' && role !== 'master_admin' && role !== 'admin')) {
+    if (!role || (role !== 'master_admin' && role !== 'admin')) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
@@ -45,6 +45,27 @@ export async function PUT(
         updated_at: new Date(),
       },
     });
+
+    // Cascade: update status pengajuan jika semua dokumen terverifikasi
+    if (existingDoc.pengajuan_id) {
+      const allDocs = await prisma.dokumenPengajuan.findMany({
+        where: { pengajuan_id: existingDoc.pengajuan_id },
+      });
+      const semuaTerverifikasi = allDocs.length > 0 && allDocs.every(
+        (doc) => doc.status_verifikasi === 'terverifikasi'
+      );
+      if (semuaTerverifikasi) {
+        const statusTerverifikasi = await prisma.masterStatusPengajuan.findFirst({
+          where: { nama_status: 'terverifikasi' },
+        });
+        if (statusTerverifikasi) {
+          await prisma.pengajuanStudi.update({
+            where: { id: existingDoc.pengajuan_id },
+            data: { status_id: statusTerverifikasi.id },
+          });
+        }
+      }
+    }
 
     return NextResponse.json(updated, { status: 200 });
   } catch (error) {

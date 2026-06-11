@@ -5,9 +5,7 @@ import { verifyToken, type JwtPayload } from '@/src/lib/jwt';
 const ROLE_DASHBOARD_MAP: Record<string, string> = {
   dosen: '/user/dashboard',
   admin: '/admin/dashboard',
-  admin_fakultas: '/admin/dashboard',
   master_admin: '/admin/dashboard',
-  keuangan: '/keuangan/dashboard',
 };
 
 function getRedirectUrl(role: string): string {
@@ -16,17 +14,14 @@ function getRedirectUrl(role: string): string {
 
 const PATH_ROLE_MAP: Record<string, string[]> = {
   '/user': ['dosen'],
-  '/admin': ['admin', 'admin_fakultas', 'master_admin'],
+  '/admin': ['admin', 'master_admin'],
   '/master_admin': ['master_admin'],
-  '/keuangan': ['keuangan'],
 };
 
 const ROLE_TO_COOKIE: Record<string, string> = {
   dosen: 'token_dosen',
   admin: 'token_admin',
-  admin_fakultas: 'token_admin_fakultas',
   master_admin: 'token_master_admin',
-  keuangan: 'token_keuangan',
 };
 
 function findToken(request: NextRequest, allowedRoles: string[]): { token: string; payload: JwtPayload } | null {
@@ -116,6 +111,5 @@ export const config = {
     '/user/:path*',
     '/admin/:path*',
     '/master_admin/:path*',
-    '/keuangan/:path*',
   ],
 };

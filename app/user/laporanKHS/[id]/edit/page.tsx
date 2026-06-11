@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { getKHSById, updateKHS } from '../../actions';
 import { notFound } from 'next/navigation';
 import FileDropzone from '../../FileDropzone';
+import { getTahunAkademikOptions } from '@/src/lib/tahun-akademik';
 
 export const dynamic = 'force-dynamic';
 
@@ -35,6 +36,7 @@ export default async function EditKHSPage({
         <Link
           href={`/user/laporanKHS/${khsId}`}
           className="p-2 hover:bg-slate-100 rounded-full transition-colors text-slate-600"
+          aria-label="Kembali"
         >
           <ArrowLeft size={20} />
         </Link>
@@ -79,12 +81,9 @@ export default async function EditKHSPage({
                 required
               >
                 <option value="">Pilih Tahun Akademik</option>
-                <option value="2023/2024 Ganjil">2023/2024 Ganjil</option>
-                <option value="2023/2024 Genap">2023/2024 Genap</option>
-                <option value="2024/2025 Ganjil">2024/2025 Ganjil</option>
-                <option value="2024/2025 Genap">2024/2025 Genap</option>
-                <option value="2025/2026 Ganjil">2025/2026 Ganjil</option>
-                <option value="2025/2026 Genap">2025/2026 Genap</option>
+                {getTahunAkademikOptions().map((tahun) => (
+                  <option key={tahun} value={tahun}>{tahun}</option>
+                ))}
               </select>
             </div>
           </div>

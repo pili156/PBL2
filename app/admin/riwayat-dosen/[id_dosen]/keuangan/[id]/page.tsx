@@ -1,5 +1,5 @@
 import { prisma } from '@/src/lib/prisma';
-import { ArrowLeft, FileText, Check, Send, Star, Info, XCircle, CheckSquare, Banknote, Calendar, Building, User } from 'lucide-react';
+import { FileText, Check, Send, Star, Info, XCircle, CheckSquare, Banknote, Calendar, Building, User } from 'lucide-react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { acceptKeuangan, rejectKeuangan, uploadBuktiTransfer } from '../../../actions';
@@ -86,10 +86,6 @@ export default async function DetailKeuanganPage({ params }: Props) {
           </div>
           <StatusBadge status={keuangan.status_pencairan} domain="pencairan" size="md" dot />
         </div>
-        <Link href={`/admin/riwayat-dosen/${idDosen}/keuangan`}
-          className="inline-flex items-center gap-2 text-xs font-semibold text-slate-500 hover:text-blue-600 transition-colors">
-          <ArrowLeft size={16} /> Kembali
-        </Link>
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-5 gap-6 items-start">
