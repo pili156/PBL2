@@ -76,6 +76,15 @@ export async function POST(request: Request) {
 
     const cookieStore = await cookies();
 
+    // --- BAGIAN YANG DITAMBAHKAN: Menghapus cookie role lain yang mungkin tersisa di browser ---
+    const allRoles = ['dosen', 'admin', 'master_admin'];
+    for (const r of allRoles) {
+      if (r !== roleName) {
+        cookieStore.delete(`token_${r}`);
+      }
+    }
+    // ----------------------------------------------------------------------------------------
+
     cookieStore.set(cookieName, token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
