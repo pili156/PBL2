@@ -29,6 +29,6 @@
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts",
     "**/*.mts"
-, "app/admin/riwayat-dosen/[id_dosen]/HeaderDosen"  ],
+, "app/master_admin/riwayat-dosen/[id_dosen]/HeaderDosen"  ],
   "exclude": ["node_modules"]
 }

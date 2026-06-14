@@ -34,9 +34,20 @@ export default function Login() {
 
       const data = await res.json();
 
-if (res.ok) {
-        router.push(data.redirectUrl || "/user/dashboard");
-} else {
+      if (res.ok) {
+        // AMBIL ROLE DARI RESPONSE API
+        // Menyesuaikan dengan struktur data dari backend (bisa data.role atau data.user.role)
+        const userRole = data.role || (data.user && data.user.role);
+
+        // LOGIKA PEMISAHAN REDIRECT (PISAH RUMAH)
+        if (userRole === "master_admin") {
+          router.push("/master_admin/dashboard");
+        } else if (userRole === "admin") {
+          router.push("/admin/dashboard");
+        } else {
+          router.push("/user/dashboard"); // Default untuk dosen/user biasa
+        }
+      } else {
         setErrorMsg(data.error || "Login Gagal");
       }
     } catch (error) {
