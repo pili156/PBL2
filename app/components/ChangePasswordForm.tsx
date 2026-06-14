@@ -118,7 +118,7 @@ export default function ChangePasswordForm({ backUrl }: ChangePasswordFormProps)
                 value={formData.currentPassword}
                 onChange={handleChange}
                 required
-                className="w-full px-4 py-2.5 pr-12 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-slate-50"
+                className="w-full px-4 py-2.5 pr-12 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-slate-50 text-slate-900"
                 placeholder="Masukkan password saat ini"
               />
               <button
@@ -142,7 +142,7 @@ export default function ChangePasswordForm({ backUrl }: ChangePasswordFormProps)
                 value={formData.newPassword}
                 onChange={handleChange}
                 required
-                className="w-full px-4 py-2.5 pr-12 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-slate-50"
+                className="w-full px-4 py-2.5 pr-12 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-slate-50 text-slate-900"
                 placeholder="Masukkan password baru (min. 6 karakter)"
               />
               <button
@@ -166,7 +166,7 @@ export default function ChangePasswordForm({ backUrl }: ChangePasswordFormProps)
                 value={formData.confirmPassword}
                 onChange={handleChange}
                 required
-                className="w-full px-4 py-2.5 pr-12 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-slate-50"
+                className="w-full px-4 py-2.5 pr-12 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-slate-50 text-slate-900"
                 placeholder="Konfirmasi password baru"
               />
               <button

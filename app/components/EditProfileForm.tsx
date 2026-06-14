@@ -219,7 +219,7 @@ export default function EditProfileForm({ backUrl, apiUrl = "/api/user/profile" 
                   name="nip"
                   value={formData.nip}
                   onChange={handleChange}
-                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-slate-900"
                   placeholder="Masukkan NIP"
                 />
               </div>
@@ -235,7 +235,7 @@ export default function EditProfileForm({ backUrl, apiUrl = "/api/user/profile" 
                   name="no_telp"
                   value={formData.no_telp}
                   onChange={handleChange}
-                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-slate-900"
                   placeholder="Masukkan no. telepon"
                 />
               </div>
@@ -253,7 +253,7 @@ export default function EditProfileForm({ backUrl, apiUrl = "/api/user/profile" 
                 name="nama_lengkap"
                 value={formData.nama_lengkap}
                 onChange={handleChange}
-                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
+                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-slate-900"
                 placeholder="Masukkan nama lengkap"
               />
             </div>
@@ -268,7 +268,7 @@ export default function EditProfileForm({ backUrl, apiUrl = "/api/user/profile" 
                   name="pangkat_golongan"
                   value={formData.pangkat_golongan}
                   onChange={handleChange}
-                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-slate-900"
                   placeholder="Contoh: IV/a"
                 />
               </div>
@@ -284,7 +284,7 @@ export default function EditProfileForm({ backUrl, apiUrl = "/api/user/profile" 
                   name="jabatan"
                   value={formData.jabatan}
                   onChange={handleChange}
-                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-slate-900"
                   placeholder="Masukkan jabatan"
                 />
               </div>
@@ -299,7 +299,7 @@ export default function EditProfileForm({ backUrl, apiUrl = "/api/user/profile" 
                 name="unit_kerja"
                 value={formData.unit_kerja}
                 onChange={handleChange}
-                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
+                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-slate-900"
                 placeholder="Masukkan unit kerja"
               />
             </div>
@@ -314,7 +314,7 @@ export default function EditProfileForm({ backUrl, apiUrl = "/api/user/profile" 
                   name="jurusan"
                   value={formData.jurusan}
                   onChange={handleChange}
-                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-slate-900"
                   placeholder="Masukkan jurusan"
                 />
               </div>
@@ -327,7 +327,7 @@ export default function EditProfileForm({ backUrl, apiUrl = "/api/user/profile" 
                   name="program_studi"
                   value={formData.program_studi}
                   onChange={handleChange}
-                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-slate-900"
                   placeholder="Masukkan program studi"
                 />
               </div>

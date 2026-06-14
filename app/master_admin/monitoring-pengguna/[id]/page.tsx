@@ -108,7 +108,7 @@ export default async function EditUserPage({ params }: Props) {
                   name="nama_lengkap"
                   defaultValue={user.master_dosen?.nama_lengkap || ''}
                   required
-                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-slate-900"
                 />
               </div>
               <div>
@@ -117,7 +117,7 @@ export default async function EditUserPage({ params }: Props) {
                   type="text"
                   name="nip"
                   defaultValue={user.master_dosen?.nip || ''}
-                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-slate-900"
                 />
               </div>
             </div>
@@ -129,7 +129,7 @@ export default async function EditUserPage({ params }: Props) {
                   name="email"
                   defaultValue={user.email || ''}
                   required
-                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-slate-900"
                 />
               </div>
               <div>
@@ -149,7 +149,7 @@ export default async function EditUserPage({ params }: Props) {
                 type="text"
                 name="jurusan"
                 defaultValue={user.master_dosen?.jurusan || ''}
-                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-slate-900"
               />
             </div>
             <button
@@ -176,7 +176,7 @@ export default async function EditUserPage({ params }: Props) {
                   <select
                     name="role_id"
                     defaultValue={user.role_id || 3}
-                    className="flex-1 px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white"
+                    className="flex-1 px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white text-slate-900"
                   >
                     {ROLE_OPTIONS.map(r => (
                       <option key={r.id} value={r.id}>{r.name}</option>
@@ -221,7 +221,7 @@ export default async function EditUserPage({ params }: Props) {
                   name="password"
                   required
                   minLength={6}
-                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-slate-900"
                   placeholder="Minimal 6 karakter"
                 />
               </div>
