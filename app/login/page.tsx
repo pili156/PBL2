@@ -120,6 +120,7 @@ export default function Login() {
                 </svg>
               </span>
               <input
+                suppressHydrationWarning
                 id="identifier"
                 name="identifier"
                 autoComplete="username"
