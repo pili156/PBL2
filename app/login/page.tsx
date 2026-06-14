@@ -142,6 +142,7 @@ export default function Login() {
                 </svg>
               </span>
               <input
+                suppressHydrationWarning
                 id="password"
                 name="password"
                 autoComplete="current-password"
@@ -168,6 +169,7 @@ export default function Login() {
 
             {/* Tombol Masuk */}
             <button
+              suppressHydrationWarning
               type="submit"
               disabled={loading}
               className="w-full py-3.5 bg-[#005B9F] hover:bg-[#004A85] text-white rounded-full font-medium text-sm transition-colors disabled:opacity-50"
