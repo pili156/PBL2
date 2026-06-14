@@ -163,7 +163,7 @@ export default function Login() {
                 className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" 
               />
               <label htmlFor="remember" className="text-xs text-gray-500 cursor-pointer">
-                ingat saya
+                ingatkan saya
               </label>
             </div>
 
