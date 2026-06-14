@@ -1,14 +1,16 @@
 // app/admin/dashboard/DashboardClient.tsx
 "use client";
 
+import { useState } from "react"; // Import useState
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import * as XLSX from "xlsx";
 import { 
-  Clock, FileCheck, AlertCircle, ArrowRight, GraduationCap, Download, AlertTriangle, FilePlus, Calendar
+  Clock, FileCheck, AlertCircle, ArrowRight, GraduationCap, Download, AlertTriangle, FilePlus
 } from "lucide-react";
 import { formatDateTime } from "@/src/lib/formatters";
 import StatusBadge from "@/src/components/StatusBadge";
+import DateFilter from "./DateFilter"; 
 import { 
   BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, Legend
 } from "recharts";
@@ -25,9 +27,16 @@ const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4'
 
 export default function DashboardClient({ data }: { data: any }) {
   const router = useRouter();
+  const [showAlert, setShowAlert] = useState(false); // State untuk alert custom
 
   // Fungsi Export Excel
   const handleExport = () => {
+    if (!data.exportData || data.exportData.length === 0) {
+      setShowAlert(true); // Tampilkan alert
+      setTimeout(() => setShowAlert(false), 4000); // Sembunyikan otomatis setelah 4 detik
+      return;
+    }
+
     const wb = XLSX.utils.book_new();
     const ws = XLSX.utils.json_to_sheet(data.exportData);
     
@@ -37,20 +46,36 @@ export default function DashboardClient({ data }: { data: any }) {
     ws['!cols'] = colWidths;
 
     XLSX.utils.book_append_sheet(wb, ws, "Ringkasan_Dashboard");
-    XLSX.writeFile(wb, `Ringkasan_Admin_${data.filter.toUpperCase()}.xlsx`);
-  };
+    
+    let fileName = "Ringkasan_Admin_Semua_Waktu.xlsx";
+    if (data.dari && data.sampai) {
+      fileName = `Ringkasan_Admin_${data.dari}_sd_${data.sampai}.xlsx`;
+    } else if (data.dari) {
+      fileName = `Ringkasan_Admin_Sejak_${data.dari}.xlsx`;
+    } else if (data.sampai) {
+      fileName = `Ringkasan_Admin_Hingga_${data.sampai}.xlsx`;
+    }
 
-  // Format Tanggal Hari Ini untuk Header
-  const todayDate = new Date().toLocaleDateString('id-ID', { 
-    weekday: 'long', 
-    year: 'numeric', 
-    month: 'long', 
-    day: 'numeric' 
-  });
+    XLSX.writeFile(wb, fileName);
+  };
 
   return (
     <div className="p-6 bg-slate-50 min-h-screen space-y-8 rounded-2xl">
       
+      {/* ALERT NOTIFICATION (Muncul saat data export kosong) */}
+      {showAlert && (
+        <div className="bg-rose-50 border border-rose-200 text-rose-700 px-5 py-3.5 rounded-xl flex items-center gap-3 shadow-sm transition-all animate-in fade-in slide-in-from-top-4 duration-300">
+          <AlertCircle size={20} className="text-rose-500" />
+          <span className="text-sm font-bold">Tidak ada data untuk di-export pada rentang tanggal ini.</span>
+          <button 
+            onClick={() => setShowAlert(false)} 
+            className="ml-auto text-rose-400 hover:text-rose-600 font-bold text-lg leading-none"
+          >
+            &times;
+          </button>
+        </div>
+      )}
+
       {/* 1. HEADER & ACTIONS */}
       <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
         <div>
@@ -59,25 +84,8 @@ export default function DashboardClient({ data }: { data: any }) {
         </div>
         
         <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
-          {/* Widget Tanggal Hari Ini */}
-          <div className="hidden lg:flex items-center gap-2 bg-slate-50 border border-slate-200 px-4 py-2.5 rounded-lg text-slate-600 shadow-sm">
-            <Calendar size={18} className="text-blue-600" />
-            <span className="text-sm font-bold">{todayDate}</span>
-          </div>
+          <DateFilter />
 
-          {/* Filter Data */}
-          <select 
-            className="bg-slate-50 border border-slate-200 text-slate-700 text-sm font-bold rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 outline-none cursor-pointer hover:bg-slate-100 transition shadow-sm"
-            value={data.filter}
-            onChange={(e) => router.push(`?filter=${e.target.value}`)}
-          >
-            <option value="all">📅 Semua Waktu</option>
-            <option value="bulan">📅 Bulan Ini</option>
-            <option value="semester">📅 Semester Ini</option>
-            <option value="tahun">📅 Tahun Ini</option>
-          </select>
-
-          {/* Tombol Export */}
           <button 
             onClick={handleExport} 
             className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-lg text-sm font-bold transition-all shadow-sm hover:shadow-md"

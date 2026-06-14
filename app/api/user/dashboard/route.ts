@@ -80,9 +80,18 @@ export async function GET(request: Request) {
     })) || [];
 
     // 5. Progress Masa Studi (Asumsi Target 8 Semester)
-    const currentSemester = khsList.length > 0 ? Math.max(...khsList.map(k => k.semester_ke || 1)) : 1;
+    // PERBAIKAN: Set default 0 agar tidak otomatis progress jalan jika belum ada pengajuan
+    let currentSemester = 0;
+    let progressPersen = 0;
     const maxSemester = 8; 
-    const progressPersen = Math.min(Math.round((currentSemester / maxSemester) * 100), 100);
+
+    if (pengajuan) {
+      // Jika KHS ada isinya, ambil semester tertinggi. Jika belum ada KHS, set semester ke 1.
+      currentSemester = khsList.length > 0 ? Math.max(...khsList.map(k => k.semester_ke || 1)) : 1;
+      
+      // Hitung persen hanya jika sudah mengumpulkan KHS. Jika belum, set 0%.
+      progressPersen = khsList.length > 0 ? Math.min(Math.round((currentSemester / maxSemester) * 100), 100) : 0;
+    }
 
     const dashboardData = {
       nama_dosen: user.master_dosen?.nama_lengkap || user.username || "User",

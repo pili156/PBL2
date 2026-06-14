@@ -3,20 +3,6 @@ import { prisma } from "@/src/lib/prisma";
 import MasterAdminDashboard from "./MasterAdminDashboard";
 import DashboardClient from "./DashboardClient";
 
-function getDateFilter(filter: string) {
-  const now = new Date();
-  switch (filter) {
-    case "bulan":
-      return { gte: new Date(now.getFullYear(), now.getMonth(), 1) };
-    case "semester":
-      return { gte: new Date(now.getFullYear(), now.getMonth() - 5, 1) };
-    case "tahun":
-      return { gte: new Date(now.getFullYear(), 0, 1) };
-    default:
-      return undefined;
-  }
-}
-
 export default async function AdminDashboardPage({
   searchParams,
 }: {
@@ -24,21 +10,31 @@ export default async function AdminDashboardPage({
 }) {
   const headersList = await headers();
   const userRole = headersList.get("x-user-role") || "";
+  const params = await searchParams;
+  
+  const dari = typeof params.dari === "string" ? params.dari : undefined;
+  const sampai = typeof params.sampai === "string" ? params.sampai : undefined;
 
   if (userRole === "master_admin") {
-    const params = await searchParams;
     return (
       <MasterAdminDashboard
-        dari={typeof params.dari === "string" ? params.dari : undefined}
-        sampai={typeof params.sampai === "string" ? params.sampai : undefined}
+        dari={dari}
+        sampai={sampai}
       />
     );
   }
 
-  const params = await searchParams;
-  const filter = typeof params.filter === "string" ? params.filter : "all";
-  const dateFilter = getDateFilter(filter);
-  const dateCondition = dateFilter ? { created_at: dateFilter } : {};
+  // Buat Custom Date Condition untuk range tanggal (dari & sampai)
+  const dateCondition: any = {};
+  if (dari || sampai) {
+    dateCondition.created_at = {};
+    if (dari) dateCondition.created_at.gte = new Date(dari);
+    if (sampai) {
+      const endDate = new Date(sampai);
+      endDate.setHours(23, 59, 59, 999);
+      dateCondition.created_at.lte = endDate;
+    }
+  }
 
   const tujuhHariLalu = new Date();
   tujuhHariLalu.setDate(tujuhHariLalu.getDate() - 7);
@@ -54,6 +50,7 @@ export default async function AdminDashboardPage({
     statusGroups,
     masterStatuses,
     lewatBatas,
+    allExportDataRaw // <-- Tambahan khusus query Excel
   ] = await Promise.all([
     prisma.dokumenPengajuan.count({ where: { status_verifikasi: "pending" } }),
     prisma.skKementerian.count(),
@@ -83,8 +80,9 @@ export default async function AdminDashboardPage({
       orderBy: { updated_at: "asc" },
     }),
 
+    // Terapkan Range Tanggal untuk UI Pengajuan Baru (Dibatasi 5)
     prisma.pengajuanStudi.findMany({
-      where: dateCondition,
+      where: Object.keys(dateCondition).length > 0 ? dateCondition : {},
       include: {
         user: { include: { master_dosen: true } },
         dokumen_pengajuan: { include: { master_dokumen: true } },
@@ -112,6 +110,17 @@ export default async function AdminDashboardPage({
         },
       },
       orderBy: { updated_at: "asc" },
+    }),
+
+    // Terapkan Range Tanggal untuk Excel Export (Semua data, tidak dilimit)
+    prisma.pengajuanStudi.findMany({
+      where: Object.keys(dateCondition).length > 0 ? dateCondition : {},
+      include: {
+        user: { include: { master_dosen: true } },
+        dokumen_pengajuan: { include: { master_dokumen: true } },
+        status: true,
+      },
+      orderBy: { created_at: "desc" },
     }),
   ]);
 
@@ -147,11 +156,12 @@ export default async function AdminDashboardPage({
       value: g._count,
     }));
 
-  const exportData = mappedPengajuanBaru.map((p) => ({
-    Dosen: p.dosen,
-    Jenis: p.jenis,
-    Tanggal: p.tanggal,
-    Status: p.status,
+  // Mapping semua data hasil query allExportDataRaw (tanpa take: 5)
+  const exportData = allExportDataRaw.map((p) => ({
+    Dosen: p.user?.master_dosen?.nama_lengkap || "Dosen",
+    Jenis: p.dokumen_pengajuan?.[0]?.master_dokumen?.nama_dokumen || "Pengajuan",
+    Tanggal: p.created_at ? p.created_at.toLocaleDateString("id-ID") : "-",
+    Status: p.status?.nama_status || "pending",
   }));
 
   return (
@@ -163,8 +173,9 @@ export default async function AdminDashboardPage({
         urgentTasks: mappedUrgentTasks,
         lewatBatas: mappedLewatBatas,
         grafikStatus,
-        exportData,
-        filter,
+        exportData, // Sekarang berisi semua data utuh
+        dari,       // Parameter ini dipass untuk nama file Excel
+        sampai,     // Parameter ini dipass untuk nama file Excel
       }}
     />
   );
