@@ -208,20 +208,20 @@ export default async function EditUserPage({ params }: Props) {
           </div>
 
           <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-6">
-            <h3 className="text-sm font-semibold text-slate-800 mb-5 flex items-center gap-2">
+            <h3 className="text-sm font-semibold text-slate-900 mb-5 flex items-center gap-2">
               <KeyRound size={16} className="text-slate-400" />
               Reset Password
             </h3>
             <form action={resetPasswordAction} className="space-y-3">
               <input type="hidden" name="id" value={user.id} />
               <div>
-                <label className="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wider">Password Baru</label>
+                <label className="block text-xs font-semibold text-slate-900 mb-1.5 uppercase tracking-wider">Password Baru</label>
                 <input
                   type="password"
                   name="password"
                   required
                   minLength={8}
-                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-slate-900"
                   placeholder="Min. 8 karakter, 1 huruf kapital, 1 karakter unik"
                 />
               </div>
