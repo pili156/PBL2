@@ -69,7 +69,7 @@ export default async function DashboardDosen({ params }: Props) {
   const semesterAktif = khsList.length;
   const isSelesai = ['studi_selesai', 'selesai'].includes(pengajuan.status?.nama_status?.toLowerCase() ?? '');
   const lastKhs = semesterAktif > 0 ? khsList[khsList.length - 1] : null;
-  const isDisetujui = ['disetujui', 'diterima', 'aktif', 'sedang berjalan'].includes(pengajuan.status?.nama_status?.toLowerCase() ?? '');
+  const isDisetujui = ['disetujui', 'diterima', 'aktif', 'sedang berjalan'].includes(pengajuan.status?.nama_status?.toLowerCase() ?? '') || !!skKementerian;
 
   const ipkValues = khsList.map((k) => Number(k.ipk || 0)).filter((v) => v > 0);
   const rataIpk = ipkValues.length > 0 ? (ipkValues.reduce((a, b) => a + b, 0) / ipkValues.length).toFixed(2) : '-';

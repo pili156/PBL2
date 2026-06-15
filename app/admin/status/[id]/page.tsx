@@ -14,6 +14,7 @@ export default function ManajemenStatusPage({ params }: Props) {
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [selectedStatus, setSelectedStatus] = useState("");
   const [uploading, setUploading] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -70,13 +71,14 @@ export default function ManajemenStatusPage({ params }: Props) {
       return;
     }
 
+    if (!selectedStatus) {
+      setMessage({ type: 'error', text: 'Silakan pilih status verifikasi terlebih dahulu' });
+      return;
+    }
+
     const formData = new FormData();
     formData.append('file', selectedFile);
-    
-    const statusSelect = (e.currentTarget.elements.namedItem('status_pengajuan') as HTMLSelectElement);
-    const statusPengajuan = statusSelect?.value;
-    
-    formData.append('status_pengajuan', statusPengajuan);
+    formData.append('status_pengajuan', selectedStatus);
     formData.append('status_studi', 'aktif');
 
     setUploading(true);
@@ -93,6 +95,7 @@ export default function ManajemenStatusPage({ params }: Props) {
       if (response.ok) {
         setMessage({ type: 'success', text: 'SK berhasil diupload dan disimpan!' });
         setSelectedFile(null);
+        setSelectedStatus("");
         if (fileInputRef.current) {
           fileInputRef.current.value = '';
         }
@@ -205,6 +208,9 @@ export default function ManajemenStatusPage({ params }: Props) {
                 <label className="block text-[10px] font-black text-[#434343] mb-4 uppercase tracking-[0.2em]">Update Status Verifikasi:</label>
                 <select 
                   name="status_pengajuan"
+                  value={selectedStatus}
+                  onChange={(e) => setSelectedStatus(e.target.value)}
+                  required
                   className="w-full p-4 bg-gray-50 border border-gray-200 rounded-2xl outline-none focus:border-[#0085FF] font-bold text-sm text-[#434343] cursor-pointer"
                 >
                   <option value="">Pilih Status Baru...</option>
@@ -243,6 +249,37 @@ export default function ManajemenStatusPage({ params }: Props) {
                   {data.status || "pending"}
                 </span>
               </div>
+
+              {data.sk_kementerian && data.sk_kementerian.length > 0 && (
+                <div className="pt-6 mt-4 border-t border-gray-50">
+                  <span className="text-[10px] text-gray-400 font-black uppercase tracking-widest block mb-3">SK Tugas Belajar</span>
+                  {data.sk_kementerian.map((sk: any) => (
+                    <div key={sk.id} className="bg-blue-50 rounded-xl p-4 space-y-2">
+                      {sk.nomor_sk && (
+                        <div className="flex justify-between items-center">
+                          <span className="text-[10px] text-gray-400 font-black uppercase">Nomor SK</span>
+                          <span className="text-xs font-bold text-[#1F1F1F]">{sk.nomor_sk}</span>
+                        </div>
+                      )}
+                      {sk.tanggal_terbit && (
+                        <div className="flex justify-between items-center">
+                          <span className="text-[10px] text-gray-400 font-black uppercase">Terbit</span>
+                          <span className="text-xs font-bold text-[#1F1F1F]">{sk.tanggal_terbit}</span>
+                        </div>
+                      )}
+                      {sk.file_sk_path && (
+                        <a
+                          href={sk.file_sk_path}
+                          target="_blank"
+                          className="text-xs font-semibold text-blue-600 hover:text-blue-800 transition-colors block text-center mt-2"
+                        >
+                          Lihat Dokumen SK
+                        </a>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -251,7 +288,7 @@ export default function ManajemenStatusPage({ params }: Props) {
         <div className="mt-12 flex justify-end">
           <button 
             type="submit"
-            disabled={uploading}
+            disabled={uploading || !selectedStatus}
             className="bg-[#0085FF] text-white px-14 py-4 rounded-2xl font-black text-[11px] uppercase tracking-[0.2em] shadow-xl shadow-blue-100 hover:bg-[#006ACC] hover:-translate-y-1 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
           >
             {uploading ? (
