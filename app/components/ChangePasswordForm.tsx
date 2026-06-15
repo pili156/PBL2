@@ -4,6 +4,13 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Lock, ArrowLeft, Loader2, Save, Eye, EyeOff } from "lucide-react";
 
+function validatePassword(password: string): string | null {
+  if (password.length < 8) return "Password minimal 8 karakter";
+  if (!/[A-Z]/.test(password)) return "Password harus mengandung minimal 1 huruf kapital";
+  if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) return "Password harus mengandung minimal 1 karakter unik (!@#$%^&* dll)";
+  return null;
+}
+
 type ChangePasswordFormProps = {
   backUrl: string;
 };
@@ -39,8 +46,9 @@ export default function ChangePasswordForm({ backUrl }: ChangePasswordFormProps)
       return;
     }
 
-    if (formData.newPassword.length < 6) {
-      setErrorMsg("Password baru minimal 6 karakter");
+    const passwordError = validatePassword(formData.newPassword);
+    if (passwordError) {
+      setErrorMsg(passwordError);
       return;
     }
 
@@ -143,7 +151,7 @@ export default function ChangePasswordForm({ backUrl }: ChangePasswordFormProps)
                 onChange={handleChange}
                 required
                 className="w-full px-4 py-2.5 pr-12 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-slate-50 text-slate-900"
-                placeholder="Masukkan password baru (min. 6 karakter)"
+                placeholder="Min. 8 karakter, 1 huruf kapital, 1 karakter unik"
               />
               <button
                 type="button"

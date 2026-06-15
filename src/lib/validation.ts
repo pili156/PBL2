@@ -1,5 +1,10 @@
 import { z } from "zod";
 
+export const passwordSchema = z.string()
+  .min(8, "Password minimal 8 karakter")
+  .regex(/[A-Z]/, "Password harus mengandung minimal 1 huruf kapital")
+  .regex(/[!@#$%^&*(),.?":{}|<>]/, "Password harus mengandung minimal 1 karakter unik (!@#$%^&* dll)");
+
 export const loginSchema = z.object({
   identifier: z.string().min(1, "Email/NIP wajib diisi"),
   password: z.string().min(1, "Password wajib diisi"),
@@ -10,14 +15,14 @@ export const registerSchema = z.object({
     (email) => email.endsWith("@polines.ac.id"),
     "Gunakan email institusi @polines.ac.id"
   ),
-  password: z.string().min(8, "Password minimal 8 karakter"),
+  password: passwordSchema,
   nip: z.string().min(1, "NIP wajib diisi"),
   nama_lengkap: z.string().min(1, "Nama lengkap wajib diisi"),
 });
 
 export const changePasswordSchema = z.object({
   currentPassword: z.string().min(1, "Password saat ini wajib diisi"),
-  newPassword: z.string().min(6, "Password baru minimal 6 karakter"),
+  newPassword: passwordSchema,
   confirmPassword: z.string().min(1, "Konfirmasi password wajib diisi"),
 }).refine((data) => data.newPassword === data.confirmPassword, {
   message: "Password baru dan konfirmasi tidak cocok",

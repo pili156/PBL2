@@ -220,9 +220,9 @@ export default async function EditUserPage({ params }: Props) {
                   type="password"
                   name="password"
                   required
-                  minLength={6}
-                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-slate-900"
-                  placeholder="Minimal 6 karakter"
+                  minLength={8}
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+                  placeholder="Min. 8 karakter, 1 huruf kapital, 1 karakter unik"
                 />
               </div>
               <button
