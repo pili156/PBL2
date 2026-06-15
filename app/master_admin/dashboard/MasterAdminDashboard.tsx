@@ -7,12 +7,11 @@ import {
   TrendingUp,
   Activity,
   Shield,
-  Filter,
 } from "lucide-react";
 import { prisma } from "@/src/lib/prisma";
 import BarChartRegistrasi from "./BarChartRegistrasi";
 import PieChartRole from "./PieChartRole";
-import DateFilter from "./DateFilter";
+import MasterAdminHeader from "./MasterAdminHeader"; // Import header baru
 import { formatDateTime } from "@/src/lib/formatters";
 
 export default async function MasterAdminDashboard({
@@ -78,6 +77,7 @@ export default async function MasterAdminDashboard({
     roleGroups,
     roles,
     recentLogs,
+    allExportUsersRaw, // Tambahan untuk query data excel
   ] = await Promise.all([
     prisma.user.count({ where: userDateFilter }),
     prisma.user.count({
@@ -106,33 +106,31 @@ export default async function MasterAdminDashboard({
       orderBy: { created_at: "desc" },
       include: { user: { select: { username: true, email: true } } },
     }),
+    // Mengambil semua user berdasarkan filter untuk diexport ke Excel
+    prisma.user.findMany({
+      where: userDateFilter,
+      orderBy: { created_at: "desc" },
+    }),
   ]);
 
   const monthlyData = aggregateByMonth(recentUsers, now, dateFilterStart, dateFilterEnd);
   const roleData = buildRoleData(roleGroups, roles);
 
-  const filterLabel =
-    dari || sampai
-      ? `${dari || "Awal"} – ${sampai || "Sekarang"}`
-      : null;
+  // Mapping data user untuk format file Excel
+  const roleMapExport = new Map(roles.map((r) => [r.id, r.nama_role || "Unknown"]));
+  const exportData = allExportUsersRaw.map((u) => ({
+    Username: u.username || "-",
+    Email: u.email || "-",
+    Role: u.role_id ? roleMapExport.get(u.role_id) : "Unknown",
+    Status: u.status_akun || "-",
+    "Tanggal Daftar": u.created_at ? formatDateTime(u.created_at) : "-",
+  }));
 
   return (
-    <div className="p-6 bg-slate-50 min-h-screen space-y-8">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-800">Dashboard Master Admin</h1>
-          <p className="text-slate-500">Pantau aktivitas sistem, kelola pengguna, dan tinjau log aktivitas secara real-time.</p>
-        </div>
-        <div className="flex items-center gap-3">
-          {filterLabel && (
-            <div className="flex items-center gap-2 bg-blue-50 text-blue-700 text-sm font-medium px-3 py-2 rounded-lg border border-blue-200">
-              <Filter size={16} />
-              {filterLabel}
-            </div>
-          )}
-          <Suspense fallback={null}><DateFilter /></Suspense>
-        </div>
-      </div>
+    <div className="p-6 bg-slate-50 min-h-screen space-y-8 rounded-2xl">
+      
+      {/* HEADER BARU (Sama dengan format Admin dan ada Export) */}
+      <MasterAdminHeader exportData={exportData} dari={dari} sampai={sampai} />
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <KpiCard

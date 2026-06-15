@@ -6,6 +6,49 @@ import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
+// Data Mapping Jurusan dan Program Studi Polines
+const dataPolines = {
+  "Teknik Sipil": [
+    "D3 - Konstruksi Gedung",
+    "D3 - Konstruksi Sipil",
+    "D4 - Teknik Perawatan dan Perbaikan Gedung",
+    "D4 - Perancangan Jalan dan Jembatan",
+  ],
+  "Teknik Mesin": [
+    "D3 - Teknik Mesin",
+    "D3 - Teknik Konversi Energi",
+    "D4 - Teknik Mesin Produksi dan Perawatan",
+    "D4 - Teknologi Rekayasa Pembangkit Energi",
+  ],
+  "Teknik Elektro": [
+    "D3 - Teknik Listrik",
+    "D3 - Teknik Elektronika",
+    "D3 - Teknik Telekomunikasi",
+    "D3 - Teknik Informatika",
+    "D4 - Teknik Telekomunikasi",
+    "D4 - Teknologi Rekayasa Instalasi Listrik",
+    "D4 - Teknologi Rekayasa Komputer",
+    "D4 - Teknologi Rekayasa Elektronika",
+    "S2 Terapan - Teknik Telekomunikasi",
+  ],
+  "Akuntansi": [
+    "D3 - Akuntansi",
+    "D3 - Keuangan dan Perbankan",
+    "D4 - Komputerisasi Akuntansi",
+    "D4 - Perbankan Syariah",
+    "D4 - Analis Keuangan",
+    "D4 - Akuntansi Manajerial",
+  ],
+  "Administrasi Bisnis": [
+    "D3 - Administrasi Bisnis",
+    "D3 - Manajemen Pemasaran",
+    "D4 - Manajemen Bisnis Internasional",
+    "D4 - Administrasi Bisnis Terapan",
+  ],
+};
+
+type JurusanKey = keyof typeof dataPolines;
+
 export default function Register() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
@@ -22,6 +65,16 @@ export default function Register() {
     konfirmasi_password: "",
   });
 
+  // Fungsi untuk menangani perubahan pada dropdown Jurusan
+  const handleJurusanChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const selectedJurusan = e.target.value;
+    setFormData({
+      ...formData,
+      jurusan: selectedJurusan,
+      program_studi: "", // Reset program studi karena jurusan berubah
+    });
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg(""); // Reset pesan error
@@ -30,6 +83,12 @@ export default function Register() {
     // Pengecekan domain polines di sisi frontend
     if (!formData.email.endsWith('@polines.ac.id')) {
       setErrorMsg("Hanya akun @polines.ac.id yang diizinkan untuk mendaftar!");
+      return;
+    }
+
+    // Pengecekan dropdown
+    if (!formData.jurusan || !formData.program_studi) {
+      setErrorMsg("Jurusan dan Program Studi wajib dipilih!");
       return;
     }
 
@@ -77,6 +136,11 @@ export default function Register() {
       setLoading(false);
     }
   };
+
+  // Ambil daftar prodi berdasarkan jurusan yang dipilih saat ini
+  const availableProdi = formData.jurusan
+    ? dataPolines[formData.jurusan as JurusanKey]
+    : [];
 
   return (
     <div className="flex min-h-screen w-full relative font-sans bg-[#005B9F]">
@@ -202,9 +266,9 @@ export default function Register() {
               />
             </div>
 
-            {/* Input Jurusan */}
+            {/* DROPDOWN Jurusan */}
             <div className="relative">
-              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
+              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <rect x="4" y="2" width="16" height="20" rx="2" ry="2" />
                   <path d="M9 22v-4h6v4" />
@@ -219,37 +283,52 @@ export default function Register() {
                   <path d="M8 14h.01" />
                 </svg>
               </span>
-              <input 
+              <select 
                 id="jurusan"
                 name="jurusan"
-                autoComplete="off"
-                type="text" 
                 required
-                placeholder="Jurusan" 
                 value={formData.jurusan}
-                onChange={(e) => setFormData({...formData, jurusan: e.target.value})}
-                className="w-full border border-gray-200 rounded-full pl-12 pr-4 py-3 text-sm text-gray-700 outline-none focus:border-blue-500 transition-colors bg-gray-50/50"
-              />
+                onChange={handleJurusanChange}
+                className="w-full border border-gray-200 rounded-full pl-12 pr-10 py-3 text-sm text-gray-700 outline-none focus:border-blue-500 transition-colors bg-gray-50/50 appearance-none"
+              >
+                <option value="" disabled>Pilih Jurusan</option>
+                {Object.keys(dataPolines).map((jrs) => (
+                  <option key={jrs} value={jrs}>{jrs}</option>
+                ))}
+              </select>
+              {/* Ikon panah ke bawah */}
+              <div className="absolute inset-y-0 right-4 flex items-center pointer-events-none text-gray-400">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+              </div>
             </div>
 
-            {/* Input Program Studi */}
+            {/* DROPDOWN Program Studi */}
             <div className="relative">
-              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
+              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20" />
                 </svg>
               </span>
-              <input 
+              <select 
                 id="program_studi"
                 name="program_studi"
-                autoComplete="off"
-                type="text" 
                 required
-                placeholder="Program Studi / Bagian / UPA" 
+                disabled={!formData.jurusan} // Nonaktif jika jurusan belum dipilih
                 value={formData.program_studi}
                 onChange={(e) => setFormData({...formData, program_studi: e.target.value})}
-                className="w-full border border-gray-200 rounded-full pl-12 pr-4 py-3 text-sm text-gray-700 outline-none focus:border-blue-500 transition-colors bg-gray-50/50"
-              />
+                className="w-full border border-gray-200 rounded-full pl-12 pr-10 py-3 text-sm text-gray-700 outline-none focus:border-blue-500 transition-colors bg-gray-50/50 appearance-none disabled:bg-gray-100 disabled:text-gray-400"
+              >
+                <option value="" disabled>
+                  {formData.jurusan ? "Pilih Program Studi" : "Pilih Jurusan Dahulu"}
+                </option>
+                {availableProdi.map((prodi) => (
+                  <option key={prodi} value={prodi}>{prodi}</option>
+                ))}
+              </select>
+              {/* Ikon panah ke bawah */}
+              <div className="absolute inset-y-0 right-4 flex items-center pointer-events-none text-gray-400">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+              </div>
             </div>
 
             {/* Input Password */}
