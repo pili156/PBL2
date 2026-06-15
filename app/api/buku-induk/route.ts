@@ -30,7 +30,8 @@ export async function POST(request: Request) {
     const roleDosen = await prisma.masterRole.findFirst({ where: { nama_role: "dosen" } });
 
     const autoUsername = email.split('@')[0];
-    const tempPassword = bcrypt.hashSync(nip, 10);
+    const rawPassword = 'Sandi@' + nip.slice(-4);
+    const tempPassword = bcrypt.hashSync(rawPassword, 10);
 
     const newUser = await prisma.user.create({
       data: {
@@ -54,7 +55,7 @@ export async function POST(request: Request) {
       }
     });
 
-    return NextResponse.json({ message: "Data pegawai berhasil ditambahkan ke Buku Induk!" }, { status: 201 });
+    return NextResponse.json({ message: `Data pegawai berhasil ditambahkan! Password awal: ${rawPassword}` }, { status: 201 });
   } catch (error) {
     console.error("Buku Induk Create Error:", error);
     return NextResponse.json({ error: "Terjadi kesalahan pada server." }, { status: 500 });

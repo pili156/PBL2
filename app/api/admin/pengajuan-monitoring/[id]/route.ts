@@ -31,6 +31,7 @@ export async function GET(
         jalur_pendanaan: true,
         wilayah: true,
         status: true,
+        sk_kementerian: true,
       },
     });
 
@@ -61,6 +62,13 @@ export async function GET(
       wilayah_studi: pengajuan.wilayah?.nama_wilayah || 'N/A',
       status: pengajuan.status?.nama_status || 'N/A',
       tanggal_pengajuan: pengajuan.tanggal_pengajuan?.toISOString().split('T')[0] || '',
+      sk_kementerian: pengajuan.sk_kementerian?.map((sk) => ({
+        id: sk.id,
+        nomor_sk: sk.nomor_sk,
+        file_sk_path: sk.file_sk_path,
+        tanggal_terbit: sk.tanggal_terbit?.toISOString().split('T')[0] || '',
+        status_studi: sk.status_studi,
+      })),
       dokumen: dokumenPengajuan.map((d) => ({
         id: d.id,
         nama_dokumen: d.master_dokumen?.nama_dokumen || 'Unknown',

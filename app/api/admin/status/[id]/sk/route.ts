@@ -30,6 +30,10 @@ export async function POST(
       return NextResponse.json({ error: 'File tidak ditemukan' }, { status: 400 });
     }
 
+    if (!statusPengajuan) {
+      return NextResponse.json({ error: 'Status pengajuan harus dipilih' }, { status: 400 });
+    }
+
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
@@ -76,15 +80,21 @@ export async function POST(
 
     if (statusPengajuan) {
       const statusMaster = await prisma.masterStatusPengajuan.findFirst({
-        where: { nama_status: statusPengajuan },
+        where: { nama_status: statusPengajuan.toLowerCase() },
       });
 
-      if (statusMaster) {
-        await prisma.pengajuanStudi.update({
-          where: { id: pengajuanId },
-          data: { status_id: statusMaster.id },
-        });
+      if (!statusMaster) {
+        console.error(`Status "${statusPengajuan}" tidak ditemukan di master_status_pengajuan`);
+        return NextResponse.json(
+          { error: `Status "${statusPengajuan}" tidak valid` },
+          { status: 400 }
+        );
       }
+
+      await prisma.pengajuanStudi.update({
+        where: { id: pengajuanId },
+        data: { status_id: statusMaster.id },
+      });
     }
 
     return NextResponse.json({ 

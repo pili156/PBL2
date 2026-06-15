@@ -33,9 +33,17 @@ export default function Register() {
       return;
     }
 
-    // Pengecekan keamanan password (Min. 8 karakter)
+    // Pengecekan keamanan password (Min. 8 karakter, 1 huruf kapital, 1 karakter unik)
     if (formData.password.length < 8) {
-      setErrorMsg("Keamanan lemah: Password minimal harus 8 karakter!");
+      setErrorMsg("Password minimal 8 karakter");
+      return;
+    }
+    if (!/[A-Z]/.test(formData.password)) {
+      setErrorMsg("Password harus mengandung minimal 1 huruf kapital");
+      return;
+    }
+    if (!/[!@#$%^&*(),.?":{}|<>]/.test(formData.password)) {
+      setErrorMsg("Password harus mengandung minimal 1 karakter unik (!@#$%^&* dll)");
       return;
     }
 
@@ -259,7 +267,7 @@ export default function Register() {
                 type="password" 
                 required
                 minLength={8}
-                placeholder="Password (Min. 8 Karakter)" 
+                placeholder="Min. 8 karakter, 1 huruf kapital, 1 karakter unik" 
                 value={formData.password}
                 onChange={(e) => setFormData({...formData, password: e.target.value})}
                 className={`w-full border rounded-full pl-12 pr-4 py-3 text-sm text-gray-700 outline-none transition-colors bg-gray-50/50 ${errorMsg.includes("lemah") ? "border-red-400 focus:border-red-500" : "border-gray-200 focus:border-blue-500"}`}

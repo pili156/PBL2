@@ -30,8 +30,8 @@ export default function DocumentList({
 
   return (
     <div className="bg-white rounded-lg border border-slate-200 p-6">
-      <h3 className="text-lg font-semibold mb-4">
-        Daftar dokumen <span className="text-slate-400">{documents.length} items</span>
+      <h3 className="text-xl font-bold text-slate-900 mb-4">
+           <span className="text-slate-400">{documents.length} items</span>
       </h3>
       
       <div className="space-y-2 max-h-96 overflow-y-auto">

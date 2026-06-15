@@ -14,6 +14,7 @@ export default function ManajemenStatusPage({ params }: Props) {
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [selectedStatus, setSelectedStatus] = useState("");
   const [uploading, setUploading] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -70,13 +71,14 @@ export default function ManajemenStatusPage({ params }: Props) {
       return;
     }
 
+    if (!selectedStatus) {
+      setMessage({ type: 'error', text: 'Silakan pilih status verifikasi terlebih dahulu' });
+      return;
+    }
+
     const formData = new FormData();
     formData.append('file', selectedFile);
-    
-    const statusSelect = (e.currentTarget.elements.namedItem('status_pengajuan') as HTMLSelectElement);
-    const statusPengajuan = statusSelect?.value;
-    
-    formData.append('status_pengajuan', statusPengajuan);
+    formData.append('status_pengajuan', selectedStatus);
     formData.append('status_studi', 'aktif');
 
     setUploading(true);
@@ -93,6 +95,7 @@ export default function ManajemenStatusPage({ params }: Props) {
       if (response.ok) {
         setMessage({ type: 'success', text: 'SK berhasil diupload dan disimpan!' });
         setSelectedFile(null);
+        setSelectedStatus("");
         if (fileInputRef.current) {
           fileInputRef.current.value = '';
         }
@@ -221,8 +224,10 @@ export default function ManajemenStatusPage({ params }: Props) {
                 <p className="text-xs text-slate-500 mb-4">Tentukan status pengajuan setelah SK ini diterbitkan.</p>
                 <select 
                   name="status_pengajuan"
+                  value={selectedStatus}
+                  onChange={(e) => setSelectedStatus(e.target.value)}
                   required
-                  className="w-full px-4 py-3 bg-white border border-slate-300 rounded-xl outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 text-sm text-slate-700 font-medium transition-all"
+                  className="w-full p-4 bg-gray-50 border border-gray-200 rounded-2xl outline-none focus:border-[#0085FF] font-bold text-sm text-[#434343] cursor-pointer"
                 >
                   <option value="" disabled selected>Pilih status persetujuan...</option>
                   <option value="diterima">Diterima (Disetujui)</option>
@@ -273,50 +278,67 @@ export default function ManajemenStatusPage({ params }: Props) {
                   </p>
                 </div>
 
-                {/* Info Item (Status Badge) */}
-                <div className="pt-4 mt-2 border-t border-slate-100">
-                  <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2 block flex items-center gap-1.5">
-                    <ShieldCheck size={14} /> Status Saat Ini
-                  </label>
-                  <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wide ${
-                    data.status === 'diterima' || data.status === 'terverifikasi'
-                      ? 'bg-emerald-100 text-emerald-700 border border-emerald-200' 
-                      : data.status === 'pending'
-                      ? 'bg-amber-100 text-amber-700 border border-amber-200'
-                      : 'bg-red-100 text-red-700 border border-red-200'
-                  }`}>
-                    <span className={`w-1.5 h-1.5 rounded-full ${
-                      data.status === 'diterima' || data.status === 'terverifikasi' ? 'bg-emerald-500' : 
-                      data.status === 'pending' ? 'bg-amber-500' : 'bg-red-500'
-                    }`} />
-                    {data.status || "pending"}
-                  </span>
-                </div>
+              <div className="pt-8 mt-4 border-t border-gray-50 flex justify-between items-center">
+                <span className="text-[10px] text-gray-400 font-black uppercase tracking-widest">Status Saat Ini</span>
+                <span className={`px-5 py-2 rounded-xl text-[10px] font-black uppercase tracking-[0.15em] ${
+                  data.status === 'diterima' || data.status === 'terverifikasi'
+                    ? 'bg-[#C4F2C9] text-[#2D7336]' 
+                    : 'bg-[#FFE2E2] text-[#CC3333]'
+                }`}>
+                  {data.status || "pending"}
+                </span>
               </div>
 
-              {/* Action Button (Dipindah ke bawah kartu Info Dosen agar lebih menyatu dengan flow membaca dari kiri ke kanan lalu submit) */}
-              <div className="mt-8 pt-6 border-t border-slate-100">
-                <button 
-                  type="submit"
-                  disabled={uploading}
-                  className="w-full bg-blue-600 text-white px-6 py-3 rounded-xl font-semibold text-sm shadow-md shadow-blue-500/20 hover:bg-blue-700 hover:shadow-lg hover:shadow-blue-500/30 transition-all active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                >
-                  {uploading ? (
-                    <>
-                      <Loader2 className="animate-spin" size={18} />
-                      Menyimpan...
-                    </>
-                  ) : (
-                    <>
-                      <UploadCloud size={18} />
-                      Simpan & Terbitkan SK
-                    </>
-                  )}
-                </button>
-              </div>
+              {data.sk_kementerian && data.sk_kementerian.length > 0 && (
+                <div className="pt-6 mt-4 border-t border-gray-50">
+                  <span className="text-[10px] text-gray-400 font-black uppercase tracking-widest block mb-3">SK Tugas Belajar</span>
+                  {data.sk_kementerian.map((sk: any) => (
+                    <div key={sk.id} className="bg-blue-50 rounded-xl p-4 space-y-2">
+                      {sk.nomor_sk && (
+                        <div className="flex justify-between items-center">
+                          <span className="text-[10px] text-gray-400 font-black uppercase">Nomor SK</span>
+                          <span className="text-xs font-bold text-[#1F1F1F]">{sk.nomor_sk}</span>
+                        </div>
+                      )}
+                      {sk.tanggal_terbit && (
+                        <div className="flex justify-between items-center">
+                          <span className="text-[10px] text-gray-400 font-black uppercase">Terbit</span>
+                          <span className="text-xs font-bold text-[#1F1F1F]">{sk.tanggal_terbit}</span>
+                        </div>
+                      )}
+                      {sk.file_sk_path && (
+                        <a
+                          href={sk.file_sk_path}
+                          target="_blank"
+                          className="text-xs font-semibold text-blue-600 hover:text-blue-800 transition-colors block text-center mt-2"
+                        >
+                          Lihat Dokumen SK
+                        </a>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
+        </div>
 
+        {/* Action Button */}
+        <div className="mt-12 flex justify-end">
+          <button 
+            type="submit"
+            disabled={uploading || !selectedStatus}
+            className="bg-[#0085FF] text-white px-14 py-4 rounded-2xl font-black text-[11px] uppercase tracking-[0.2em] shadow-xl shadow-blue-100 hover:bg-[#006ACC] hover:-translate-y-1 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+          >
+            {uploading ? (
+              <>
+                <Loader2 className="animate-spin" size={16} />
+               Mengupload...
+              </>
+            ) : (
+              'Simpan & Terbitkan SK'
+            )}
+          </button>
         </div>
       </form>
     </div>
