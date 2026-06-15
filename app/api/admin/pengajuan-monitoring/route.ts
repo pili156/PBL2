@@ -53,6 +53,9 @@ export async function GET(request: Request) {
         jenis_studi: true,
         status: true,
         dokumen_pengajuan: {
+          where: {
+            pengajuan_reimbursement_id: null,
+          },
           include: {
             master_dokumen: true,
           },
