@@ -18,6 +18,7 @@ const PATH_ROLE_MAP: Record<string, string[]> = {
   '/admin': ['admin_fakultas'],
   '/master_admin': ['master_admin'],
   '/keuangan': ['keuangan'],
+  '/buku-induk': ['admin_fakultas'],
 };
 
 const ROLE_TO_COOKIE: Record<string, string> = {
