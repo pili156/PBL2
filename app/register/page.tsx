@@ -1,9 +1,11 @@
+// app/register/page.tsx
 "use client";
 
 import Image from "next/image";
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { getJurusanData } from "./actions"; // IMPORT SERVER ACTION DI SINI
 
 // Tipe Data untuk hasil fetch dari Database
 interface ProgramStudi {
@@ -37,15 +39,12 @@ export default function Register() {
     konfirmasi_password: "",
   });
 
-  // Ambil data jurusan dari API saat komponen pertama kali dimuat
+  // Ambil data jurusan MENGGUNAKAN SERVER ACTION
   useEffect(() => {
     const fetchJurusan = async () => {
       try {
-        const res = await fetch("/api/jurusan");
-        if (res.ok) {
-          const data = await res.json();
-          setDataJurusan(data);
-        }
+        const data = await getJurusanData(); // Panggil fungsi server langsung
+        setDataJurusan(data);
       } catch (error) {
         console.error("Gagal memuat data jurusan:", error);
       } finally {
