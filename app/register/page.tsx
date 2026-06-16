@@ -1,53 +1,21 @@
-// app/register/page.tsx
 "use client";
 
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
-// Data Mapping Jurusan dan Program Studi Polines
-const dataPolines = {
-  "Teknik Sipil": [
-    "D3 - Konstruksi Gedung",
-    "D3 - Konstruksi Sipil",
-    "D4 - Teknik Perawatan dan Perbaikan Gedung",
-    "D4 - Perancangan Jalan dan Jembatan",
-  ],
-  "Teknik Mesin": [
-    "D3 - Teknik Mesin",
-    "D3 - Teknik Konversi Energi",
-    "D4 - Teknik Mesin Produksi dan Perawatan",
-    "D4 - Teknologi Rekayasa Pembangkit Energi",
-  ],
-  "Teknik Elektro": [
-    "D3 - Teknik Listrik",
-    "D3 - Teknik Elektronika",
-    "D3 - Teknik Telekomunikasi",
-    "D3 - Teknik Informatika",
-    "D4 - Teknik Telekomunikasi",
-    "D4 - Teknologi Rekayasa Instalasi Listrik",
-    "D4 - Teknologi Rekayasa Komputer",
-    "D4 - Teknologi Rekayasa Elektronika",
-    "S2 Terapan - Teknik Telekomunikasi",
-  ],
-  "Akuntansi": [
-    "D3 - Akuntansi",
-    "D3 - Keuangan dan Perbankan",
-    "D4 - Komputerisasi Akuntansi",
-    "D4 - Perbankan Syariah",
-    "D4 - Analis Keuangan",
-    "D4 - Akuntansi Manajerial",
-  ],
-  "Administrasi Bisnis": [
-    "D3 - Administrasi Bisnis",
-    "D3 - Manajemen Pemasaran",
-    "D4 - Manajemen Bisnis Internasional",
-    "D4 - Administrasi Bisnis Terapan",
-  ],
-};
+// Tipe Data untuk hasil fetch dari Database
+interface ProgramStudi {
+  id: number;
+  nama_prodi: string;
+}
 
-type JurusanKey = keyof typeof dataPolines;
+interface Jurusan {
+  id: number;
+  nama_jurusan: string;
+  program_studi: ProgramStudi[];
+}
 
 export default function Register() {
   const router = useRouter();
@@ -55,6 +23,10 @@ export default function Register() {
   const [errorMsg, setErrorMsg] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
   
+  // State untuk menyimpan data dari database
+  const [dataJurusan, setDataJurusan] = useState<Jurusan[]>([]);
+  const [isLoadingJurusan, setIsLoadingJurusan] = useState(true);
+
   const [formData, setFormData] = useState({
     email: "",
     nama_lengkap: "",
@@ -65,34 +37,48 @@ export default function Register() {
     konfirmasi_password: "",
   });
 
-  // Fungsi untuk menangani perubahan pada dropdown Jurusan
+  // Ambil data jurusan dari API saat komponen pertama kali dimuat
+  useEffect(() => {
+    const fetchJurusan = async () => {
+      try {
+        const res = await fetch("/api/jurusan");
+        if (res.ok) {
+          const data = await res.json();
+          setDataJurusan(data);
+        }
+      } catch (error) {
+        console.error("Gagal memuat data jurusan:", error);
+      } finally {
+        setIsLoadingJurusan(false);
+      }
+    };
+
+    fetchJurusan();
+  }, []);
+
   const handleJurusanChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const selectedJurusan = e.target.value;
     setFormData({
       ...formData,
-      jurusan: selectedJurusan,
-      program_studi: "", // Reset program studi karena jurusan berubah
+      jurusan: e.target.value,
+      program_studi: "", // Reset prodi saat jurusan diganti
     });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setErrorMsg(""); // Reset pesan error
-    setSuccessMsg(""); // Reset pesan sukses
+    setErrorMsg("");
+    setSuccessMsg("");
     
-    // Pengecekan domain polines di sisi frontend
     if (!formData.email.endsWith('@polines.ac.id')) {
       setErrorMsg("Hanya akun @polines.ac.id yang diizinkan untuk mendaftar!");
       return;
     }
 
-    // Pengecekan dropdown
     if (!formData.jurusan || !formData.program_studi) {
       setErrorMsg("Jurusan dan Program Studi wajib dipilih!");
       return;
     }
 
-    // Pengecekan keamanan password (Min. 8 karakter, 1 huruf kapital, 1 karakter unik)
     if (formData.password.length < 8) {
       setErrorMsg("Password minimal 8 karakter");
       return;
@@ -123,7 +109,6 @@ export default function Register() {
 
       if (res.ok) {
         setSuccessMsg("Berhasil mendaftar! Mengalihkan ke halaman login...");
-        // Beri jeda 1.5 detik agar user bisa membaca pesan sukses sebelum pindah halaman
         setTimeout(() => {
           router.push("/login");
         }, 1500);
@@ -137,24 +122,20 @@ export default function Register() {
     }
   };
 
-  // Ambil daftar prodi berdasarkan jurusan yang dipilih saat ini
-  const availableProdi = formData.jurusan
-    ? dataPolines[formData.jurusan as JurusanKey]
-    : [];
+  // Mencari daftar prodi berdasarkan nama jurusan yang dipilih
+  const selectedJurusanObj = dataJurusan.find(j => j.nama_jurusan === formData.jurusan);
+  const availableProdi = selectedJurusanObj ? selectedJurusanObj.program_studi : [];
 
   return (
     <div className="flex min-h-screen w-full relative font-sans bg-[#005B9F]">
-      {/* Layer Background Gambar */}
       <div className="absolute inset-0 lg:w-[60%] z-0">
         <div
           className="absolute inset-0 bg-cover bg-center fixed lg:absolute"
           style={{ backgroundImage: "url('/auth/background2.jpeg')" }}
         />
-        {/* Overlay Biru */}
         <div className="absolute inset-0 bg-[#005B9F] opacity-70 fixed lg:absolute" />
       </div>
 
-      {/* Sisi Kiri - Konten Informasi */}
       <div className="relative z-10 hidden w-[55%] flex-col justify-center px-16 lg:flex">
         <div className="text-white mt-10 fixed top-1/2 -translate-y-1/2">
           <Image
@@ -177,7 +158,6 @@ export default function Register() {
         </div>
       </div>
 
-      {/* Sisi Kanan - Panel Form */}
       <div className="relative z-10 flex w-full lg:w-[45%] flex-col justify-center items-center bg-white lg:rounded-l-2xl shadow-[-10px_0_20px_rgba(0,0,0,0.05)] ml-auto min-h-screen py-10 lg:py-0">
         <div className="w-full max-w-md p-8 lg:p-12">
           <div className="text-center mb-6">
@@ -185,14 +165,12 @@ export default function Register() {
             <p className="text-sm text-gray-500">Daftar untuk mengakses sistem</p>
           </div>
 
-          {/* MENAMPILKAN PESAN ERROR */}
           {errorMsg && (
             <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-600 text-sm rounded-lg text-center">
               {errorMsg}
             </div>
           )}
 
-          {/* MENAMPILKAN PESAN SUKSES */}
           {successMsg && (
             <div className="mb-4 p-3 bg-green-50 border border-green-200 text-green-600 text-sm rounded-lg text-center">
               {successMsg}
@@ -201,87 +179,31 @@ export default function Register() {
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             
-            {/* Input Email */}
             <div className="relative">
               <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <rect width="20" height="16" x="2" y="4" rx="2" />
-                  <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
-                </svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="16" x="2" y="4" rx="2" /><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" /></svg>
               </span>
-              <input 
-                id="email"
-                name="email"
-                autoComplete="email"
-                type="email" 
-                required
-                placeholder="Email Polines (@polines.ac.id)" 
-                value={formData.email}
-                onChange={(e) => setFormData({...formData, email: e.target.value})}
-                className={`w-full border rounded-full pl-12 pr-4 py-3 text-sm text-gray-700 outline-none transition-colors bg-gray-50/50 ${errorMsg.includes("Email") || errorMsg.includes("@polines") ? "border-red-400 focus:border-red-500" : "border-gray-200 focus:border-blue-500"}`}
-              />
+              <input id="email" name="email" autoComplete="email" type="email" required placeholder="Email Polines (@polines.ac.id)" value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} className={`w-full border rounded-full pl-12 pr-4 py-3 text-sm text-gray-700 outline-none transition-colors bg-gray-50/50 ${errorMsg.includes("Email") || errorMsg.includes("@polines") ? "border-red-400 focus:border-red-500" : "border-gray-200 focus:border-blue-500"}`} />
             </div>
 
-            {/* Input Nama Lengkap */}
             <div className="relative">
               <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
-                  <circle cx="12" cy="7" r="4" />
-                </svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>
               </span>
-              <input 
-                id="nama_lengkap"
-                name="nama_lengkap"
-                autoComplete="name"
-                type="text" 
-                required
-                placeholder="Nama Lengkap dengan gelar" 
-                value={formData.nama_lengkap}
-                onChange={(e) => setFormData({...formData, nama_lengkap: e.target.value})}
-                className="w-full border border-gray-200 rounded-full pl-12 pr-4 py-3 text-sm text-gray-700 outline-none focus:border-blue-500 transition-colors bg-gray-50/50"
-              />
+              <input id="nama_lengkap" name="nama_lengkap" autoComplete="name" type="text" required placeholder="Nama Lengkap dengan gelar" value={formData.nama_lengkap} onChange={(e) => setFormData({...formData, nama_lengkap: e.target.value})} className="w-full border border-gray-200 rounded-full pl-12 pr-4 py-3 text-sm text-gray-700 outline-none focus:border-blue-500 transition-colors bg-gray-50/50" />
             </div>
 
-            {/* Input NIP */}
             <div className="relative">
               <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <rect width="20" height="14" x="2" y="5" rx="2" />
-                  <circle cx="8" cy="12" r="2" />
-                  <path d="M14 11h4" />
-                  <path d="M14 14h4" />
-                </svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="14" x="2" y="5" rx="2" /><circle cx="8" cy="12" r="2" /><path d="M14 11h4" /><path d="M14 14h4" /></svg>
               </span>
-              <input 
-                id="nip"
-                name="nip"
-                autoComplete="off"
-                type="text" 
-                required
-                placeholder="NIP" 
-                value={formData.nip}
-                onChange={(e) => setFormData({...formData, nip: e.target.value})}
-                className="w-full border border-gray-200 rounded-full pl-12 pr-4 py-3 text-sm text-gray-700 outline-none focus:border-blue-500 transition-colors bg-gray-50/50"
-              />
+              <input id="nip" name="nip" autoComplete="off" type="text" required placeholder="NIP" value={formData.nip} onChange={(e) => setFormData({...formData, nip: e.target.value})} className="w-full border border-gray-200 rounded-full pl-12 pr-4 py-3 text-sm text-gray-700 outline-none focus:border-blue-500 transition-colors bg-gray-50/50" />
             </div>
 
-            {/* DROPDOWN Jurusan */}
+            {/* DROPDOWN JURUSAN (DINAMIS) */}
             <div className="relative">
               <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <rect x="4" y="2" width="16" height="20" rx="2" ry="2" />
-                  <path d="M9 22v-4h6v4" />
-                  <path d="M8 6h.01" />
-                  <path d="M16 6h.01" />
-                  <path d="M12 6h.01" />
-                  <path d="M12 10h.01" />
-                  <path d="M12 14h.01" />
-                  <path d="M16 10h.01" />
-                  <path d="M16 14h.01" />
-                  <path d="M8 10h.01" />
-                  <path d="M8 14h.01" />
-                </svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="4" y="2" width="16" height="20" rx="2" ry="2" /><path d="M9 22v-4h6v4" /><path d="M8 6h.01" /><path d="M16 6h.01" /><path d="M12 6h.01" /><path d="M12 10h.01" /><path d="M12 14h.01" /><path d="M16 10h.01" /><path d="M16 14h.01" /><path d="M8 10h.01" /><path d="M8 14h.01" /></svg>
               </span>
               <select 
                 id="jurusan"
@@ -289,97 +211,62 @@ export default function Register() {
                 required
                 value={formData.jurusan}
                 onChange={handleJurusanChange}
-                className="w-full border border-gray-200 rounded-full pl-12 pr-10 py-3 text-sm text-gray-700 outline-none focus:border-blue-500 transition-colors bg-gray-50/50 appearance-none"
+                disabled={isLoadingJurusan}
+                className="w-full border border-gray-200 rounded-full pl-12 pr-10 py-3 text-sm text-gray-700 outline-none focus:border-blue-500 transition-colors bg-gray-50/50 appearance-none disabled:bg-gray-100"
               >
-                <option value="" disabled>Pilih Jurusan</option>
-                {Object.keys(dataPolines).map((jrs) => (
-                  <option key={jrs} value={jrs}>{jrs}</option>
+                <option value="" disabled>
+                  {isLoadingJurusan ? "Memuat data jurusan..." : "Pilih Jurusan"}
+                </option>
+                {dataJurusan.map((jrs) => (
+                  <option key={jrs.id} value={jrs.nama_jurusan}>{jrs.nama_jurusan}</option>
                 ))}
               </select>
-              {/* Ikon panah ke bawah */}
               <div className="absolute inset-y-0 right-4 flex items-center pointer-events-none text-gray-400">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
               </div>
             </div>
 
-            {/* DROPDOWN Program Studi */}
+            {/* DROPDOWN PROGRAM STUDI (DINAMIS) */}
             <div className="relative">
               <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20" />
-                </svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20" /></svg>
               </span>
               <select 
                 id="program_studi"
                 name="program_studi"
                 required
-                disabled={!formData.jurusan} // Nonaktif jika jurusan belum dipilih
+                disabled={!formData.jurusan || isLoadingJurusan}
                 value={formData.program_studi}
                 onChange={(e) => setFormData({...formData, program_studi: e.target.value})}
                 className="w-full border border-gray-200 rounded-full pl-12 pr-10 py-3 text-sm text-gray-700 outline-none focus:border-blue-500 transition-colors bg-gray-50/50 appearance-none disabled:bg-gray-100 disabled:text-gray-400"
               >
                 <option value="" disabled>
-                  {formData.jurusan ? "Pilih Program Studi" : "Pilih Jurusan Dahulu"}
+                  {!formData.jurusan ? "Pilih Jurusan Dahulu" : "Pilih Program Studi"}
                 </option>
                 {availableProdi.map((prodi) => (
-                  <option key={prodi} value={prodi}>{prodi}</option>
+                  <option key={prodi.id} value={prodi.nama_prodi}>{prodi.nama_prodi}</option>
                 ))}
               </select>
-              {/* Ikon panah ke bawah */}
               <div className="absolute inset-y-0 right-4 flex items-center pointer-events-none text-gray-400">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
               </div>
             </div>
 
-            {/* Input Password */}
             <div className="relative">
               <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <rect width="18" height="11" x="3" y="11" rx="2" ry="2" />
-                  <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-                </svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></svg>
               </span>
-              <input 
-                id="password"
-                name="password"
-                autoComplete="new-password"
-                type="password" 
-                required
-                minLength={8}
-                placeholder="Min. 8 karakter, 1 huruf kapital, 1 karakter unik" 
-                value={formData.password}
-                onChange={(e) => setFormData({...formData, password: e.target.value})}
-                className={`w-full border rounded-full pl-12 pr-4 py-3 text-sm text-gray-700 outline-none transition-colors bg-gray-50/50 ${errorMsg.includes("lemah") ? "border-red-400 focus:border-red-500" : "border-gray-200 focus:border-blue-500"}`}
-              />
+              <input id="password" name="password" autoComplete="new-password" type="password" required minLength={8} placeholder="Min. 8 karakter, 1 huruf kapital, 1 karakter unik" value={formData.password} onChange={(e) => setFormData({...formData, password: e.target.value})} className={`w-full border rounded-full pl-12 pr-4 py-3 text-sm text-gray-700 outline-none transition-colors bg-gray-50/50 ${errorMsg.includes("lemah") ? "border-red-400 focus:border-red-500" : "border-gray-200 focus:border-blue-500"}`} />
             </div>
 
-            {/* Input Konfirmasi Password */}
             <div className="relative">
               <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <rect width="18" height="11" x="3" y="11" rx="2" ry="2" />
-                  <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-                </svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></svg>
               </span>
-              <input 
-                id="konfirmasi_password"
-                name="konfirmasi_password"
-                autoComplete="new-password"
-                type="password" 
-                required
-                placeholder="Konfirmasi Password" 
-                value={formData.konfirmasi_password}
-                onChange={(e) => setFormData({...formData, konfirmasi_password: e.target.value})}
-                className={`w-full border rounded-full pl-12 pr-4 py-3 text-sm text-gray-700 outline-none transition-colors bg-gray-50/50 ${errorMsg.includes("cocok") ? "border-red-400 focus:border-red-500" : "border-gray-200 focus:border-blue-500"}`}
-              />
+              <input id="konfirmasi_password" name="konfirmasi_password" autoComplete="new-password" type="password" required placeholder="Konfirmasi Password" value={formData.konfirmasi_password} onChange={(e) => setFormData({...formData, konfirmasi_password: e.target.value})} className={`w-full border rounded-full pl-12 pr-4 py-3 text-sm text-gray-700 outline-none transition-colors bg-gray-50/50 ${errorMsg.includes("cocok") ? "border-red-400 focus:border-red-500" : "border-gray-200 focus:border-blue-500"}`} />
             </div>
 
-            {/* Tombol Register */}
-            <button 
-              type="submit"
-              disabled={loading}
-              className="w-full py-3.5 mt-2 bg-[#005B9F] hover:bg-[#004A85] text-white rounded-full font-medium text-sm transition-colors disabled:opacity-50"
-            >
+            <button type="submit" disabled={loading} className="w-full py-3.5 mt-2 bg-[#005B9F] hover:bg-[#004A85] text-white rounded-full font-medium text-sm transition-colors disabled:opacity-50">
               {loading ? "Memproses..." : "Register"}
             </button>
           </form>
