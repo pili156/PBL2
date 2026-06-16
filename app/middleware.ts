@@ -5,6 +5,14 @@ import type { NextRequest } from 'next/server';
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
+  // 0. BYPASS RUTE PUBLIK (Penting agar fetch dari frontend tidak diblokir/error)
+  if (
+    pathname.startsWith('/api/jurusan') || 
+    pathname.startsWith('/api/auth')
+  ) {
+    return NextResponse.next();
+  }
+
   // 1. Ambil semua token dari cookie
   const tokenMasterAdmin = request.cookies.get('token_master_admin')?.value;
   const tokenAdmin = request.cookies.get('token_admin')?.value;
@@ -25,7 +33,7 @@ export function middleware(request: NextRequest) {
       return NextResponse.redirect(new URL('/login', request.url));
     }
 
-    // Suntikkan header role untuk dibaca oleh API backend (Solusi Poin 5)
+    // Suntikkan header role untuk dibaca oleh API backend
     const requestHeaders = new Headers(request.headers);
     requestHeaders.set('x-user-role', 'master_admin');
     return NextResponse.next({ request: { headers: requestHeaders } });
@@ -73,6 +81,8 @@ export const config = {
     '/api/admin/:path*',
     '/api/user/:path*',
     '/api/buku-induk/:path*',
+    '/api/jurusan/:path*', // <-- Tambahkan ini agar terpantau tapi langsung di-bypass di Step 0
+    '/api/auth/:path*',    // <-- Tambahkan ini juga
     '/login',
     '/register',
     '/'
