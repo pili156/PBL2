@@ -235,7 +235,7 @@ export default function DocumentStatusList() {
       </div>
 
       <div className="bg-white rounded-xl border border-slate-200 p-6">
-        <h3 className="text-lg font-semibold mb-4">
+        <h3 className="text-xl font-bold text-slate-900 mb-4">
           Daftar Dokumen yang diupload <span className="text-slate-400">({data.dokumen.filter(d => d.file_path).length} items)</span>
         </h3>
         

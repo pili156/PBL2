@@ -69,7 +69,7 @@ export default async function DashboardDosen({ params }: Props) {
   const semesterAktif = khsList.length;
   const isSelesai = ['studi_selesai', 'selesai'].includes(pengajuan.status?.nama_status?.toLowerCase() ?? '');
   const lastKhs = semesterAktif > 0 ? khsList[khsList.length - 1] : null;
-  const isDisetujui = ['disetujui', 'diterima', 'aktif', 'sedang berjalan'].includes(pengajuan.status?.nama_status?.toLowerCase() ?? '');
+  const isDisetujui = ['disetujui', 'diterima', 'aktif', 'sedang berjalan'].includes(pengajuan.status?.nama_status?.toLowerCase() ?? '') || !!skKementerian;
 
   const ipkValues = khsList.map((k) => Number(k.ipk || 0)).filter((v) => v > 0);
   const rataIpk = ipkValues.length > 0 ? (ipkValues.reduce((a, b) => a + b, 0) / ipkValues.length).toFixed(2) : '-';
@@ -99,11 +99,21 @@ export default async function DashboardDosen({ params }: Props) {
           </span>
         </div>
         <div className="relative">
-          <div className="absolute top-6 left-0 right-0 h-0.5 bg-slate-100" />
+          <div className="absolute top-[22px] left-[10%] right-[10%] h-0.5 bg-slate-200" />
           <div
-            className="absolute top-6 left-0 h-0.5 bg-emerald-500 transition-all duration-700 w-[var(--progress)]"
-            style={{ '--progress': isSelesai ? '100%' : semesterAktif > 0 ? '75%' : skKementerian ? '50%' : isDisetujui ? '25%' : '0%' } as React.CSSProperties}
-          />
+            className="absolute top-[22px] left-[10%] h-0.5 bg-emerald-500 transition-all duration-700"
+            style={{
+            width: isSelesai
+            ? '80%'
+            : semesterAktif > 0
+            ? '60%'
+            : skKementerian
+            ? '40%'
+            : isDisetujui
+            ? '20%'
+            : '0%',
+          }}
+/>
           <div className="grid grid-cols-5 gap-2">
             {steps.map((step, i) => (
               <div key={i} className="flex flex-col items-center text-center">

@@ -61,9 +61,13 @@ export async function POST(request: Request) {
 
     let targetUrl = "/user/dashboard";
 
-    if (roleName === "master_admin" || roleName === "admin") {
+    // --- BAGIAN YANG DIBENARKAN ---
+    if (roleName === "master_admin") {
+      targetUrl = "/master_admin/dashboard";
+    } else if (roleName === "admin") {
       targetUrl = "/admin/dashboard";
     }
+    // ------------------------------
 
     const token = signToken({
       userId: user.id,
@@ -76,11 +80,20 @@ export async function POST(request: Request) {
 
     const cookieStore = await cookies();
 
+    // --- BAGIAN YANG DITAMBAHKAN: Menghapus cookie role lain yang mungkin tersisa di browser ---
+    const allRoles = ['dosen', 'admin', 'master_admin'];
+    for (const r of allRoles) {
+      if (r !== roleName) {
+        cookieStore.delete(`token_${r}`);
+      }
+    }
+    // ----------------------------------------------------------------------------------------
+
     cookieStore.set(cookieName, token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
-      maxAge: 60 * 60,
+      maxAge: 12 * 60 * 60,
       path: "/",
     });
 

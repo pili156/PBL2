@@ -4,6 +4,13 @@ import { prisma } from "@/src/lib/prisma";
 import { revalidatePath } from "next/cache";
 import bcrypt from "bcryptjs";
 
+function validatePassword(password: string): string | null {
+  if (password.length < 8) return "Password minimal 8 karakter";
+  if (!/[A-Z]/.test(password)) return "Password harus mengandung minimal 1 huruf kapital";
+  if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) return "Password harus mengandung minimal 1 karakter unik (!@#$%^&* dll)";
+  return null;
+}
+
 export async function toggleStatus(userId: number) {
   const user = await prisma.user.findUnique({ where: { id: userId } });
   if (!user) throw new Error("User tidak ditemukan");
@@ -27,6 +34,9 @@ export async function createUser(formData: FormData) {
   const namaLengkap = formData.get("nama_lengkap") as string;
   const nip = formData.get("nip") as string;
   const jurusan = formData.get("jurusan") as string;
+
+  const passwordError = validatePassword(password);
+  if (passwordError) throw new Error(passwordError);
 
   const password_hash = await bcrypt.hash(password, 10);
 
@@ -80,6 +90,9 @@ export async function deleteUserById(userId: number) {
 export async function resetPassword(formData: FormData) {
   const userId = Number(formData.get("id"));
   const newPassword = formData.get("password") as string;
+
+  const passwordError = validatePassword(newPassword);
+  if (passwordError) throw new Error(passwordError);
 
   const password_hash = await bcrypt.hash(newPassword, 10);
   await prisma.user.update({

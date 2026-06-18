@@ -26,13 +26,13 @@ export default async function UploadKHSPage({
         <div className="flex items-center gap-4 border-b border-slate-200 pb-4">
           <Link
             href="/user/laporanKHS"
-            className="p-2 hover:bg-slate-100 rounded-full transition-colors text-slate-600"
+            className="p-2 hover:bg-slate-100 rounded-full transition-colors text-slate-900"
           >
             <ArrowLeft size={20} />
           </Link>
           <div>
-            <h2 className="text-2xl font-bold text-slate-800">Upload KHS</h2>
-            <p className="text-sm text-slate-500 mt-1">Unggah dokumen KHS untuk semester Anda</p>
+            <h2 className="text-2xl font-bold text-slate-900">Upload KHS</h2>
+            <p className="text-sm text-slate-900 mt-1">Unggah dokumen KHS untuk semester Anda</p>
           </div>
         </div>
         <div className="bg-amber-50 border border-amber-200 rounded-lg p-6 flex items-start gap-3">

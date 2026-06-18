@@ -7,7 +7,7 @@ function requireEnv(name: string): string {
 }
 
 const JWT_SECRET = requireEnv('JWT_SECRET');
-const JWT_EXPIRES_IN = '1h';
+const JWT_EXPIRES_IN = '12h';
 
 export interface JwtPayload {
   userId: number;

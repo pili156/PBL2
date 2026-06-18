@@ -16,7 +16,7 @@ import {
   HandCoins,
   type LucideIcon,
 } from "lucide-react";
-import type { MenuItem, IconName } from "@/src/types";
+import type { MenuItem } from "@/src/types";
 import { canAccess } from "@/src/lib/auth/permissions";
 import { useSidebar } from "./SidebarProvider";
 
@@ -125,7 +125,7 @@ export default function Sidebar({
             <div className="flex flex-col">
               <h1 className="text-2xl font-bold tracking-wide leading-none">SIGAP</h1>
               <p className="text-[10px] text-slate-400 mt-1 leading-tight uppercase tracking-wider">
-                Sistem Informasi Gelar Akademik Polines
+                Sistem Informasi Gelar Akademik
               </p>
             </div>
           )}

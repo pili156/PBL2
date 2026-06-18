@@ -34,9 +34,20 @@ export default function Login() {
 
       const data = await res.json();
 
-if (res.ok) {
-        router.push(data.redirectUrl || "/user/dashboard");
-} else {
+      if (res.ok) {
+        // AMBIL ROLE DARI RESPONSE API
+        // Menyesuaikan dengan struktur data dari backend (bisa data.role atau data.user.role)
+        const userRole = data.role || (data.user && data.user.role);
+
+        // LOGIKA PEMISAHAN REDIRECT (PISAH RUMAH)
+        if (userRole === "master_admin") {
+          router.push("/master_admin/dashboard");
+        } else if (userRole === "admin") {
+          router.push("/admin/dashboard");
+        } else {
+          router.push("/user/dashboard"); // Default untuk dosen/user biasa
+        }
+      } else {
         setErrorMsg(data.error || "Login Gagal");
       }
     } catch (error) {
@@ -109,6 +120,7 @@ if (res.ok) {
                 </svg>
               </span>
               <input
+                suppressHydrationWarning
                 id="identifier"
                 name="identifier"
                 autoComplete="username"
@@ -130,6 +142,7 @@ if (res.ok) {
                 </svg>
               </span>
               <input
+                suppressHydrationWarning
                 id="password"
                 name="password"
                 autoComplete="current-password"
@@ -150,12 +163,13 @@ if (res.ok) {
                 className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" 
               />
               <label htmlFor="remember" className="text-xs text-gray-500 cursor-pointer">
-                ingat saya
+                ingatkan saya
               </label>
             </div>
 
             {/* Tombol Masuk */}
             <button
+              suppressHydrationWarning
               type="submit"
               disabled={loading}
               className="w-full py-3.5 bg-[#005B9F] hover:bg-[#004A85] text-white rounded-full font-medium text-sm transition-colors disabled:opacity-50"

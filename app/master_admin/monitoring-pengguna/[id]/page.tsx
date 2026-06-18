@@ -108,7 +108,7 @@ export default async function EditUserPage({ params }: Props) {
                   name="nama_lengkap"
                   defaultValue={user.master_dosen?.nama_lengkap || ''}
                   required
-                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-slate-900"
                 />
               </div>
               <div>
@@ -117,7 +117,7 @@ export default async function EditUserPage({ params }: Props) {
                   type="text"
                   name="nip"
                   defaultValue={user.master_dosen?.nip || ''}
-                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-slate-900"
                 />
               </div>
             </div>
@@ -129,7 +129,7 @@ export default async function EditUserPage({ params }: Props) {
                   name="email"
                   defaultValue={user.email || ''}
                   required
-                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-slate-900"
                 />
               </div>
               <div>
@@ -149,7 +149,7 @@ export default async function EditUserPage({ params }: Props) {
                 type="text"
                 name="jurusan"
                 defaultValue={user.master_dosen?.jurusan || ''}
-                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-slate-900"
               />
             </div>
             <button
@@ -176,7 +176,7 @@ export default async function EditUserPage({ params }: Props) {
                   <select
                     name="role_id"
                     defaultValue={user.role_id || 3}
-                    className="flex-1 px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white"
+                    className="flex-1 px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white text-slate-900"
                   >
                     {ROLE_OPTIONS.map(r => (
                       <option key={r.id} value={r.id}>{r.name}</option>
@@ -208,21 +208,21 @@ export default async function EditUserPage({ params }: Props) {
           </div>
 
           <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-6">
-            <h3 className="text-sm font-semibold text-slate-800 mb-5 flex items-center gap-2">
+            <h3 className="text-sm font-semibold text-slate-900 mb-5 flex items-center gap-2">
               <KeyRound size={16} className="text-slate-400" />
               Reset Password
             </h3>
             <form action={resetPasswordAction} className="space-y-3">
               <input type="hidden" name="id" value={user.id} />
               <div>
-                <label className="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wider">Password Baru</label>
+                <label className="block text-xs font-semibold text-slate-900 mb-1.5 uppercase tracking-wider">Password Baru</label>
                 <input
                   type="password"
                   name="password"
                   required
-                  minLength={6}
-                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
-                  placeholder="Minimal 6 karakter"
+                  minLength={8}
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-slate-900"
+                  placeholder="Min. 8 karakter, 1 huruf kapital, 1 karakter unik"
                 />
               </div>
               <button
