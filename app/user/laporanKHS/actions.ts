@@ -3,6 +3,7 @@
 import { prisma } from '@/src/lib/prisma';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
+import { headers } from 'next/headers';
 import { writeFile, mkdir, unlink } from 'fs/promises';
 import { join } from 'path';
 import { v4 as uuidv4 } from 'uuid';
@@ -37,59 +38,65 @@ export async function uploadKHS(prevState: { error?: string } | null, formData: 
   const fileError = validateFile(file);
   if (fileError) return { error: fileError };
 
-  const { headers } = await import('next/headers');
-  const headersList = await headers();
-  const userId = parseInt(headersList.get('x-user-id') || '0');
+  let pengajuanId: number;
 
-  if (!userId) {
-    return { error: 'User belum login' };
+  try {
+    const headersList = await headers();
+    const userId = parseInt(headersList.get('x-user-id') || '0');
+
+    if (!userId) {
+      return { error: 'User belum login' };
+    }
+
+    const pengajuan = await prisma.pengajuanStudi.findFirst({
+      where: { user_id: userId },
+      orderBy: { created_at: 'desc' },
+    });
+
+    if (!pengajuan) {
+      return { error: 'Anda belum memiliki pengajuan studi. Silakan buat pengajuan terlebih dahulu.' };
+    }
+
+    pengajuanId = pengajuan.id;
+
+    const existingKHS = await prisma.monitoringKhs.findFirst({
+      where: {
+        pengajuan_id: pengajuanId,
+        semester_ke: parseInt(semester),
+      },
+    });
+
+    if (existingKHS) {
+      return { error: 'KHS untuk semester ini sudah ada' };
+    }
+
+    const bytes = await file.arrayBuffer();
+    const buffer = Buffer.from(bytes);
+    const fileExt = file.name.split('.').pop();
+    const fileName = `khs-${pengajuanId}-semester-${semester}-${uuidv4()}.${fileExt}`;
+    const filePath = join(process.cwd(), 'public', 'uploads', 'khs', fileName);
+    const uploadDir = join(process.cwd(), 'public', 'uploads', 'khs');
+
+    await mkdir(uploadDir, { recursive: true });
+    await writeFile(filePath, buffer);
+    const fileUrl = `/uploads/khs/${fileName}`;
+
+    await prisma.monitoringKhs.create({
+      data: {
+        pengajuan_id: pengajuanId,
+        semester_ke: parseInt(semester),
+        tahun_akademik: tahunAkademik,
+        ipk: parseFloat(ipk),
+        file_khs_path: fileUrl,
+        catatan_evaluasi: catatan || null,
+        tanggal_unggah: new Date(),
+        status_evaluasi: 'pending',
+      },
+    });
+  } catch (error) {
+    console.error('[uploadKHS] Unexpected error:', error);
+    return { error: 'Terjadi kesalahan saat mengupload KHS. Silakan coba lagi.' };
   }
-
-  const pengajuan = await prisma.pengajuanStudi.findFirst({
-    where: { user_id: userId },
-    orderBy: { created_at: 'desc' },
-  });
-
-  if (!pengajuan) {
-    return { error: 'Anda belum memiliki pengajuan studi. Silakan buat pengajuan terlebih dahulu.' };
-  }
-
-  const pengajuanId = pengajuan.id;
-
-  const existingKHS = await prisma.monitoringKhs.findFirst({
-    where: {
-      pengajuan_id: pengajuanId,
-      semester_ke: parseInt(semester),
-    },
-  });
-
-  if (existingKHS) {
-    return { error: 'KHS untuk semester ini sudah ada' };
-  }
-
-  const bytes = await file.arrayBuffer();
-  const buffer = Buffer.from(bytes);
-  const fileExt = file.name.split('.').pop();
-  const fileName = `khs-${pengajuanId}-semester-${semester}-${uuidv4()}.${fileExt}`;
-  const filePath = join(process.cwd(), 'public', 'uploads', 'khs', fileName);
-  const uploadDir = join(process.cwd(), 'public', 'uploads', 'khs');
-
-  await mkdir(uploadDir, { recursive: true });
-  await writeFile(filePath, buffer);
-  const fileUrl = `/uploads/khs/${fileName}`;
-
-  await prisma.monitoringKhs.create({
-    data: {
-      pengajuan_id: pengajuanId,
-      semester_ke: parseInt(semester),
-      tahun_akademik: tahunAkademik,
-      ipk: parseFloat(ipk),
-      file_khs_path: fileUrl,
-      catatan_evaluasi: catatan || null,
-      tanggal_unggah: new Date(),
-status_evaluasi: 'pending',
-    },
-  });
 
   revalidatePath('/user/laporanKHS');
   redirect('/user/laporanKHS');

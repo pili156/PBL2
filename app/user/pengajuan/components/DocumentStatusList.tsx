@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { FileText, Check, AlertCircle, Clock, Download, Award, Upload, Loader2 } from "lucide-react";
-import { getStatusBadgeClass } from "@/src/lib/status-utils";
+import { getStatusBadgeClass, getOverallPengajuanStatus } from "@/src/lib/status-utils";
 
 type Dokumen = {
   id: number;
@@ -143,13 +143,7 @@ export default function DocumentStatusList() {
 
   const getStatusOverall = () => {
     if (!data) return null;
-    const submittedDokumen = data.dokumen.filter((d) => d.file_path);
-    if (submittedDokumen.length === 0) return null;
-    const allTerverifikasi = submittedDokumen.every((d) => d.status_verifikasi === 'terverifikasi');
-    const hasRevisi = submittedDokumen.some((d) => d.status_verifikasi === 'revisi');
-    if (allTerverifikasi) return 'terverifikasi';
-    if (hasRevisi) return 'revisi';
-    return 'pending';
+    return getOverallPengajuanStatus(data.dokumen);
   };
 
   if (loading) {

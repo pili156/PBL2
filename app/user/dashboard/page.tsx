@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Upload, Wallet, ClipboardCheck, FileEdit } from "lucide-react";
+import { Upload, Wallet, ClipboardCheck, FileEdit, Check, AlertCircle, Clock } from "lucide-react";
+import { getStatusBadgeClass } from "@/src/lib/status-utils";
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer,
   LineChart, Line
@@ -118,7 +119,31 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between">
           <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Status Pengajuan</span>
-          <p className="text-lg font-bold text-blue-600 mt-2">{data.status_pengajuan}</p>
+          <div className="mt-2">
+            {data.status_pengajuan ? (() => {
+              let icon, label;
+              switch (data.status_pengajuan.toLowerCase()) {
+                case "terverifikasi":
+                  icon = <Check size={16} />;
+                  label = "TERVERIFIKASI";
+                  break;
+                case "revisi":
+                  icon = <AlertCircle size={16} />;
+                  label = "REVISI";
+                  break;
+                default:
+                  icon = <Clock size={16} />;
+                  label = "PENDING";
+              }
+              const badgeClass = getStatusBadgeClass(data.status_pengajuan, 'verifikasi');
+              return (
+                <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold uppercase ${badgeClass}`}>
+                  {icon}
+                  {label}
+                </span>
+              );
+            })() : <span className="text-slate-500 italic">-</span>}
+          </div>
         </div>
         <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between">
           <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Status Studi Terkini</span>
