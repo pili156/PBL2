@@ -261,3 +261,21 @@ model ActivityLog {
 
   @@map("activity_logs")
 }
+
+model MasterJurusan {
+  id            Int                  @id @default(autoincrement())
+  nama_jurusan  String               @unique
+  program_studi MasterProgramStudi[]
+
+  @@map("master_jurusan")
+}
+
+model MasterProgramStudi {
+  id           Int           @id @default(autoincrement())
+  jurusan_id   Int
+  nama_prodi   String
+  
+  jurusan      MasterJurusan @relation(fields: [jurusan_id], references: [id], onDelete: Cascade)
+
+  @@map("master_program_studi")
+}

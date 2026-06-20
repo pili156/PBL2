@@ -2,6 +2,47 @@
 import { prisma } from '../src/lib/prisma'; // Sesuaikan path ini dengan project kamu
 import bcrypt from 'bcryptjs';
 
+// --- DATA JURUSAN DAN PROGRAM STUDI ---
+const dataPolines = {
+  "Teknik Sipil": [
+    "D3 - Konstruksi Gedung",
+    "D3 - Konstruksi Sipil",
+    "D4 - Teknik Perawatan dan Perbaikan Gedung",
+    "D4 - Perancangan Jalan dan Jembatan",
+  ],
+  "Teknik Mesin": [
+    "D3 - Teknik Mesin",
+    "D3 - Teknik Konversi Energi",
+    "D4 - Teknik Mesin Produksi dan Perawatan",
+    "D4 - Teknologi Rekayasa Pembangkit Energi",
+  ],
+  "Teknik Elektro": [
+    "D3 - Teknik Listrik",
+    "D3 - Teknik Elektronika",
+    "D3 - Teknik Telekomunikasi",
+    "D3 - Teknik Informatika",
+    "D4 - Teknik Telekomunikasi",
+    "D4 - Teknologi Rekayasa Instalasi Listrik",
+    "D4 - Teknologi Rekayasa Komputer",
+    "D4 - Teknologi Rekayasa Elektronika",
+    "S2 Terapan - Teknik Telekomunikasi",
+  ],
+  "Akuntansi": [
+    "D3 - Akuntansi",
+    "D3 - Keuangan dan Perbankan",
+    "D4 - Komputerisasi Akuntansi",
+    "D4 - Perbankan Syariah",
+    "D4 - Analis Keuangan",
+    "D4 - Akuntansi Manajerial",
+  ],
+  "Administrasi Bisnis": [
+    "D3 - Administrasi Bisnis",
+    "D3 - Manajemen Pemasaran",
+    "D4 - Manajemen Bisnis Internasional",
+    "D4 - Administrasi Bisnis Terapan",
+  ],
+};
+
 async function main() {
   console.log('Memulai proses seeding (SIGAP Polines PBL2)...');
 
@@ -21,6 +62,8 @@ async function main() {
   await cleanUp(() => prisma.masterDokumen.deleteMany());
   await cleanUp(() => prisma.masterDosen.deleteMany());
   await cleanUp(() => prisma.user.deleteMany());
+  await cleanUp(() => prisma.masterProgramStudi.deleteMany()); // Tambahan cleanup prodi
+  await cleanUp(() => prisma.masterJurusan.deleteMany()); // Tambahan cleanup jurusan
   await cleanUp(() => prisma.masterWilayah.deleteMany());
   await cleanUp(() => prisma.masterStatusPengajuan.deleteMany());
   await cleanUp(() => prisma.masterJalurPendanaan.deleteMany());
@@ -62,7 +105,24 @@ async function main() {
   const wilayahDalamNegeri = await prisma.masterWilayah.create({ data: { id: 1, nama_wilayah: 'Dalam Negeri' } });
   const wilayahLuarNegeri = await prisma.masterWilayah.create({ data: { id: 2, nama_wilayah: 'Luar Negeri' } });
 
-  console.log('Data Master (Role, Jenis Studi, Pendanaan, Status, Dokumen, Wilayah) telah siap.');
+  // --- 2.6 Master Jurusan & Program Studi ---
+  console.log('Seeding Jurusan dan Program Studi...');
+  for (const [jurusanName, prodiList] of Object.entries(dataPolines)) {
+    await prisma.masterJurusan.upsert({
+      where: { nama_jurusan: jurusanName },
+      update: {}, 
+      create: {
+        nama_jurusan: jurusanName,
+        program_studi: {
+          create: prodiList.map((prodi) => ({
+            nama_prodi: prodi,
+          })),
+        },
+      },
+    });
+  }
+
+  console.log('Data Master (Role, Jenis Studi, Pendanaan, Status, Dokumen, Wilayah, Jurusan) telah siap.');
 
   // ===============================================================
   // === 3. SEED USERS & DOSEN PROFILE (Budi Doremi) ===
@@ -107,11 +167,11 @@ async function main() {
   // --- 3.5 Buat Profil Dosen Lengkap Budi (Tabel MasterDosen) ---
   await prisma.masterDosen.create({
     data: {
-      user_id: userDosenBudi.id,
+      user: { connect: { id: userDosenBudi.id } }, // Diperbaiki: Menggunakan connect
       nip: '198273645',
       nama_lengkap: 'Budi Doremi, S.Kom., M.T.',
       pangkat_golongan: 'Penata Muda Tk I (III/b)',
-      jabatan: 'Asisten Ahli',
+      jabatan: 'Asisten Ahli', // Diperbaiki: Typo dari 'jabatu' menjadi 'jabatan'
       unit_kerja: 'Politeknik Negeri Semarang',
       jurusan: 'Teknik Elektro',
       program_studi: 'Teknik Informatika',
@@ -295,4 +355,3 @@ main()
   .finally(async () => {
     await prisma.$disconnect();
   });
-  
