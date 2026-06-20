@@ -6,9 +6,10 @@ import { ArrowLeft, FileText } from "lucide-react";
 
 interface DetailHeaderProps {
   pengajuan: PengajuanDetail | null;
+  allDocumentsVerified?: boolean;
 }
 
-export default function DetailHeader({ pengajuan }: DetailHeaderProps) {
+export default function DetailHeader({ pengajuan, allDocumentsVerified = false }: DetailHeaderProps) {
   if (!pengajuan) {
     return null;
   }
@@ -37,7 +38,7 @@ export default function DetailHeader({ pengajuan }: DetailHeaderProps) {
           <p className="text-slate-600 mt-2">NIP: {pengajuan.nip}</p>
         </div>
         <div className="flex items-center gap-3">
-          {pengajuan.id && (
+          {pengajuan.id && allDocumentsVerified ? (
             <Link
               href={`/admin/status/${pengajuan.id}`}
               className="flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors text-sm font-semibold"
@@ -45,7 +46,15 @@ export default function DetailHeader({ pengajuan }: DetailHeaderProps) {
               <FileText size={16} />
               Upload SK
             </Link>
-          )}
+          ) : pengajuan.id ? (
+            <span
+              title="Semua dokumen harus terverifikasi terlebih dahulu"
+              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-300 text-white cursor-not-allowed transition-colors text-sm font-semibold opacity-60"
+            >
+              <FileText size={16} />
+              Upload SK
+            </span>
+          ) : null}
           <Link
             href="/admin/verifikasi-pengajuan"
             className="flex items-center gap-2 px-4 py-2 rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-50 transition-colors"

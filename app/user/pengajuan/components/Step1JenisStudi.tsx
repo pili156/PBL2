@@ -6,7 +6,13 @@ import { StudyType, FundingType, StudyRegion } from "../type";
 import { STUDY_TYPES, FUNDING_TYPES, STUDY_REGIONS } from "../constants";
 
 type Props = {
-  onNext: (data: { studyType: StudyType; fundingType: FundingType; studyRegion: StudyRegion; perguruanTinggi: string }) => void;
+  onNext: (data: {
+    studyType: StudyType;
+    fundingType: FundingType;
+    studyRegion: StudyRegion;
+    perguruanTinggi: string;
+    namaBeasiswa: string;
+  }) => void;
 };
 
 const ICON_MAP = {
@@ -27,6 +33,7 @@ export default function Step1JenisStudi({ onNext }: Props) {
   const [studyType, setStudyType] = useState<StudyType | null>(null);
   const [fundingType, setFundingType] = useState<FundingType | null>(null);
   const [studyRegion, setStudyRegion] = useState<StudyRegion | null>(null);
+  const [namaBeasiswa, setNamaBeasiswa] = useState("");
   const [perguruanTinggi, setPerguruanTinggi] = useState("");
   const [selections, setSelections] = useState<SelectionState>({ studyType: false, fundingType: false, studyRegion: false });
   const [autoSaveStatus, setAutoSaveStatus] = useState<"idle" | "saving" | "saved">("idle");
@@ -40,43 +47,88 @@ export default function Step1JenisStudi({ onNext }: Props) {
         if (data.studyType) setStudyType(data.studyType as StudyType);
         if (data.fundingType) setFundingType(data.fundingType as FundingType);
         if (data.studyRegion) setStudyRegion(data.studyRegion as StudyRegion);
+        if (data.namaBeasiswa) setNamaBeasiswa(data.namaBeasiswa as string);
+        if (data.perguruanTinggi) setPerguruanTinggi(data.perguruanTinggi as string);
       } catch (e) {}
     }
   }, []);
+
+  useEffect(() => {
+    if (fundingType === "beasiswa") {
+      setNamaBeasiswa((current) => current);
+    } else {
+      setNamaBeasiswa("");
+    }
+
+    setStudyType(null);
+    setStudyRegion(null);
+  }, [fundingType]);
 
   useEffect(() => {
     setSelections({ studyType: !!studyType, fundingType: !!fundingType, studyRegion: !!studyRegion });
   }, [studyType, fundingType, studyRegion]);
 
   useEffect(() => {
-    if (studyType && fundingType && studyRegion) {
+    const canAutoSave =
+      studyType &&
+      fundingType &&
+      studyRegion &&
+      (fundingType !== "beasiswa" || namaBeasiswa.trim() !== "");
+
+    if (canAutoSave) {
       setAutoSaveStatus("saving");
       const timer = setTimeout(() => {
-        localStorage.setItem("pengajuan_step1_draft", JSON.stringify({ studyType, fundingType, studyRegion, perguruanTinggi }));
+        localStorage.setItem(
+          "pengajuan_step1_draft",
+          JSON.stringify({ studyType, fundingType, studyRegion, perguruanTinggi, namaBeasiswa })
+        );
         setAutoSaveStatus("saved");
         setTimeout(() => setAutoSaveStatus("idle"), 2000);
       }, 1000);
       return () => clearTimeout(timer);
     }
-  }, [studyType, fundingType, studyRegion]);
+  }, [studyType, fundingType, studyRegion, perguruanTinggi, namaBeasiswa]);
 
   const handleNext = () => {
     setIsAnimating(true);
     setTimeout(() => {
-      if (studyType && fundingType && studyRegion) {
-        onNext({ studyType, fundingType, studyRegion, perguruanTinggi });
+      if (
+        studyType &&
+        fundingType &&
+        studyRegion &&
+        perguruanTinggi.trim() !== "" &&
+        (fundingType !== "beasiswa" || namaBeasiswa.trim() !== "")
+      ) {
+        onNext({ studyType, fundingType, studyRegion, perguruanTinggi, namaBeasiswa });
       }
       setIsAnimating(false);
     }, 300);
   };
 
-  const isComplete = studyType && fundingType && studyRegion;
+  const isComplete =
+    studyType &&
+    fundingType &&
+    studyRegion &&
+    perguruanTinggi.trim() !== "" &&
+    (fundingType !== "beasiswa" || namaBeasiswa.trim() !== "");
 
   const allSelectionsMade = selections.studyType && selections.fundingType && selections.studyRegion;
+  const shouldShowStudyType =
+    fundingType === "mandiri" ||
+    (fundingType === "beasiswa" && namaBeasiswa.trim() !== "");
+  const shouldShowRegionAndPT = !!fundingType;
+
+  let stepCounter = 2;
+  if (fundingType === "beasiswa") stepCounter++;
+  const studyTypeStepNumber = stepCounter;
+  if (shouldShowStudyType) stepCounter++;
+  const regionStepNumber = stepCounter;
+  stepCounter++;
+  const ptStepNumber = stepCounter;
 
   const steps = [
-    { key: "studyType" as const, label: "Pilih jenis studi", number: 1, isSelected: selections.studyType },
-    { key: "fundingType" as const, label: "Pilih jalur pendanaan", number: 2, isSelected: selections.fundingType },
+    { key: "fundingType" as const, label: "Pilih jalur pendanaan", number: 1, isSelected: selections.fundingType },
+    { key: "studyType" as const, label: "Pilih jenis studi", number: 2, isSelected: selections.studyType },
     { key: "studyRegion" as const, label: "Pilih wilayah studi", number: 3, isSelected: selections.studyRegion },
   ];
 
@@ -131,66 +183,6 @@ export default function Step1JenisStudi({ onNext }: Props) {
         <div className="flex items-center gap-3 mb-6">
           <div className="flex items-center justify-center w-10 h-10 bg-blue-600 text-white rounded-full font-semibold">
             01
-          </div>
-          <h2 className="text-xl font-bold text-gray-900">Pilih jenis studi</h2>
-        </div>
-
-        <div className="grid grid-cols-2 gap-6">
-          {STUDY_TYPES.map((type) => {
-            const Icon = ICON_MAP[type.icon as keyof typeof ICON_MAP];
-            const isSelected = studyType === type.id;
-
-            return (
-              <button
-                key={type.id}
-                onClick={() => setStudyType(type.id as StudyType)}
-                className={`group relative p-6 rounded-xl border-2 transition-all duration-300 text-left ${
-                  isSelected
-                    ? "border-blue-500 bg-blue-50 shadow-lg shadow-blue-100 scale-[1.02]"
-                    : "border-gray-200 bg-white hover:border-blue-300 hover:bg-blue-50/30 hover:shadow-md"
-                }`}
-              >
-                <div
-                  className={`absolute top-4 right-4 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${
-                    isSelected
-                      ? "border-blue-600 bg-blue-600"
-                      : "border-gray-300 bg-white group-hover:border-blue-400"
-                  }`}
-                >
-                  {isSelected && <div className="w-2 h-2 bg-white rounded-full" />}
-                </div>
-
-                <div className="mb-4">
-                  <div
-                    className={`inline-flex p-3 rounded-lg transition-all ${
-                      isSelected ? "bg-blue-200" : "bg-gray-100 group-hover:bg-blue-100"
-                    }`}
-                  >
-                    <Icon
-                      size={24}
-                      className={
-                        isSelected ? "text-blue-600" : "text-gray-500 group-hover:text-blue-500"
-                      }
-                    />
-                  </div>
-                </div>
-
-                <h3 className="font-semibold text-gray-900 text-lg mb-2">
-                  {type.title}
-                </h3>
-                <p className="text-sm text-gray-600 leading-relaxed">
-                  {type.description}
-                </p>
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      <div className="mb-10">
-        <div className="flex items-center gap-3 mb-6">
-          <div className="flex items-center justify-center w-10 h-10 bg-blue-600 text-white rounded-full font-semibold">
-            02
           </div>
           <h2 className="text-xl font-bold text-gray-900">
             Pilih jalur pendanaan
@@ -249,91 +241,134 @@ export default function Step1JenisStudi({ onNext }: Props) {
         </div>
       </div>
 
-      <div className="mb-10">
-        <div className="flex items-center gap-3 mb-6">
-          <div className="flex items-center justify-center w-10 h-10 bg-blue-600 text-white rounded-full font-semibold">
-            03
+      {fundingType === "beasiswa" && (
+        <div className="mb-10">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="flex items-center justify-center w-10 h-10 bg-blue-600 text-white rounded-full font-semibold">02</div>
+            <h2 className="text-xl font-bold text-gray-900">Nama Beasiswa</h2>
           </div>
-          <h2 className="text-xl font-bold text-gray-900">
-            Pilih Wilayah Studi
-          </h2>
-        </div>
-
-        <div className="grid grid-cols-2 gap-6">
-          {STUDY_REGIONS.map((region) => {
-            const Icon = ICON_MAP[region.icon as keyof typeof ICON_MAP];
-            const isSelected = studyRegion === region.id;
-
-            return (
-              <button
-                key={region.id}
-                onClick={() => setStudyRegion(region.id as StudyRegion)}
-                className={`group relative p-6 rounded-xl border-2 transition-all duration-300 text-left ${
-                  isSelected
-                    ? "border-blue-500 bg-blue-50 shadow-lg shadow-blue-100 scale-[1.02]"
-                    : "border-gray-200 bg-white hover:border-blue-300 hover:bg-blue-50/30 hover:shadow-md"
-                }`}
-              >
-                <div
-                  className={`absolute top-4 right-4 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${
-                    isSelected
-                      ? "border-blue-600 bg-blue-600"
-                      : "border-gray-300 bg-white group-hover:border-blue-400"
-                  }`}
-                >
-                  {isSelected && <div className="w-2 h-2 bg-white rounded-full" />}
-                </div>
-
-                <div className="mb-4">
-                  <div
-                    className={`inline-flex p-3 rounded-lg transition-all ${
-                      isSelected ? "bg-blue-200" : "bg-gray-100 group-hover:bg-blue-100"
-                    }`}
-                  >
-                    <Icon
-                      size={24}
-                      className={
-                        isSelected ? "text-blue-600" : "text-gray-500 group-hover:text-blue-500"
-                      }
-                    />
-                  </div>
-                </div>
-
-                <h3 className="font-semibold text-gray-900 text-lg mb-2">
-                  {region.title}
-                </h3>
-                <p className="text-sm text-gray-600 leading-relaxed">
-                  {region.description}
-                </p>
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      <div className="mb-10">
-        <div className="flex items-center gap-3 mb-6">
-          <div className="flex items-center justify-center w-10 h-10 bg-blue-600 text-white rounded-full font-semibold">
-            04
-          </div>
-          <h2 className="text-xl font-bold text-gray-900">
-            Perguruan Tinggi Tujuan
-          </h2>
-        </div>
-        <div className="relative">
-          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
-            <Building2 size={20} />
-          </span>
           <input
             type="text"
-            value={perguruanTinggi}
-            onChange={(e) => setPerguruanTinggi(e.target.value)}
-            placeholder="Masukkan nama perguruan tinggi tujuan"
-            className="w-full border border-gray-200 rounded-xl pl-12 pr-4 py-3 text-sm text-gray-700 outline-none focus:border-blue-500 transition-colors bg-white"
-            required
+            value={namaBeasiswa}
+            onChange={(e) => setNamaBeasiswa(e.target.value)}
+            placeholder="Masukkan nama beasiswa yang dipilih"
+            className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-700 outline-none focus:border-blue-500 transition-colors bg-white"
           />
         </div>
-      </div>
+      )}
+
+      {shouldShowStudyType && (
+        <div className="mb-10">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="flex items-center justify-center w-10 h-10 bg-blue-600 text-white rounded-full font-semibold">{studyTypeStepNumber}</div>
+            <h2 className="text-xl font-bold text-gray-900">Pilih jenis studi</h2>
+          </div>
+
+          <div className="grid grid-cols-2 gap-6">
+            {STUDY_TYPES.map((type) => {
+              const Icon = ICON_MAP[type.icon as keyof typeof ICON_MAP];
+              const isSelected = studyType === type.id;
+
+              return (
+                <button
+                  key={type.id}
+                  type="button"
+                  onClick={() => setStudyType(type.id as StudyType)}
+                  className={`group relative p-6 rounded-xl border-2 transition-all duration-300 text-left ${
+                    isSelected
+                      ? "border-blue-500 bg-blue-50 shadow-lg shadow-blue-100 scale-[1.02]"
+                      : "border-gray-200 bg-white hover:border-blue-300 hover:bg-blue-50/30 hover:shadow-md"
+                  }`}>
+                  <div
+                    className={`absolute top-4 right-4 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${
+                      isSelected
+                        ? "border-blue-600 bg-blue-600"
+                        : "border-gray-300 bg-white group-hover:border-blue-400"
+                    }`}>
+                    {isSelected && <div className="w-2 h-2 bg-white rounded-full" />}
+                  </div>
+
+                  <div className="mb-4">
+                    <div className={`inline-flex p-3 rounded-lg transition-all ${isSelected ? "bg-blue-200" : "bg-gray-100 group-hover:bg-blue-100"}`}>
+                      <Icon size={24} className={isSelected ? "text-blue-600" : "text-gray-500 group-hover:text-blue-500"} />
+                    </div>
+                  </div>
+
+                  <h3 className="font-semibold text-gray-900 text-lg mb-2">{type.title}</h3>
+                  <p className="text-sm text-gray-600 leading-relaxed">{type.description}</p>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {shouldShowRegionAndPT && (
+        <>
+          <div className="mb-10">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="flex items-center justify-center w-10 h-10 bg-blue-600 text-white rounded-full font-semibold">{regionStepNumber}</div>
+              <h2 className="text-xl font-bold text-gray-900">Pilih wilayah studi</h2>
+            </div>
+
+            <div className="grid grid-cols-2 gap-6">
+              {STUDY_REGIONS.map((region) => {
+                const Icon = ICON_MAP[region.icon as keyof typeof ICON_MAP];
+                const isSelected = studyRegion === region.id;
+
+                return (
+                  <button
+                    key={region.id}
+                    type="button"
+                    onClick={() => setStudyRegion(region.id as StudyRegion)}
+                    className={`group relative p-6 rounded-xl border-2 transition-all duration-300 text-left ${
+                      isSelected
+                        ? "border-blue-500 bg-blue-50 shadow-lg shadow-blue-100 scale-[1.02]"
+                        : "border-gray-200 bg-white hover:border-blue-300 hover:bg-blue-50/30 hover:shadow-md"
+                    }`}>
+                    <div
+                      className={`absolute top-4 right-4 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${
+                        isSelected
+                          ? "border-blue-600 bg-blue-600"
+                          : "border-gray-300 bg-white group-hover:border-blue-400"
+                    }`}>
+                      {isSelected && <div className="w-2 h-2 bg-white rounded-full" />}
+                    </div>
+
+                    <div className="mb-4">
+                      <div className={`inline-flex p-3 rounded-lg transition-all ${isSelected ? "bg-blue-200" : "bg-gray-100 group-hover:bg-blue-100"}`}>
+                        <Icon size={24} className={isSelected ? "text-blue-600" : "text-gray-500 group-hover:text-blue-500"} />
+                      </div>
+                    </div>
+
+                    <h3 className="font-semibold text-gray-900 text-lg mb-2">{region.title}</h3>
+                    <p className="text-sm text-gray-600 leading-relaxed">{region.description}</p>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="mb-10">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="flex items-center justify-center w-10 h-10 bg-blue-600 text-white rounded-full font-semibold">{ptStepNumber}</div>
+              <h2 className="text-xl font-bold text-gray-900">Perguruan Tinggi Tujuan</h2>
+            </div>
+            <div className="relative">
+              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
+                <Building2 size={20} />
+              </span>
+              <input
+                type="text"
+                value={perguruanTinggi}
+                onChange={(e) => setPerguruanTinggi(e.target.value)}
+                placeholder="Masukkan nama perguruan tinggi tujuan"
+                className="w-full border border-gray-200 rounded-xl pl-12 pr-4 py-3 text-sm text-gray-700 outline-none focus:border-blue-500 transition-colors bg-white"
+              />
+            </div>
+          </div>
+        </>
+      )}
 
       <div className="mb-8 p-5 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl">
         <div className="flex items-start gap-4">

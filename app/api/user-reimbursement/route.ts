@@ -67,7 +67,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: parsed.error.issues[0].message }, { status: 400 });
     }
 
-    const { semester_ke: semesterKe, tahun_akademik: tahunAkademik, tahun_ke: tahunKe, nominal: nominalValue, catatan_keuangan: catatan, jenis_pengajuan: jenisPengajuan } = parsed.data;
+    const { semester_ke: semesterKe, tahun_akademik: tahunAkademik, tahun_ke: tahunKe, nominal: nominalValue, catatan_keuangan: catatan, jenis_pengajuan: jenisPengajuan, nomor_rekening: nomorRekening, nama_bank: namaBank } = parsed.data;
 
     const pengajuan = await prisma.pengajuanStudi.findFirst({
       where: { user_id: userId },
@@ -110,6 +110,8 @@ export async function POST(request: Request) {
         nominal: nominalNumber,
         status_pencairan: "pending",
         catatan_keuangan: catatan || null,
+        nomor_rekening: nomorRekening,
+        nama_bank: namaBank,
       },
     });
 

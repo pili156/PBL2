@@ -37,6 +37,7 @@ export type PengajuanFormData = {
   studyType?: StudyType;
   fundingType?: FundingType;
   studyRegion?: StudyRegion;
+  namaBeasiswa?: string;
   documents: Record<DocumentType, UploadFile | null>;
 };
 

@@ -64,6 +64,7 @@ async function main() {
   await cleanUp(() => prisma.user.deleteMany());
   await cleanUp(() => prisma.masterProgramStudi.deleteMany());
   await cleanUp(() => prisma.masterJurusan.deleteMany());
+  await cleanUp(() => prisma.masterBank.deleteMany());
   await cleanUp(() => prisma.masterWilayah.deleteMany());
   await cleanUp(() => prisma.masterStatusPengajuan.deleteMany());
   await cleanUp(() => prisma.masterJalurPendanaan.deleteMany());
@@ -96,11 +97,31 @@ async function main() {
   await prisma.masterStatusPengajuan.create({ data: { id: 7, nama_status: 'terverifikasi' } });
   await prisma.masterStatusPengajuan.create({ data: { id: 8, nama_status: 'revisi' } });
 
-  // --- 2.5 Master Dokumen (Untuk Syarat Awal) ---
-  await prisma.masterDokumen.create({ data: { id: 1, nama_dokumen: 'SK CPNS', is_mandatory: true, syarat_wilayah: 'Semua' } });
-  await prisma.masterDokumen.create({ data: { id: 2, nama_dokumen: 'LoA (Letter of Acceptance) Universitas', is_mandatory: true, syarat_wilayah: 'Semua' } });
-  await prisma.masterDokumen.create({ data: { id: 3, nama_dokumen: 'Surat Izin Studi (Dari Kampus)', is_mandatory: true, syarat_wilayah: 'Semua' } });
-  await prisma.masterDokumen.create({ data: { id: 4, nama_dokumen: 'SK Tugas Belajar (Kementerian)', is_mandatory: true, syarat_wilayah: 'Semua' } });
+  // --- 2.5 Master Dokumen (Utuk Syarat Awal & Upload Pengajuan) ---
+  await prisma.masterDokumen.create({ data: { id: 1, nama_dokumen: 'Kartu Virtual ASN', is_mandatory: true, syarat_wilayah: 'Semua' } });
+  await prisma.masterDokumen.create({ data: { id: 2, nama_dokumen: 'SK CPNS', is_mandatory: false, syarat_wilayah: 'Semua' } });
+  await prisma.masterDokumen.create({ data: { id: 3, nama_dokumen: 'SK PNS', is_mandatory: false, syarat_wilayah: 'Semua' } });
+  await prisma.masterDokumen.create({ data: { id: 4, nama_dokumen: 'SK Pangkat Terakhir', is_mandatory: true, syarat_wilayah: 'Semua' } });
+  await prisma.masterDokumen.create({ data: { id: 5, nama_dokumen: 'SK Jabatan Terakhir', is_mandatory: true, syarat_wilayah: 'Semua' } });
+  await prisma.masterDokumen.create({ data: { id: 6, nama_dokumen: 'Penilaian Prestasi Kerja', is_mandatory: true, syarat_wilayah: 'Semua' } });
+  await prisma.masterDokumen.create({ data: { id: 7, nama_dokumen: 'Akta Nikah', is_mandatory: false, syarat_wilayah: 'Semua' } });
+  await prisma.masterDokumen.create({ data: { id: 8, nama_dokumen: 'KP-4', is_mandatory: false, syarat_wilayah: 'Semua' } });
+  await prisma.masterDokumen.create({ data: { id: 9, nama_dokumen: 'SK Kesehatan Jasmani', is_mandatory: true, syarat_wilayah: 'Semua' } });
+  await prisma.masterDokumen.create({ data: { id: 10, nama_dokumen: 'Surat Rekomendasi Atasan', is_mandatory: true, syarat_wilayah: 'Semua' } });
+  await prisma.masterDokumen.create({ data: { id: 11, nama_dokumen: 'Surat Keterangan Pimpinan', is_mandatory: true, syarat_wilayah: 'Semua' } });
+  await prisma.masterDokumen.create({ data: { id: 12, nama_dokumen: 'Perjanjian Tugas Belajar', is_mandatory: true, syarat_wilayah: 'Semua' } });
+  await prisma.masterDokumen.create({ data: { id: 13, nama_dokumen: 'Jaminan Pembiayaan', is_mandatory: false, syarat_wilayah: 'Semua' } });
+  await prisma.masterDokumen.create({ data: { id: 14, nama_dokumen: 'Fotokopi Surat LoA', is_mandatory: true, syarat_wilayah: 'Semua' } });
+  await prisma.masterDokumen.create({ data: { id: 15, nama_dokumen: 'Surat Pernyataan Pimpinan Unit', is_mandatory: true, syarat_wilayah: 'Semua' } });
+  await prisma.masterDokumen.create({ data: { id: 16, nama_dokumen: 'Surat Pernyataan Pegawai', is_mandatory: true, syarat_wilayah: 'Semua' } });
+  await prisma.masterDokumen.create({ data: { id: 17, nama_dokumen: 'Ijazah Pendidikan Terakhir', is_mandatory: true, syarat_wilayah: 'Semua' } });
+  await prisma.masterDokumen.create({ data: { id: 18, nama_dokumen: 'Surat Akreditasi Prodi & Kampus', is_mandatory: true, syarat_wilayah: 'Semua' } });
+  await prisma.masterDokumen.create({ data: { id: 19, nama_dokumen: 'Surat Persetujuan Seteng', is_mandatory: false, syarat_wilayah: 'Semua' } });
+  await prisma.masterDokumen.create({ data: { id: 20, nama_dokumen: 'SK Kesehatan Rohani', is_mandatory: true, syarat_wilayah: 'Semua' } });
+  await prisma.masterDokumen.create({ data: { id: 21, nama_dokumen: 'Formulir Bantuan Studi', is_mandatory: true, syarat_wilayah: 'Semua' } });
+  await prisma.masterDokumen.create({ data: { id: 22, nama_dokumen: 'Bukti Pembayaran SPP', is_mandatory: true, syarat_wilayah: 'Semua' } });
+  await prisma.masterDokumen.create({ data: { id: 23, nama_dokumen: 'Bukti Akreditasi Program Studi', is_mandatory: true, syarat_wilayah: 'Semua' } });
+  await prisma.masterDokumen.create({ data: { id: 24, nama_dokumen: 'Letter of Acceptance (LoA)', is_mandatory: true, syarat_wilayah: 'Semua' } });
   const wilayahDalamNegeri = await prisma.masterWilayah.create({ data: { id: 1, nama_wilayah: 'Dalam Negeri' } });
   const wilayahLuarNegeri = await prisma.masterWilayah.create({ data: { id: 2, nama_wilayah: 'Luar Negeri' } });
 
@@ -187,7 +208,18 @@ async function main() {
     });
   }
 
-  console.log('Data Master (Role, Jenis Studi, Pendanaan, Status, Dokumen, Wilayah, Jurusan) telah siap.');
+  // --- 2.7 Master Bank ---
+  console.log('Seeding Master Bank...');
+  const bankNames = ['BNI', 'BRI', 'BSI', 'BCA', 'Mandiri'];
+  for (const nama of bankNames) {
+    await prisma.masterBank.upsert({
+      where: { nama_bank: nama },
+      update: {},
+      create: { nama_bank: nama },
+    });
+  }
+
+  console.log('Data Master (Role, Jenis Studi, Pendanaan, Status, Dokumen, Wilayah, Jurusan, Bank) telah siap.');
 
   // ===============================================================
   // === 3. SEED USERS & DOSEN PROFILE (Budi Doremi) ===

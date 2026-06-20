@@ -32,24 +32,41 @@ export default async function BantuanStudiPage() {
       pengajuan_reimbursement: {
         where: { jenis_pengajuan: "bantuan_studi" },
         orderBy: { created_at: "desc" },
+        include: {
+          dokumen_pengajuan: true,
+        },
       },
     },
   });
 
   const bantuanStudiList = pengajuan?.pengajuan_reimbursement ?? [];
 
+  // Helper function to determine effective status based on documents and pencairan status
+  const getEffectiveStatus = (item: typeof bantuanStudiList[0]): string => {
+    // Check if any document has revisi status
+    const hasDocumentRevision = item.dokumen_pengajuan?.some(
+      (doc) => doc.status_verifikasi === "revisi"
+    );
+
+    if (hasDocumentRevision) {
+      return "revisi";
+    }
+
+    return item.status_pencairan?.toLowerCase() ?? "pending";
+  };
+
   const counts = {
     total: bantuanStudiList.length,
     diproses: bantuanStudiList.filter((item) => {
-      const status = item.status_pencairan?.toLowerCase() ?? "";
+      const status = getEffectiveStatus(item);
       return ["pending", "draft"].includes(status);
     }).length,
     disetujui: bantuanStudiList.filter((item) => {
-      const status = item.status_pencairan?.toLowerCase() ?? "";
+      const status = getEffectiveStatus(item);
       return ["disetujui", "dicairkan", "selesai"].includes(status);
     }).length,
     revisi: bantuanStudiList.filter((item) => {
-      const status = item.status_pencairan?.toLowerCase() ?? "";
+      const status = getEffectiveStatus(item);
       return ["ditolak", "dibatalkan", "revisi"].includes(status);
     }).length,
   };
@@ -128,7 +145,11 @@ export default async function BantuanStudiPage() {
                           : "-"}
                       </td>
                       <td className="px-4 py-4">
-                        <StatusBadge status={item.status_pencairan} domain="pencairan" size="md" />
+                        <StatusBadge 
+                          status={getEffectiveStatus(item)} 
+                          domain={item.dokumen_pengajuan?.some(doc => doc.status_verifikasi === "revisi") ? "verifikasi" : "pencairan"} 
+                          size="md" 
+                        />
                       </td>
                       <td className="px-4 py-4 text-center">
                         <Link

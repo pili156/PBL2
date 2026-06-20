@@ -18,6 +18,8 @@ type BantuanStudiDetail = {
   status_pencairan: string | null;
   catatan_keuangan: string | null;
   file_bukti_bayar: string | null;
+  nama_bank: string | null;
+  nomor_rekening: string | null;
   created_at: string | null;
   pengajuan_studi: {
     id: number;
@@ -285,6 +287,14 @@ export default function BantuanStudiDetailPage() {
               <div>
                 <p className="text-xs text-slate-500">Tahun Akademik</p>
                 <p className="font-semibold text-slate-900">{data.tahun_akademik || "-"}</p>
+              </div>
+              <div>
+                <p className="text-xs text-slate-500">Bank</p>
+                <p className="font-semibold text-slate-900">{data.nama_bank || "-"}</p>
+              </div>
+              <div>
+                <p className="text-xs text-slate-500">Nomor Rekening</p>
+                <p className="font-semibold text-slate-900">{data.nomor_rekening || "-"}</p>
               </div>
               <div>
                 <p className="text-xs text-slate-500">Nominal</p>
