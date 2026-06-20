@@ -122,11 +122,32 @@ model MasterStatusPengajuan {
 }
 
 model MasterWilayah {
-  id          Int              @id @default(autoincrement())
+  id           Int              @id @default(autoincrement())
   nama_wilayah String?
-  pengajuan   PengajuanStudi[]
+  pengajuan    PengajuanStudi[]
 
   @@map("master_wilayah")
+}
+
+model MasterJabatan {
+  id         Int      @id @default(autoincrement())
+  nama       String   @unique
+  singkatan  String   @unique
+  urutan     Int
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@map("master_jabatan")
+}
+
+model MasterPangkat {
+  id         Int      @id @default(autoincrement())
+  pangkat    String
+  golongan   String   @unique
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@map("master_pangkat")
 }
 
 model MasterDokumen {

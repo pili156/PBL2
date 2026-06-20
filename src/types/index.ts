@@ -16,3 +16,5 @@ export type MenuItem = {
   icon: IconName;
   allowedRoles: string[];
 };
+
+export * from './master';

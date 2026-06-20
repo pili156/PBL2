@@ -3,11 +3,13 @@ import { prisma } from '@/src/lib/prisma';
 
 export async function GET() {
   try {
-    const [jenisStudi, jalurPendanaan, wilayah, masterDokumen] = await Promise.all([
+    const [jenisStudi, jalurPendanaan, wilayah, masterDokumen, masterJabatan, masterPangkat] = await Promise.all([
       prisma.masterJenisStudi.findMany(),
       prisma.masterJalurPendanaan.findMany(),
       prisma.masterWilayah.findMany(),
       prisma.masterDokumen.findMany(),
+      prisma.masterJabatan.findMany({ orderBy: { urutan: 'asc' } }),
+      prisma.masterPangkat.findMany({ orderBy: { golongan: 'asc' } }),
     ]);
 
     return NextResponse.json({
@@ -15,6 +17,8 @@ export async function GET() {
       jalurPendanaan,
       wilayah,
       masterDokumen,
+      masterJabatan,
+      masterPangkat,
     });
   } catch (error) {
     console.error('Error fetching master data:', error);
