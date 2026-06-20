@@ -16,6 +16,7 @@ const PATH_ROLE_MAP: Record<string, string[]> = {
   '/user': ['dosen'],
   '/admin': ['admin', 'master_admin'],
   '/master_admin': ['master_admin'],
+
 };
 
 const ROLE_TO_COOKIE: Record<string, string> = {
