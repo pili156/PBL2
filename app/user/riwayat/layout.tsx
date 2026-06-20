@@ -21,6 +21,11 @@ export default async function RiwayatLayout({ children }: { children: React.Reac
           status: true,
           jenis_studi: true,
           jalur_pendanaan: true,
+          pengajuan_reimbursement: {
+            include: {
+              dokumen_pengajuan: true,
+            },
+          },
         },
         orderBy: { created_at: 'desc' },
         take: 1,
@@ -29,6 +34,20 @@ export default async function RiwayatLayout({ children }: { children: React.Reac
   });
 
   if (!user) notFound();
+
+  // Helper function to determine effective status based on documents and pencairan status
+  const getEffectiveStatus = (item: typeof user.pengajuan_studi[0]['pengajuan_reimbursement'][0]): string => {
+    // Check if any document has revisi status
+    const hasDocumentRevision = item.dokumen_pengajuan?.some(
+      (doc) => doc.status_verifikasi === "revisi"
+    );
+
+    if (hasDocumentRevision) {
+      return "revisi";
+    }
+
+    return item.status_pencairan?.toLowerCase() ?? "pending";
+  };
 
   const namaLengkap = user.master_dosen?.nama_lengkap || user.username || 'Dosen';
   const inisial = namaLengkap.charAt(0).toUpperCase();
@@ -40,6 +59,19 @@ export default async function RiwayatLayout({ children }: { children: React.Reac
   const jenisStudi = latestPengajuan?.jenis_studi?.nama_jenis || null;
   const jalurPendanaan = latestPengajuan?.jalur_pendanaan?.nama_pendanaan || null;
   const perguruanTinggi = latestPengajuan?.perguruan_tinggi || null;
+
+  // Calculate bantuan cair with effective status
+  let totalBantuanCair = 0;
+  if (latestPengajuan?.pengajuan_reimbursement) {
+    for (const r of latestPengajuan.pengajuan_reimbursement) {
+      if (r.nominal) {
+        const effectiveStatus = getEffectiveStatus(r);
+        if (["dicairkan", "selesai"].includes(effectiveStatus)) {
+          totalBantuanCair += Number(r.nominal);
+        }
+      }
+    }
+  }
 
   return (
     <div className="space-y-6">
