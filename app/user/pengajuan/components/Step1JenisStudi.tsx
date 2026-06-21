@@ -1,9 +1,11 @@
+// app/user/pengajuan/components/Step1JenisStudi.tsx
 "use client";
 
 import { useState, useEffect } from "react";
 import { Book, GraduationCap, Award, Wallet, MapPin, Save, ArrowRight, Loader2, Check, Building2 } from "lucide-react";
 import { StudyType, FundingType, StudyRegion } from "../type";
 import { STUDY_TYPES, FUNDING_TYPES, STUDY_REGIONS } from "../constants";
+import { getKampusDariDatabase } from "../actions";
 
 type Props = {
   onNext: (data: {
@@ -29,7 +31,16 @@ interface SelectionState {
   studyRegion: boolean;
 }
 
+const DAFTAR_BEASISWA = [
+  "LPDP",
+  "BPI (Beasiswa Pendidikan Indonesia)",
+  "Beasiswa Unggulan Kemendikbud",
+  "AAS (Australia Awards Scholarships)",
+  "Lainnya..."
+];
+
 export default function Step1JenisStudi({ onNext }: Props) {
+  // STATE ASLI MILIKMU
   const [studyType, setStudyType] = useState<StudyType | null>(null);
   const [fundingType, setFundingType] = useState<FundingType | null>(null);
   const [studyRegion, setStudyRegion] = useState<StudyRegion | null>(null);
@@ -39,6 +50,18 @@ export default function Step1JenisStudi({ onNext }: Props) {
   const [autoSaveStatus, setAutoSaveStatus] = useState<"idle" | "saving" | "saved">("idle");
   const [isAnimating, setIsAnimating] = useState(false);
 
+  // STATE TAMBAHAN UNTUK FITUR BARU
+  const [dbPtn, setDbPtn] = useState<any[]>([]);
+  const [beasiswaCustom, setBeasiswaCustom] = useState("");
+  const [ptnCustom, setPtnCustom] = useState("");
+
+  // Ambil data PTN dari database
+  useEffect(() => {
+    getKampusDariDatabase().then((data) => {
+      if (data) setDbPtn(data);
+    });
+  }, []);
+
   useEffect(() => {
     const saved = localStorage.getItem("pengajuan_step1_draft");
     if (saved) {
@@ -47,17 +70,42 @@ export default function Step1JenisStudi({ onNext }: Props) {
         if (data.studyType) setStudyType(data.studyType as StudyType);
         if (data.fundingType) setFundingType(data.fundingType as FundingType);
         if (data.studyRegion) setStudyRegion(data.studyRegion as StudyRegion);
-        if (data.namaBeasiswa) setNamaBeasiswa(data.namaBeasiswa as string);
-        if (data.perguruanTinggi) setPerguruanTinggi(data.perguruanTinggi as string);
+        
+        // Handle Beasiswa
+        if (data.namaBeasiswa) {
+          if (!DAFTAR_BEASISWA.includes(data.namaBeasiswa)) {
+            setNamaBeasiswa("Lainnya...");
+            setBeasiswaCustom(data.namaBeasiswa);
+          } else {
+            setNamaBeasiswa(data.namaBeasiswa as string);
+          }
+        }
+
+        // Handle Perguruan Tinggi
+        if (data.perguruanTinggi) {
+          setPerguruanTinggi(data.perguruanTinggi as string);
+        }
       } catch (e) {}
     }
   }, []);
+
+  // Perbaikan deteksi nilai PTN jika menggunakan custom text
+  useEffect(() => {
+    if (dbPtn.length > 0 && perguruanTinggi && studyRegion === "dalam_negeri") {
+      const isExist = dbPtn.some(pt => pt.nama_pt === perguruanTinggi);
+      if (!isExist && perguruanTinggi !== "Lainnya...") {
+        setPtnCustom(perguruanTinggi);
+        setPerguruanTinggi("Lainnya...");
+      }
+    }
+  }, [dbPtn, studyRegion]);
 
   useEffect(() => {
     if (fundingType === "beasiswa") {
       setNamaBeasiswa((current) => current);
     } else {
       setNamaBeasiswa("");
+      setBeasiswaCustom("");
     }
 
     setStudyType(null);
@@ -68,54 +116,60 @@ export default function Step1JenisStudi({ onNext }: Props) {
     setSelections({ studyType: !!studyType, fundingType: !!fundingType, studyRegion: !!studyRegion });
   }, [studyType, fundingType, studyRegion]);
 
+  const getFinalPTN = () => (studyRegion === "dalam_negeri" && perguruanTinggi === "Lainnya...") ? ptnCustom : perguruanTinggi;
+  const getFinalBeasiswa = () => namaBeasiswa === "Lainnya..." ? beasiswaCustom : namaBeasiswa;
+
   useEffect(() => {
+    const finalPTN = getFinalPTN();
+    const finalBeasiswa = getFinalBeasiswa();
+
     const canAutoSave =
       studyType &&
       fundingType &&
       studyRegion &&
-      (fundingType !== "beasiswa" || namaBeasiswa.trim() !== "");
+      (fundingType !== "beasiswa" || finalBeasiswa.trim() !== "");
 
     if (canAutoSave) {
       setAutoSaveStatus("saving");
       const timer = setTimeout(() => {
         localStorage.setItem(
           "pengajuan_step1_draft",
-          JSON.stringify({ studyType, fundingType, studyRegion, perguruanTinggi, namaBeasiswa })
+          JSON.stringify({ studyType, fundingType, studyRegion, perguruanTinggi: finalPTN, namaBeasiswa: finalBeasiswa })
         );
         setAutoSaveStatus("saved");
         setTimeout(() => setAutoSaveStatus("idle"), 2000);
       }, 1000);
       return () => clearTimeout(timer);
     }
-  }, [studyType, fundingType, studyRegion, perguruanTinggi, namaBeasiswa]);
-
-  const handleNext = () => {
-    setIsAnimating(true);
-    setTimeout(() => {
-      if (
-        studyType &&
-        fundingType &&
-        studyRegion &&
-        perguruanTinggi.trim() !== "" &&
-        (fundingType !== "beasiswa" || namaBeasiswa.trim() !== "")
-      ) {
-        onNext({ studyType, fundingType, studyRegion, perguruanTinggi, namaBeasiswa });
-      }
-      setIsAnimating(false);
-    }, 300);
-  };
+  }, [studyType, fundingType, studyRegion, perguruanTinggi, ptnCustom, namaBeasiswa, beasiswaCustom]);
 
   const isComplete =
     studyType &&
     fundingType &&
     studyRegion &&
-    perguruanTinggi.trim() !== "" &&
-    (fundingType !== "beasiswa" || namaBeasiswa.trim() !== "");
+    getFinalPTN().trim() !== "" &&
+    (fundingType !== "beasiswa" || getFinalBeasiswa().trim() !== "");
+
+  const handleNext = () => {
+    setIsAnimating(true);
+    setTimeout(() => {
+      if (isComplete) {
+        onNext({ 
+          studyType: studyType!, 
+          fundingType: fundingType!, 
+          studyRegion: studyRegion!, 
+          perguruanTinggi: getFinalPTN(), 
+          namaBeasiswa: fundingType === "beasiswa" ? getFinalBeasiswa() : "" 
+        });
+      }
+      setIsAnimating(false);
+    }, 300);
+  };
 
   const allSelectionsMade = selections.studyType && selections.fundingType && selections.studyRegion;
   const shouldShowStudyType =
     fundingType === "mandiri" ||
-    (fundingType === "beasiswa" && namaBeasiswa.trim() !== "");
+    (fundingType === "beasiswa" && getFinalBeasiswa().trim() !== "");
   const shouldShowRegionAndPT = !!fundingType;
 
   let stepCounter = 2;
@@ -247,13 +301,37 @@ export default function Step1JenisStudi({ onNext }: Props) {
             <div className="flex items-center justify-center w-10 h-10 bg-blue-600 text-white rounded-full font-semibold">02</div>
             <h2 className="text-xl font-bold text-gray-900">Nama Beasiswa</h2>
           </div>
-          <input
-            type="text"
-            value={namaBeasiswa}
-            onChange={(e) => setNamaBeasiswa(e.target.value)}
-            placeholder="Masukkan nama beasiswa yang dipilih"
-            className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-700 outline-none focus:border-blue-500 transition-colors bg-white"
-          />
+          
+          <div className="relative">
+            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
+              <Award size={20} />
+            </span>
+            <select
+              value={namaBeasiswa}
+              onChange={(e) => setNamaBeasiswa(e.target.value)}
+              className="w-full border border-gray-200 rounded-xl pl-12 pr-10 py-3 text-sm text-gray-700 outline-none focus:border-blue-500 transition-colors bg-white appearance-none"
+            >
+              <option value="" disabled>Pilih Jenis Beasiswa...</option>
+              {DAFTAR_BEASISWA.map(b => (
+                <option key={b} value={b}>{b}</option>
+              ))}
+            </select>
+            <div className="absolute inset-y-0 right-4 flex items-center pointer-events-none text-gray-400">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+            </div>
+          </div>
+          
+          {namaBeasiswa === "Lainnya..." && (
+            <div className="mt-3 animate-in fade-in slide-in-from-top-2">
+              <input
+                type="text"
+                value={beasiswaCustom}
+                onChange={(e) => setBeasiswaCustom(e.target.value)}
+                placeholder="Ketik nama beasiswa secara spesifik..."
+                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-700 outline-none focus:border-blue-500 transition-colors bg-white"
+              />
+            </div>
+          )}
         </div>
       )}
 
@@ -268,6 +346,11 @@ export default function Step1JenisStudi({ onNext }: Props) {
             {STUDY_TYPES.map((type) => {
               const Icon = ICON_MAP[type.icon as keyof typeof ICON_MAP];
               const isSelected = studyType === type.id;
+              
+              // MENGUBAH REDAKSI KHUSUS UNTUK TAMPILAN
+              let displayTitle = type.title;
+              if (type.id === "tugas_belajar") displayTitle = "Tugas Belajar (Dibebastugaskan)";
+              if (type.id === "izin_belajar") displayTitle = "Tugas Belajar (Tetap Menjalankan Kewajiban)";
 
               return (
                 <button
@@ -294,7 +377,7 @@ export default function Step1JenisStudi({ onNext }: Props) {
                     </div>
                   </div>
 
-                  <h3 className="font-semibold text-gray-900 text-lg mb-2">{type.title}</h3>
+                  <h3 className="font-semibold text-gray-900 text-lg mb-2">{displayTitle}</h3>
                   <p className="text-sm text-gray-600 leading-relaxed">{type.description}</p>
                 </button>
               );
@@ -320,7 +403,11 @@ export default function Step1JenisStudi({ onNext }: Props) {
                   <button
                     key={region.id}
                     type="button"
-                    onClick={() => setStudyRegion(region.id as StudyRegion)}
+                    onClick={() => {
+                      setStudyRegion(region.id as StudyRegion);
+                      setPerguruanTinggi("");
+                      setPtnCustom("");
+                    }}
                     className={`group relative p-6 rounded-xl border-2 transition-all duration-300 text-left ${
                       isSelected
                         ? "border-blue-500 bg-blue-50 shadow-lg shadow-blue-100 scale-[1.02]"
@@ -331,7 +418,7 @@ export default function Step1JenisStudi({ onNext }: Props) {
                         isSelected
                           ? "border-blue-600 bg-blue-600"
                           : "border-gray-300 bg-white group-hover:border-blue-400"
-                    }`}>
+                      }`}>
                       {isSelected && <div className="w-2 h-2 bg-white rounded-full" />}
                     </div>
 
@@ -354,18 +441,55 @@ export default function Step1JenisStudi({ onNext }: Props) {
               <div className="flex items-center justify-center w-10 h-10 bg-blue-600 text-white rounded-full font-semibold">{ptStepNumber}</div>
               <h2 className="text-xl font-bold text-gray-900">Perguruan Tinggi Tujuan</h2>
             </div>
-            <div className="relative">
-              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
-                <Building2 size={20} />
-              </span>
-              <input
-                type="text"
-                value={perguruanTinggi}
-                onChange={(e) => setPerguruanTinggi(e.target.value)}
-                placeholder="Masukkan nama perguruan tinggi tujuan"
-                className="w-full border border-gray-200 rounded-xl pl-12 pr-4 py-3 text-sm text-gray-700 outline-none focus:border-blue-500 transition-colors bg-white"
-              />
-            </div>
+            
+            {studyRegion === "dalam_negeri" ? (
+              <div className="space-y-3">
+                <div className="relative">
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
+                    <Building2 size={20} />
+                  </span>
+                  <select
+                    value={perguruanTinggi}
+                    onChange={(e) => setPerguruanTinggi(e.target.value)}
+                    className="w-full border border-gray-200 rounded-xl pl-12 pr-10 py-3 text-sm text-gray-700 outline-none focus:border-blue-500 transition-colors bg-white appearance-none"
+                  >
+                    <option value="" disabled>Pilih Kampus Dalam Negeri...</option>
+                    {dbPtn.map(pt => (
+                      <option key={pt.id} value={pt.nama_pt}>{pt.nama_pt}</option>
+                    ))}
+                    <option value="Lainnya...">Lainnya...</option>
+                  </select>
+                  <div className="absolute inset-y-0 right-4 flex items-center pointer-events-none text-gray-400">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+                  </div>
+                </div>
+                
+                {perguruanTinggi === "Lainnya..." && (
+                  <div className="animate-in fade-in slide-in-from-top-2">
+                    <input
+                      type="text"
+                      value={ptnCustom}
+                      onChange={(e) => setPtnCustom(e.target.value)}
+                      placeholder="Ketik nama kampus dalam negeri secara spesifik..."
+                      className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-700 outline-none focus:border-blue-500 transition-colors bg-white"
+                    />
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="relative">
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
+                  <Building2 size={20} />
+                </span>
+                <input
+                  type="text"
+                  value={perguruanTinggi}
+                  onChange={(e) => setPerguruanTinggi(e.target.value)}
+                  placeholder="Masukkan nama perguruan tinggi tujuan di luar negeri..."
+                  className="w-full border border-gray-200 rounded-xl pl-12 pr-4 py-3 text-sm text-gray-700 outline-none focus:border-blue-500 transition-colors bg-white"
+                />
+              </div>
+            )}
           </div>
         </>
       )}

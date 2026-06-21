@@ -70,6 +70,7 @@ async function main() {
   await cleanUp(() => prisma.masterJalurPendanaan.deleteMany());
   await cleanUp(() => prisma.masterJenisStudi.deleteMany());
   await cleanUp(() => prisma.masterRole.deleteMany());
+  await cleanUp(() => prisma.masterPerguruanTinggi.deleteMany()); // TAMBAHAN CLEANUP
   // ===============================================================
   // === 2. MASTER DATA (Deterministic IDs) ===
   // ===============================================================
@@ -223,6 +224,28 @@ async function main() {
   }
 
   console.log('Data Master (Role, Jenis Studi, Pendanaan, Status, Dokumen, Wilayah, Jurusan, Bank) telah siap.');
+
+  // --- 2.8 Master Perguruan Tinggi Dalam Negeri ---
+  console.log('Seeding Master Perguruan Tinggi...');
+  const daftarPTN = [
+    "Universitas Gadjah Mada (UGM)",
+    "Universitas Indonesia (UI)",
+    "Institut Teknologi Bandung (ITB)",
+    "Universitas Diponegoro (UNDIP)",
+    "Universitas Negeri Semarang (UNNES)",
+    "Universitas Sebelas Maret (UNS)",
+    "Institut Teknologi Sepuluh Nopember (ITS)",
+    "Universitas Brawijaya (UB)",
+    "Universitas Airlangga (UNAIR)",
+    "Universitas Hasanuddin (UNHAS)"
+  ];
+  
+  for (const nama of daftarPTN) {
+    const existingPT = await prisma.masterPerguruanTinggi.findFirst({ where: { nama_pt: nama } });
+    if (!existingPT) {
+      await prisma.masterPerguruanTinggi.create({ data: { nama_pt: nama } });
+    }
+  }
 
   // ===============================================================
   // === 3. SEED USERS & DOSEN PROFILE (Budi Doremi) ===
@@ -441,7 +464,6 @@ async function main() {
   // ===============================================================
   console.log('Menyelaraskan sequence ID untuk PostgreSQL...');
   try {
-    // Sinkronisasi auto-increment agar saat register akun baru ID tidak bertabrakan dengan ID hasil seed di atas
     await prisma.$executeRawUnsafe(`SELECT setval(pg_get_serial_sequence('"users"', 'id'), coalesce(max(id), 1), max(id) IS NOT null) FROM "users";`);
     await prisma.$executeRawUnsafe(`SELECT setval(pg_get_serial_sequence('"pengajuan_studi"', 'id'), coalesce(max(id), 1), max(id) IS NOT null) FROM "pengajuan_studi";`);
     await prisma.$executeRawUnsafe(`SELECT setval(pg_get_serial_sequence('"monitoring_khs"', 'id'), coalesce(max(id), 1), max(id) IS NOT null) FROM "monitoring_khs";`);

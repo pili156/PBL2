@@ -310,3 +310,12 @@ model MasterBank {
 
   @@map("master_bank")
 }
+
+model MasterPerguruanTinggi {
+  id          Int      @id @default(autoincrement())
+  nama_pt     String   @unique
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  @@map("master_perguruan_tinggi")
+}
