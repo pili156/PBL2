@@ -13,6 +13,7 @@ type Props = {
   uploadProgress?: number;
   onUpload: (file: File) => void;
   onDelete?: () => void;
+  maxSize?: number;
   error?: string;
 };
 
