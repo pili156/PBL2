@@ -1,11 +1,13 @@
 import { headers } from "next/headers";
 import Link from "next/link";
 import { prisma } from "@/src/lib/prisma";
-import { Plus, Download, Wallet, DollarSign, CheckCircle2 } from "lucide-react";
-import { formatRupiah } from "@/src/lib/formatters";
+import { Plus, Download, Wallet, Coins, CheckCircle2 } from "lucide-react";
+import { formatRupiah, formatDateLong } from "@/src/lib/formatters";
 import StatusBadge from "@/src/components/StatusBadge";
 
 export const dynamic = "force-dynamic";
+
+const STATUS_CAIR = ["dicairkan", "selesai"] as const;
 
 export default async function RiwayatKeuanganPage() {
   const headersList = await headers();
@@ -44,31 +46,29 @@ export default async function RiwayatKeuanganPage() {
     }))
   );
 
-  // Helper function to determine effective status based on documents and pencairan status
-  const getEffectiveStatus = (item: typeof allRiwayat[0]): string => {
-    // Check if any document has revisi status
-    const hasDocumentRevision = item.dokumen_pengajuan?.some(
-      (doc) => doc.status_verifikasi === "revisi"
-    );
-
-    if (hasDocumentRevision) {
+  const computeEffectiveStatus = (item: typeof allRiwayat[0]): string => {
+    if (item.dokumen_pengajuan?.some((doc) => doc.status_verifikasi === "revisi")) {
       return "revisi";
     }
-
     return item.status_pencairan?.toLowerCase() ?? "pending";
   };
 
-  let totalBantuan = 0;
-  let totalCair = 0;
-  for (const r of allRiwayat) {
-    if (r.nominal) {
-      totalBantuan += Number(r.nominal);
-      const effectiveStatus = getEffectiveStatus(r);
-      if (["dicairkan", "selesai"].includes(effectiveStatus)) {
-        totalCair += Number(r.nominal);
+  const riwayatEnriched = allRiwayat.map((r) => ({
+    ...r,
+    _effectiveStatus: computeEffectiveStatus(r),
+  }));
+
+  const { totalBantuan, totalCair } = riwayatEnriched.reduce(
+    (acc, r) => {
+      const nominal = Number(r.nominal || 0);
+      acc.totalBantuan += nominal;
+      if ((STATUS_CAIR as readonly string[]).includes(r._effectiveStatus)) {
+        acc.totalCair += nominal;
       }
-    }
-  }
+      return acc;
+    },
+    { totalBantuan: 0, totalCair: 0 }
+  );
   const sisa = totalBantuan - totalCair;
 
   return (
@@ -107,7 +107,7 @@ export default async function RiwayatKeuanganPage() {
         </div>
         <div className="bg-slate-50 rounded-lg p-4 flex items-center gap-3">
           <div className="w-10 h-10 rounded-lg bg-amber-100 flex items-center justify-center">
-            <DollarSign size={20} className="text-amber-600" />
+            <Coins size={20} className="text-amber-600" />
           </div>
           <div>
             <p className="text-[10px] text-slate-400 uppercase tracking-wider">Sisa Belum Cair</p>
@@ -132,67 +132,60 @@ export default async function RiwayatKeuanganPage() {
             </tr>
           </thead>
           <tbody>
-            {allRiwayat.length === 0 ? (
+            {riwayatEnriched.length === 0 ? (
               <tr>
                 <td colSpan={9} className="text-center py-10 text-slate-500">
                   Belum ada riwayat pencairan bantuan studi.
                 </td>
               </tr>
             ) : (
-              allRiwayat.map((item, index) => {
-                return (
-                  <tr key={item.id} className="border-b border-slate-50 hover:bg-slate-50 transition-colors">
-                    <td className="py-4 px-2 text-sm text-slate-600 text-center">{index + 1}.</td>
-                    <td className="py-4 px-4 text-sm text-slate-600">{item.perguruan_tinggi}</td>
-                    <td className="py-4 px-4 text-sm text-slate-800">Semester {item.semester_ke}</td>
-                    <td className="py-4 px-4 text-sm text-slate-600">{item.tahun_akademik || "-"}</td>
-                    <td className="py-4 px-4 text-sm font-bold text-slate-800">{formatRupiah(item.nominal)}</td>
-                    <td className="py-4 px-4 text-sm text-slate-600">
-                      {item.created_at
-                        ? new Date(item.created_at).toLocaleDateString("id-ID", { day: "2-digit", month: "long", year: "numeric" })
-                        : "-"}
-                    </td>
-                    <td className="py-4 px-4 text-sm text-slate-600">
-                      {item.tanggal_pencairan
-                        ? new Date(item.tanggal_pencairan).toLocaleDateString("id-ID", { day: "2-digit", month: "long", year: "numeric" })
-                        : "-"}
-                    </td>
-                    <td className="py-4 px-4"><StatusBadge 
-                      status={getEffectiveStatus(item)} 
-                      domain={item.dokumen_pengajuan?.some(doc => doc.status_verifikasi === "revisi") ? "verifikasi" : "pencairan"} 
-                      size="sm" 
-                      dot 
-                    /></td>
-                    <td className="py-4 px-4 text-center">
-                      {item.file_bukti_bayar ? (
-                        <a
-                          href={item.file_bukti_bayar}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-blue-600 text-blue-600 rounded-lg text-xs font-bold hover:bg-blue-50 transition-all"
-                        >
-                          <Download size={14} /> Lihat
-                        </a>
-                      ) : (
-                        <span className="text-[10px] text-slate-400">-</span>
-                      )}
-                    </td>
-                  </tr>
-                );
-              })
+              riwayatEnriched.map((item, index) => (
+                <tr key={item.id} className="border-b border-slate-50 hover:bg-slate-50 transition-colors">
+                  <td className="py-4 px-2 text-sm text-slate-600 text-center">{index + 1}.</td>
+                  <td className="py-4 px-4 text-sm text-slate-600">{item.perguruan_tinggi}</td>
+                  <td className="py-4 px-4 text-sm text-slate-800">Semester {item.semester_ke}</td>
+                  <td className="py-4 px-4 text-sm text-slate-600">{item.tahun_akademik || "-"}</td>
+                  <td className="py-4 px-4 text-sm font-bold text-slate-800">{formatRupiah(item.nominal)}</td>
+                  <td className="py-4 px-4 text-sm text-slate-600">{formatDateLong(item.created_at)}</td>
+                  <td className="py-4 px-4 text-sm text-slate-600">{formatDateLong(item.tanggal_pencairan)}</td>
+                  <td className="py-4 px-4"><StatusBadge 
+                    status={item._effectiveStatus} 
+                    domain={item.dokumen_pengajuan?.some(doc => doc.status_verifikasi === "revisi") ? "verifikasi" : "pencairan"} 
+                    size="sm" 
+                    dot 
+                  /></td>
+                  <td className="py-4 px-4 text-center">
+                    {item.file_bukti_bayar ? (
+                      <a
+                        href={item.file_bukti_bayar}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-blue-600 text-blue-600 rounded-lg text-xs font-bold hover:bg-blue-50 transition-all"
+                      >
+                        <Download size={14} /> Lihat
+                      </a>
+                    ) : (
+                      <span className="text-[10px] text-slate-400">-</span>
+                    )}
+                  </td>
+                </tr>
+              ))
             )}
           </tbody>
         </table>
       </div>
 
-      {allRiwayat.some((r) => r.catatan_keuangan) && (
-        <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 text-xs text-amber-800">
-          <p className="font-bold mb-1">Catatan:</p>
-          {allRiwayat.filter((r) => r.catatan_keuangan).map((r) => (
-            <p key={r.id} className="mb-0.5">&bull; {r.perguruan_tinggi} - Semester {r.semester_ke}: {r.catatan_keuangan}</p>
-          ))}
-        </div>
-      )}
+      {(() => {
+        const catatanItems = riwayatEnriched.filter((r) => r.catatan_keuangan);
+        return catatanItems.length > 0 ? (
+          <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 text-xs text-amber-800">
+            <p className="font-bold mb-1">Catatan:</p>
+            {catatanItems.map((r) => (
+              <p key={r.id} className="mb-0.5">&bull; {r.perguruan_tinggi} - Semester {r.semester_ke}: {r.catatan_keuangan}</p>
+            ))}
+          </div>
+        ) : null;
+      })()}
     </div>
   );
 }
