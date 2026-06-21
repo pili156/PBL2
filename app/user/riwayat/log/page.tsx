@@ -1,6 +1,5 @@
 import { headers } from 'next/headers';
 import { prisma } from '@/src/lib/prisma';
-import { notFound } from 'next/navigation';
 import {
   History, Upload, CheckCircle2, MessageSquare,
   FileText, Wallet, Edit, Shield,
@@ -32,11 +31,12 @@ const ActivityCard = ({ activity }: { activity: Activity }) => {
   const config = activityConfig[activity.type];
   const Icon = config.icon;
   return (
-    <div className="relative flex gap-4 pb-6 last:pb-0 group">
-      <div className="relative z-10 flex-shrink-0">
+    <div className="flex gap-4 pb-6 last:pb-0 group">
+      <div className="flex flex-col items-center flex-shrink-0">
         <div className={`w-10 h-10 rounded-full ${config.bg} flex items-center justify-center`}>
           <Icon size={17} className={config.color} />
         </div>
+        <div className="w-0.5 flex-1 bg-slate-100 mt-1" />
       </div>
       <div className="flex-1 min-w-0 bg-white rounded-xl border border-slate-100 shadow-sm p-4 group-hover:shadow-md transition-shadow">
         <div className="flex items-start justify-between gap-4">
@@ -58,14 +58,18 @@ const ActivityCard = ({ activity }: { activity: Activity }) => {
 export default async function LogAktivitasPage() {
   const headersList = await headers();
   const userEmail = headersList.get('x-user-email');
-  if (!userEmail) notFound();
+  if (!userEmail) {
+    return <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-10 text-center text-slate-500">Silakan login terlebih dahulu</div>;
+  }
 
   const user = await prisma.user.findUnique({
     where: { email: userEmail },
     include: { master_dosen: true },
   });
 
-  if (!user) notFound();
+  if (!user) {
+    return <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-10 text-center text-slate-500">User tidak ditemukan</div>;
+  }
 
   const namaLengkap = user.master_dosen?.nama_lengkap || user.username || 'Dosen';
 
@@ -178,15 +182,20 @@ export default async function LogAktivitasPage() {
     }
   }
 
-  activities.sort((a, b) => {
-    const da = a.date ? new Date(a.date).getTime() : 0;
-    const db = b.date ? new Date(b.date).getTime() : 0;
-    return db - da;
+  const activitiesWithTime = activities.map((a) => ({
+    ...a,
+    _time: a.date ? new Date(a.date).getTime() : 0,
+  }));
+
+  const seen = new Map<string, boolean>();
+  const uniqueActivities = activitiesWithTime.filter((a) => {
+    const key = `${a.title}|${a._time}`;
+    if (seen.has(key)) return false;
+    seen.set(key, true);
+    return true;
   });
 
-  const uniqueActivities = activities.filter(
-    (a, i, self) => i === self.findIndex((x) => x.title === a.title && x.date?.getTime() === a.date?.getTime())
-  );
+  uniqueActivities.sort((a, b) => b._time - a._time);
 
   return (
     <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-6 space-y-6">
@@ -203,13 +212,10 @@ export default async function LogAktivitasPage() {
           <p className="text-sm text-slate-500 font-medium">Belum ada aktivitas</p>
         </div>
       ) : (
-        <div className="relative">
-          <div className="absolute left-5 top-0 bottom-0 w-0.5 bg-slate-100" />
-          <div className="space-y-1">
-            {uniqueActivities.map((activity, index) => (
-              <ActivityCard key={index} activity={activity} />
-            ))}
-          </div>
+        <div className="space-y-1">
+          {uniqueActivities.map((activity, index) => (
+            <ActivityCard key={index} activity={activity} />
+          ))}
         </div>
       )}
     </div>
