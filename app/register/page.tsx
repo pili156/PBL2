@@ -44,7 +44,9 @@ export default function Register() {
     const fetchJurusan = async () => {
       try {
         const data = await getJurusanData(); // Panggil fungsi server langsung
-        setDataJurusan(data);
+        if (data && data.length > 0) {
+          setDataJurusan(data);
+        }
       } catch (error) {
         console.error("Gagal memuat data jurusan:", error);
       } finally {
@@ -210,8 +212,8 @@ export default function Register() {
                 required
                 value={formData.jurusan}
                 onChange={handleJurusanChange}
-                disabled={isLoadingJurusan}
-                className="w-full border border-gray-200 rounded-full pl-12 pr-10 py-3 text-sm text-gray-700 outline-none focus:border-blue-500 transition-colors bg-gray-50/50 appearance-none disabled:bg-gray-100"
+                disabled={isLoadingJurusan || dataJurusan.length === 0}
+                className="w-full border border-gray-200 rounded-full pl-12 pr-10 py-3 text-sm text-gray-700 outline-none focus:border-blue-500 transition-colors bg-gray-50/50 appearance-none disabled:bg-gray-100 disabled:text-gray-400"
               >
                 <option value="" disabled>
                   {isLoadingJurusan ? "Memuat data jurusan..." : "Pilih Jurusan"}
@@ -234,7 +236,7 @@ export default function Register() {
                 id="program_studi"
                 name="program_studi"
                 required
-                disabled={!formData.jurusan || isLoadingJurusan}
+                disabled={!formData.jurusan || availableProdi.length === 0}
                 value={formData.program_studi}
                 onChange={(e) => setFormData({...formData, program_studi: e.target.value})}
                 className="w-full border border-gray-200 rounded-full pl-12 pr-10 py-3 text-sm text-gray-700 outline-none focus:border-blue-500 transition-colors bg-gray-50/50 appearance-none disabled:bg-gray-100 disabled:text-gray-400"
