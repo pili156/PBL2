@@ -48,6 +48,17 @@ export const profileSchema = z.object({
   no_telp: z.string().optional(),
 });
 
+export const masterJabatanSchema = z.object({
+  nama: z.string().min(1, "Nama jabatan wajib diisi"),
+  singkatan: z.string().min(1, "Singkatan jabatan wajib diisi"),
+  urutan: z.number().int().min(0, "Urutan harus angka positif"),
+});
+
+export const masterPangkatSchema = z.object({
+  pangkat: z.string().min(1, "Pangkat wajib diisi"),
+  golongan: z.string().min(1, "Golongan wajib diisi"),
+});
+
 export const bukuIndukSchema = z.object({
   nip: z.string().min(1, "NIP wajib diisi"),
   nama_lengkap: z.string().min(1, "Nama lengkap wajib diisi"),

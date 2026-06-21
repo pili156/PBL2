@@ -16,7 +16,6 @@ export const masterAdminMenuItems: MenuItem[] = [
   { href: "/master_admin/verifikasi-pengajuan", label: "Verifikasi Pengajuan", icon: "ShieldCheck", allowedRoles: [ROLES.MASTER_ADMIN] },
   { href: "/master_admin/riwayat-dosen", label: "Monitoring Dosen", icon: "Users", allowedRoles: [ROLES.MASTER_ADMIN] },
   { href: "/master_admin/buku-induk", label: "Buku Induk", icon: "BookOpen", allowedRoles: [ROLES.MASTER_ADMIN] },
-  
   // --- Menu Spesial Master Admin ---
   { href: "/master_admin/monitoring-pengguna", label: "Monitoring Pengguna", icon: "UserCheck", allowedRoles: [ROLES.MASTER_ADMIN] },
   { href: "/master_admin/role-permission", label: "Peran & Hak Akses", icon: "Shield", allowedRoles: [ROLES.MASTER_ADMIN] },

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { prisma } from "../../../../src/lib/prisma"; // Sesuaikan path prisma client kamu ya Mel
+import { prisma } from "@/src/lib/prisma";
 
 // 1. API UNTUK MENGAMBIL DATA LAMA DOSEN (GET)
 export async function GET(
@@ -48,13 +48,11 @@ export async function PUT(
       where: { id: idDosen },
       data: {
         nip: body.nip || null,
-        nama_lengkap: body.nama || null, // disesuaikan field input form ke db
+        nama_lengkap: body.nama || null,
         pangkat_golongan: body.pangkat_golongan || null,
         jabatan: body.jabatan || null,
         jurusan: body.jurusan_bagian_upa || null,
         program_studi: body.program_studi || null,
-        // Jika kolom excel lainnya (seperti tmt_tubel dll) belum kamu daftarkan di schema.prisma,
-        // Prisma otomatis mengabaikannya tanpa bikin eror crash database.
       },
     });
 

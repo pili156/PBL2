@@ -89,43 +89,66 @@ export default async function DashboardDosen({ params }: Props) {
     { label: 'Selesai', sub: isSelesai ? 'Lulus' : 'Belum', done: isSelesai },
   ];
 
+  const completedSteps = steps.filter(step => step.done).length;
+  const progressPercentage = Math.min(100, Math.max(0, ((completedSteps - 1) / (steps.length - 1)) * 100));
+
   return (
     <div className="space-y-6">
-      <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-6">
-        <div className="flex items-center justify-between mb-6">
-          <h3 className="text-base font-semibold text-slate-800">Progress Studi</h3>
-          <span className="bg-blue-50 text-blue-600 text-[11px] font-semibold px-3 py-1 rounded-full">
-            {pengajuan.jenis_studi?.nama_jenis || 'Studi'}
-          </span>
+      <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+        <div className="flex items-center justify-between mb-8">
+          <div>
+            <h3 className="text-base font-semibold text-slate-800">Progress Studi</h3>
+            <p className="text-xs text-slate-400 mt-0.5">
+              {completedSteps} dari {steps.length} tahapan selesai
+            </p>
+          </div>
+          <div className="flex items-center gap-3">
+            <div className="text-right">
+              <p className="text-2xl font-bold text-emerald-600">{Math.round(progressPercentage)}%</p>
+              <p className="text-[10px] text-slate-400 font-medium">Progress</p>
+            </div>
+            <span className="bg-blue-50 text-blue-600 text-[11px] font-semibold px-3 py-1 rounded-full">
+              {pengajuan.jenis_studi?.nama_jenis || 'Studi'}
+            </span>
+          </div>
         </div>
-        <div className="relative">
-          <div className="absolute top-[22px] left-[10%] right-[10%] h-0.5 bg-slate-200" />
-          <div
-            className="absolute top-[22px] left-[10%] h-0.5 bg-emerald-500 transition-all duration-700"
-            style={{
-            width: isSelesai
-            ? '80%'
-            : semesterAktif > 0
-            ? '60%'
-            : skKementerian
-            ? '40%'
-            : isDisetujui
-            ? '20%'
-            : '0%',
-          }}
-/>
-          <div className="grid grid-cols-5 gap-2">
-            {steps.map((step, i) => (
-              <div key={i} className="flex flex-col items-center text-center">
-                <div className={`w-11 h-11 rounded-full flex items-center justify-center mb-3 border-4 border-white shadow-sm transition-all ${
-                  step.done ? 'bg-emerald-500 text-white' : 'bg-slate-100 text-slate-300'
-                }`}>
-                  {step.done ? <Check size={18} strokeWidth={3} /> : <GraduationCap size={18} />}
+        <div className="overflow-x-auto">
+          <div className="relative min-w-[540px]">
+            <div className="absolute inset-x-0 flex" style={{ top: '24px' }}>
+              {steps.map((step, i) => (
+                <div key={i} className="flex-1 flex">
+                  <div className={`flex-1 h-1 ${
+                    i === 0
+                      ? 'invisible'
+                      : steps[i - 1].done
+                      ? 'bg-emerald-500'
+                      : 'bg-slate-200'
+                  }`} />
+                  <div className={`flex-1 h-1 ${
+                    i === steps.length - 1
+                      ? 'invisible'
+                      : step.done
+                      ? 'bg-emerald-500'
+                      : 'bg-slate-200'
+                  }`} />
                 </div>
-                <p className="text-[11px] font-semibold text-slate-700 leading-tight">{step.label}</p>
-                <p className="text-[10px] text-slate-400 mt-0.5">{step.sub}</p>
-              </div>
-            ))}
+              ))}
+            </div>
+            <div className="flex">
+              {steps.map((step, i) => (
+                <div key={i} className="flex-1 flex flex-col items-center">
+                  <div className={`w-12 h-12 rounded-full flex items-center justify-center border-4 border-white shadow-md relative z-10 transition-all duration-500 ${
+                    step.done
+                      ? 'bg-emerald-500 text-white'
+                      : 'bg-white text-slate-400'
+                  }`}>
+                    {step.done ? <Check size={20} strokeWidth={3} /> : <GraduationCap size={20} />}
+                  </div>
+                  <p className="text-[11px] font-semibold text-slate-700 leading-tight mt-3 text-center whitespace-nowrap">{step.label}</p>
+                  <p className="text-[10px] text-slate-400 mt-1 text-center whitespace-nowrap">{step.sub}</p>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>

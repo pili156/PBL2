@@ -62,14 +62,13 @@ async function main() {
   await cleanUp(() => prisma.masterDokumen.deleteMany());
   await cleanUp(() => prisma.masterDosen.deleteMany());
   await cleanUp(() => prisma.user.deleteMany());
-  await cleanUp(() => prisma.masterProgramStudi.deleteMany()); // Tambahan cleanup prodi
-  await cleanUp(() => prisma.masterJurusan.deleteMany()); // Tambahan cleanup jurusan
+  await cleanUp(() => prisma.masterProgramStudi.deleteMany());
+  await cleanUp(() => prisma.masterJurusan.deleteMany());
   await cleanUp(() => prisma.masterWilayah.deleteMany());
   await cleanUp(() => prisma.masterStatusPengajuan.deleteMany());
   await cleanUp(() => prisma.masterJalurPendanaan.deleteMany());
   await cleanUp(() => prisma.masterJenisStudi.deleteMany());
   await cleanUp(() => prisma.masterRole.deleteMany());
-
   // ===============================================================
   // === 2. MASTER DATA (Deterministic IDs) ===
   // ===============================================================
@@ -105,13 +104,79 @@ async function main() {
   const wilayahDalamNegeri = await prisma.masterWilayah.create({ data: { id: 1, nama_wilayah: 'Dalam Negeri' } });
   const wilayahLuarNegeri = await prisma.masterWilayah.create({ data: { id: 2, nama_wilayah: 'Luar Negeri' } });
 
+  // --- 2.5 Master Jabatan & Master Pangkat ---
+  await prisma.masterJabatan.upsert({
+    where: { singkatan: 'AA' },
+    update: { nama: 'Asisten Ahli', urutan: 1 },
+    create: { nama: 'Asisten Ahli', singkatan: 'AA', urutan: 1 },
+  });
+  await prisma.masterJabatan.upsert({
+    where: { singkatan: 'L2' },
+    update: { nama: 'Lektor', urutan: 2 },
+    create: { nama: 'Lektor', singkatan: 'L2', urutan: 2 },
+  });
+  await prisma.masterJabatan.upsert({
+    where: { singkatan: 'LK' },
+    update: { nama: 'Lektor Kepala', urutan: 3 },
+    create: { nama: 'Lektor Kepala', singkatan: 'LK', urutan: 3 },
+  });
+  await prisma.masterJabatan.upsert({
+    where: { singkatan: 'GB' },
+    update: { nama: 'Profesor', urutan: 4 },
+    create: { nama: 'Profesor', singkatan: 'GB', urutan: 4 },
+  });
+
+  await prisma.masterPangkat.upsert({
+    where: { golongan: 'III/a' },
+    update: { pangkat: 'Penata Muda' },
+    create: { pangkat: 'Penata Muda', golongan: 'III/a' },
+  });
+  await prisma.masterPangkat.upsert({
+    where: { golongan: 'III/b' },
+    update: { pangkat: 'Penata Muda Tingkat I' },
+    create: { pangkat: 'Penata Muda Tingkat I', golongan: 'III/b' },
+  });
+  await prisma.masterPangkat.upsert({
+    where: { golongan: 'III/c' },
+    update: { pangkat: 'Penata' },
+    create: { pangkat: 'Penata', golongan: 'III/c' },
+  });
+  await prisma.masterPangkat.upsert({
+    where: { golongan: 'III/d' },
+    update: { pangkat: 'Penata Tingkat I' },
+    create: { pangkat: 'Penata Tingkat I', golongan: 'III/d' },
+  });
+  await prisma.masterPangkat.upsert({
+    where: { golongan: 'IV/a' },
+    update: { pangkat: 'Pembina' },
+    create: { pangkat: 'Pembina', golongan: 'IV/a' },
+  });
+  await prisma.masterPangkat.upsert({
+    where: { golongan: 'IV/b' },
+    update: { pangkat: 'Pembina Tingkat I' },
+    create: { pangkat: 'Pembina Tingkat I', golongan: 'IV/b' },
+  });
+  await prisma.masterPangkat.upsert({
+    where: { golongan: 'IV/c' },
+    update: { pangkat: 'Pembina Utama Muda' },
+    create: { pangkat: 'Pembina Utama Muda', golongan: 'IV/c' },
+  });
+  await prisma.masterPangkat.upsert({
+    where: { golongan: 'IV/d' },
+    update: { pangkat: 'Pembina Utama Madya' },
+    create: { pangkat: 'Pembina Utama Madya', golongan: 'IV/d' },
+  });
+  await prisma.masterPangkat.upsert({
+    where: { golongan: 'IV/e' },
+    update: { pangkat: 'Pembina Utama' },
+    create: { pangkat: 'Pembina Utama', golongan: 'IV/e' },
+  });
+
   // --- 2.6 Master Jurusan & Program Studi ---
   console.log('Seeding Jurusan dan Program Studi...');
   for (const [jurusanName, prodiList] of Object.entries(dataPolines)) {
-    await prisma.masterJurusan.upsert({
-      where: { nama_jurusan: jurusanName },
-      update: {}, 
-      create: {
+    await prisma.masterJurusan.create({
+      data: {
         nama_jurusan: jurusanName,
         program_studi: {
           create: prodiList.map((prodi) => ({
@@ -353,5 +418,5 @@ main()
     process.exit(1);
   })
   .finally(async () => {
-    await prisma.$disconnect();
+    if (prisma) await prisma.$disconnect();
   });
