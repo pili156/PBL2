@@ -12,7 +12,7 @@ interface DosenItem {
   nama_lengkap: string;
   nip: string | null;
   jurusan: string | null;
-  jenjang: string | null;
+  perguruan_tinggi: string | null;
   status_kuliah: string | null;
 }
 
@@ -36,14 +36,12 @@ export default function TabDoktor({ data }: TabDoktorProps) {
   const [page, setPage] = useState(1);
 
   const filtered = data.filter((d) => {
-    const jenj = (d.jenjang || "").toUpperCase();
-    if (jenj !== "S3") return false;
-
     const nama = (d.nama_lengkap || "").toLowerCase();
     const nip = (d.nip || "").toString();
     const jur = (d.jurusan || "").toLowerCase();
+    const pt = (d.perguruan_tinggi || "").toLowerCase();
 
-    const matchSearch = nama.includes(search.toLowerCase()) || nip.includes(search) || jur.includes(search.toLowerCase());
+    const matchSearch = nama.includes(search.toLowerCase()) || nip.includes(search) || jur.includes(search.toLowerCase()) || pt.includes(search.toLowerCase());
     const matchJurusan = jurusan === "Semua Jurusan" || jur.includes(jurusan.toLowerCase());
 
     return matchSearch && matchJurusan;

@@ -12,7 +12,7 @@ interface DosenItem {
   nama_lengkap: string;
   nip: string | null;
   jurusan: string | null;
-  jenjang: string | null;
+  perguruan_tinggi: string | null;
   jenis_pengajuan_studi: string | null;
   status_kuliah: string | null;
 }
@@ -34,7 +34,6 @@ function mapStatus(statusKuliah: string | null): StatusDosen {
 export default function TabTugasBelajar({ data }: TabTugasBelajarProps) {
   const [search, setSearch] = useState("");
   const [jurusan, setJurusan] = useState("Semua Jurusan");
-  const [jenjang, setJenjang] = useState("Semua");
   const [status, setStatus] = useState("Semua Status");
   const [page, setPage] = useState(1);
 
@@ -45,15 +44,14 @@ export default function TabTugasBelajar({ data }: TabTugasBelajarProps) {
     const nama = (d.nama_lengkap || "").toLowerCase();
     const nip = (d.nip || "").toString();
     const jur = (d.jurusan || "").toLowerCase();
-    const jenj = (d.jenjang || "").toUpperCase();
+    const pt = (d.perguruan_tinggi || "").toLowerCase();
     const stat = d.status_kuliah || "Aktif";
 
-    const matchSearch = nama.includes(search.toLowerCase()) || nip.includes(search) || jur.includes(search.toLowerCase());
+    const matchSearch = nama.includes(search.toLowerCase()) || nip.includes(search) || jur.includes(search.toLowerCase()) || pt.includes(search.toLowerCase());
     const matchJurusan = jurusan === "Semua Jurusan" || jur.includes(jurusan.toLowerCase());
-    const matchJenjang = jenjang === "Semua" || jenj === jenjang.toUpperCase();
     const matchStatus = status === "Semua Status" || stat === status;
 
-    return matchSearch && matchJurusan && matchJenjang && matchStatus;
+    return matchSearch && matchJurusan && matchStatus;
   });
 
   const totalPages = Math.ceil(filtered.length / PER_PAGE);
@@ -73,12 +71,6 @@ export default function TabTugasBelajar({ data }: TabTugasBelajarProps) {
             onChange: setJurusan,
           },
           {
-            label: "Jenjang",
-            options: ["Semua", "S2", "S3"],
-            value: jenjang,
-            onChange: setJenjang,
-          },
-          {
             label: "Status",
             options: ["Semua Status", "Aktif", "Lulus", "DO"],
             value: status,
@@ -94,7 +86,7 @@ export default function TabTugasBelajar({ data }: TabTugasBelajarProps) {
               <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 whitespace-nowrap">No</th>
               <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 whitespace-nowrap">Nama Dosen</th>
               <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 whitespace-nowrap">NIP</th>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 whitespace-nowrap">Jenjang</th>
+              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 whitespace-nowrap">Perguruan Tinggi</th>
               <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 whitespace-nowrap">Status</th>
               <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 whitespace-nowrap">Aksi</th>
             </tr>
@@ -110,7 +102,7 @@ export default function TabTugasBelajar({ data }: TabTugasBelajarProps) {
                   <td className="px-4 py-3.5 text-sm text-gray-500">{(page - 1) * PER_PAGE + i + 1}</td>
                   <td className="px-4 py-3.5 text-sm text-blue-500 font-medium cursor-pointer hover:underline">{d.nama_lengkap}</td>
                   <td className="px-4 py-3.5 text-sm text-gray-600">{d.nip || "-"}</td>
-                  <td className="px-4 py-3.5 text-sm text-gray-600">{d.jenjang || "-"}</td>
+                  <td className="px-4 py-3.5 text-sm text-gray-600">{d.perguruan_tinggi || "-"}</td>
                   <td className="px-4 py-3.5"><StatusBadge status={mapStatus(d.status_kuliah)} /></td>
                   <td className="px-4 py-3.5">
                     <div className="flex items-center gap-1.5">

@@ -4,51 +4,118 @@ import { prisma } from "@/src/lib/prisma";
 
 export async function GET(request: NextRequest) {
   try {
-    // Memberikan tipe data eksplisit : any[] agar TypeScript tidak memicu error compiler
     let dataDosen: any[] = [];
-    
+
     try {
-      dataDosen = await prisma.masterDosen.findMany();
+      const raw = await prisma.masterDosen.findMany({
+        include: {
+          user: {
+            include: {
+              pengajuan_studi: {
+                include: {
+                  jenis_studi: true,
+                  status: true,
+                },
+                orderBy: { created_at: "desc" },
+              },
+            },
+          },
+        },
+      });
+
+      dataDosen = raw.map((d) => {
+        const pengajuan = d.user?.pengajuan_studi?.[0] ?? null;
+        const jenisStudi = pengajuan?.jenis_studi?.nama_jenis ?? null;
+        const statusPengajuan = pengajuan?.status?.nama_status ?? null;
+
+        return {
+          id: d.id,
+          nip: d.nip,
+          nama_lengkap: d.nama_lengkap,
+          jurusan: d.jurusan,
+          jabatan: d.jabatan,
+          program_studi: d.program_studi,
+          pangkat_golongan: d.pangkat_golongan,
+          unit_kerja: d.unit_kerja,
+          no_telp: d.no_telp,
+          jenis_pengajuan_studi: jenisStudi,
+          status_kuliah: statusPengajuan,
+          perguruan_tinggi: pengajuan?.perguruan_tinggi ?? null,
+        };
+      });
     } catch (dbError) {
-      console.error(" Gagal query ke tabel masterDosen:", dbError);
+      console.error("Gagal query ke tabel masterDosen:", dbError);
       dataDosen = [];
     }
 
-    // Hitung statistik dasar
     const totalDosen = dataDosen.length;
-    
-    const tugasBelajarTotal = dataDosen.filter((d: any) => 
-      (d.jenis_pengajuan_studi || d.jenisPengajuanStudi || "").toLowerCase().includes("tugas belajar")
+
+    const tugasBelajarTotal = dataDosen.filter((d: any) =>
+      (d.jenis_pengajuan_studi || "").toLowerCase().includes("tugas belajar")
     ).length;
 
-    const izinBelajarTotal = dataDosen.filter((d: any) => 
-      (d.jenis_pengajuan_studi || d.jenisPengajuanStudi || "").toLowerCase().includes("izin belajar")
+    const tugasBelajarAktif = dataDosen.filter((d: any) =>
+      (d.jenis_pengajuan_studi || "").toLowerCase().includes("tugas belajar") &&
+      (d.status_kuliah || "").toLowerCase() === "aktif"
     ).length;
 
-    const doktorTotal = dataDosen.filter((d: any) => 
-      (d.jenjang || d.jenjangStudi || "").toUpperCase() === "S3"
+    const tugasBelajarLulus = dataDosen.filter((d: any) =>
+      (d.jenis_pengajuan_studi || "").toLowerCase().includes("tugas belajar") &&
+      (d.status_kuliah || "").toLowerCase() === "lulus"
     ).length;
 
-    const profesorTotal = dataDosen.filter((d: any) => 
-      (d.jabatan || d.jabatanFungsional || "").toLowerCase() === "profesor"
+    const tugasBelajarDO = dataDosen.filter((d: any) =>
+      (d.jenis_pengajuan_studi || "").toLowerCase().includes("tugas belajar") &&
+      (d.status_kuliah || "").toLowerCase() === "do"
+    ).length;
+
+    const izinBelajarTotal = dataDosen.filter((d: any) =>
+      (d.jenis_pengajuan_studi || "").toLowerCase().includes("izin belajar")
+    ).length;
+
+    const izinBelajarAktif = dataDosen.filter((d: any) =>
+      (d.jenis_pengajuan_studi || "").toLowerCase().includes("izin belajar") &&
+      (d.status_kuliah || "").toLowerCase() === "aktif"
+    ).length;
+
+    const izinBelajarSelesai = dataDosen.filter((d: any) =>
+      (d.jenis_pengajuan_studi || "").toLowerCase().includes("izin belajar") &&
+      (d.status_kuliah || "").toLowerCase() === "selesai"
+    ).length;
+
+    const doktorTotal = dataDosen.filter((d: any) =>
+      (d.jenjang || "").toUpperCase() === "S3"
+    ).length;
+
+    const profesorTotal = dataDosen.filter((d: any) =>
+      (d.jabatan || "").toLowerCase() === "profesor"
     ).length;
 
     return NextResponse.json({
       daftarDosen: dataDosen,
-      lulusanTerbaru: [], 
+      lulusanTerbaru: [],
       stats: {
-        totalDosen: totalDosen,
-        tugasBelajar: { total: tugasBelajarTotal, aktif: tugasBelajarTotal, lulus: 0, do: 0 },
-        izinBelajar: { total: izinBelajarTotal, aktif: izinBelajarTotal, selesai: 0 },
+        totalDosen,
+        tugasBelajar: {
+          total: tugasBelajarTotal,
+          aktif: tugasBelajarAktif,
+          lulus: tugasBelajarLulus,
+          do: tugasBelajarDO,
+        },
+        izinBelajar: {
+          total: izinBelajarTotal,
+          aktif: izinBelajarAktif,
+          selesai: izinBelajarSelesai,
+        },
         doktor: doktorTotal,
-        profesor: profesorTotal
-      }
+        profesor: profesorTotal,
+      },
     }, { status: 200 });
 
   } catch (error) {
     console.error("Error global pada API Buku Induk:", error);
     return NextResponse.json(
-      { error: "Internal Server Error" }, 
+      { error: "Internal Server Error" },
       { status: 500 }
     );
   }
