@@ -1,80 +1,106 @@
 // app/api/auth/register/route.ts
-import { NextResponse } from 'next/server';
-import { prisma } from '@/src/lib/prisma';
-import bcrypt from 'bcryptjs';
-import { registerSchema } from '@/src/lib/validation';
+import { NextResponse } from "next/server";
+import { prisma } from "@/src/lib/prisma";
+import bcrypt from "bcryptjs";
 
-export async function POST(request: Request) {
+export async function POST(req: Request) {
   try {
-    const body = await request.json();
-    const parsed = registerSchema.safeParse(body);
+    const body = await req.json();
+    const { 
+      email, 
+      nama_lengkap, 
+      nip, 
+      nidn,
+      tempat_lahir,
+      tanggal_lahir,
+      jenis_kelamin,
+      email_pribadi,
+      alamat,
+      jurusan, 
+      program_studi,
+      no_telp,
+      pangkat_golongan,
+      jabatan,
+      unit_kerja,
+      password 
+    } = body;
 
-    if (!parsed.success) {
-      return NextResponse.json({ error: parsed.error.issues[0].message }, { status: 400 });
+    // Validasi input dasar
+    if (!email || !nama_lengkap || !nip || !password || !jurusan || !program_studi) {
+      return NextResponse.json({ error: "Field utama wajib diisi!" }, { status: 400 });
     }
 
-    const { email, password, nip, nama_lengkap } = parsed.data;
-    
-    // Tarik nilai dari body mentah
-    const { jurusan, program_studi, nidn, tempat_lahir, tanggal_lahir, jenis_kelamin, email_pribadi, alamat } = body;
-
-    // Cek apakah Email atau NIP sudah digunakan
-    const existingUser = await prisma.user.findFirst({
-      where: {
-        OR: [
-          { email: email },
-          { master_dosen: { nip: nip } }
-        ]
-      }
+    // 1. Cek apakah EMAIL sudah terdaftar
+    const existingUser = await prisma.user.findUnique({
+      where: { email },
     });
 
     if (existingUser) {
-      return NextResponse.json({ error: "Email atau NIP tersebut sudah terdaftar." }, { status: 400 });
+      return NextResponse.json({ error: "Email sudah terdaftar!" }, { status: 400 });
     }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    // Cari ID untuk role Dosen
-    const roleDosen = await prisma.masterRole.findFirst({ where: { nama_role: "dosen" } });
-
-    const autoUsername = email.split('@')[0];
-    
-    // Menyimpan data user sekaligus membuat relasi profil jurusan dan prodi ke tabel master_dosen
-    await prisma.user.create({
-      data: {
-        username: autoUsername,
-        email: email,
-        password_hash: hashedPassword,
-        // PERBAIKAN: Fallback id harus 3 (Dosen). Jika pakai 2, user baru bisa otomatis jadi Admin!
-        role_id: roleDosen?.id || 3, 
-        status_akun: "pending",
-        master_dosen: {
-          create: {
-            nip: nip,
-            nama_lengkap: nama_lengkap,
-<<<<<<< HEAD
-            // PERBAIKAN: Fallback string kosong agar Prisma tidak error jika data frontend terputus
-            jurusan: jurusan || "", 
-            program_studi: program_studi || "",
-=======
-            nidn: nidn || null,
-            tempat_lahir: tempat_lahir || null,
-            tanggal_lahir: tanggal_lahir ? new Date(tanggal_lahir) : null,
-            jenis_kelamin: jenis_kelamin || null,
-            email_pribadi: email_pribadi || null,
-            alamat: alamat || null,
-            jurusan: jurusan,
-            program_studi: program_studi,
->>>>>>> b89cd71014d8a27631cfffb5ea009c1f0e1917e1
-          }
-        }
-      }
+    // 2. Cek apakah NIP sudah terdaftar (TAMBAHAN BARU)
+    const existingNip = await prisma.masterDosen.findUnique({
+      where: { nip }
     });
 
-    return NextResponse.json({ message: "Registrasi sukses. Menunggu verifikasi dari Admin Fakultas." }, { status: 201 });
+    if (existingNip) {
+      return NextResponse.json({ error: "NIP tersebut sudah terdaftar di sistem!" }, { status: 400 });
+    }
 
-  } catch (error) {
-    console.error("Register Error:", error);
-    return NextResponse.json({ error: "Terjadi kesalahan pada server saat registrasi." }, { status: 500 });
+    // Enkripsi password
+    const password_hash = await bcrypt.hash(password, 10);
+
+    // Ambil role dosen
+    const dosenRole = await prisma.masterRole.findFirst({
+      where: { nama_role: "dosen" }
+    });
+
+    if (!dosenRole) {
+      return NextResponse.json({ error: "Role Dosen tidak ditemukan di database" }, { status: 500 });
+    }
+
+    const autoUsername = email.split('@')[0];
+
+    // Gunakan transaction untuk membuat User dan MasterDosen sekaligus
+    const newUser = await prisma.$transaction(async (tx) => {
+      const user = await tx.user.create({
+        data: {
+          username: autoUsername,
+          email: email,
+          password_hash: password_hash,
+          role_id: dosenRole.id,
+          status_akun: "pending",
+          master_dosen: {
+            create: {
+              nip: nip,
+              nama_lengkap: nama_lengkap,
+              nidn: nidn || null,
+              tempat_lahir: tempat_lahir || null,
+              tanggal_lahir: tanggal_lahir ? new Date(tanggal_lahir) : null,
+              jenis_kelamin: jenis_kelamin || null,
+              email_pribadi: email_pribadi || null,
+              alamat: alamat || null,
+              jurusan: jurusan || "",
+              program_studi: program_studi || "",
+              no_telp: no_telp || null,
+              pangkat_golongan: pangkat_golongan || null,
+              jabatan: jabatan || null,
+              unit_kerja: unit_kerja || null,
+            }
+          }
+        },
+        include: {
+          master_dosen: true 
+        }
+      });
+      return user;
+    });
+
+    return NextResponse.json({ message: "Registrasi berhasil!", user: newUser }, { status: 201 });
+
+  } catch (error: any) {
+    console.error("Error saat registrasi:", error);
+    return NextResponse.json({ error: "Terjadi kesalahan pada server" }, { status: 500 });
   }
 }

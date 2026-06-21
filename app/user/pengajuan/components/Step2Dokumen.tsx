@@ -42,7 +42,7 @@ export default function Step2Dokumen({ onNext, onPrev }: Props) {
         </h1>
         <p className="text-gray-600">
           Siapkan dokumen yang diperlukan untuk pengajuan studi lanjut. 
-          Pastikan semua dokumen dalam format PDF dengan ukuran maksimal 2MB per file.
+          Pastikan semua dokumen dalam format PDF dengan ukuran maksimal 5MB per file.
         </p>
       </div>
 
@@ -142,7 +142,7 @@ export default function Step2Dokumen({ onNext, onPrev }: Props) {
             <ul className="space-y-1 list-disc list-inside">
               <li>Pastikan semua dokumen WAJIB sudah disiapkan sebelum melanjutkan</li>
               <li>Dokumen opsional bersifat opsional namun sangat disarankan</li>
-              <li> Semua dokumen harus dalam format PDF dengan ukuran maksimal 2MB</li>
+              <li> Semua dokumen harus dalam format PDF dengan ukuran maksimal 5MB</li>
             </ul>
           </div>
         </div>

@@ -3,7 +3,8 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { ROLE_DISPLAY } from "@/src/lib/constants/roles";
-import { User, Mail, Shield, Briefcase, BadgeCheck, Save, ArrowLeft, Loader2, Hash } from "lucide-react";
+// PERBAIKAN: Menambahkan icon Phone untuk Nomor HP
+import { User, Mail, Shield, Briefcase, BadgeCheck, Save, ArrowLeft, Loader2, Hash, Phone } from "lucide-react";
 
 type ProfileData = {
   email: string;
@@ -26,8 +27,6 @@ type ProfileData = {
     no_telp?: string;
   } | null;
 };
-
-
 
 type EditProfileFormProps = {
   backUrl: string;
@@ -114,7 +113,8 @@ export default function EditProfileForm({ backUrl, apiUrl = "/api/user/profile" 
     }
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  // PERBAIKAN: Menambahkan HTMLTextAreaElement agar textarea Alamat tidak merah
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
 
@@ -314,6 +314,7 @@ export default function EditProfileForm({ backUrl, apiUrl = "/api/user/profile" 
               </div>
             </div>
 
+            {/* PERBAIKAN: Menambahkan Nomor HP sejajar dengan Jenis Kelamin */}
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-xs text-slate-500 mb-1.5">
@@ -334,20 +335,37 @@ export default function EditProfileForm({ backUrl, apiUrl = "/api/user/profile" 
               <div>
                 <label className="block text-xs text-slate-500 mb-1.5">
                   <div className="flex items-center gap-1.5">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="16" x="2" y="4" rx="2" /><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" /></svg>
-                    <span>Email Pribadi</span>
+                    <Phone size={12} />
+                    <span>Nomor HP</span>
                   </div>
                 </label>
                 <input
-                  type="email"
-                  name="email_pribadi"
-                  value={formData.email_pribadi}
+                  type="tel"
+                  name="no_telp"
+                  value={formData.no_telp}
                   onChange={handleChange}
-                  required
                   className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-slate-900"
-                  placeholder="Masukkan email pribadi"
+                  placeholder="08xxxxxxxxxx"
                 />
               </div>
+            </div>
+
+            <div>
+              <label className="block text-xs text-slate-500 mb-1.5">
+                <div className="flex items-center gap-1.5">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="16" x="2" y="4" rx="2" /><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" /></svg>
+                  <span>Email Pribadi</span>
+                </div>
+              </label>
+              <input
+                type="email"
+                name="email_pribadi"
+                value={formData.email_pribadi}
+                onChange={handleChange}
+                required
+                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-slate-900"
+                placeholder="Masukkan email pribadi"
+              />
             </div>
 
             <div>
@@ -395,7 +413,7 @@ export default function EditProfileForm({ backUrl, apiUrl = "/api/user/profile" 
                 >
                   <option value="">-- Pilih Pangkat --</option>
                   {masterData?.masterPangkat.map((pangkat) => (
-                    <option key={pangkat.id} value={pangkat.golongan}>
+                    <option key={pangkat.id} value={`${pangkat.pangkat} (${pangkat.golongan})`}>
                       {pangkat.pangkat} ({pangkat.golongan})
                     </option>
                   ))}
