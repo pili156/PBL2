@@ -94,6 +94,12 @@ export default function PengajuanPage() {
           const data = await response.json();
           //
           
+          if (data.status === 'ditolak') {
+            await fetch('/api/user/pengajuan', { method: 'DELETE' });
+            setIsInitialized(true);
+            return;
+          }
+
           if (COMPLETED_STATUSES.includes(data.status)) {
             //
             setHasCompletedPengajuan(true);

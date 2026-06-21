@@ -2,14 +2,16 @@
 
 import Link from "next/link";
 import { PengajuanDetail } from "../types";
-import { ArrowLeft, FileText } from "lucide-react";
+import { ArrowLeft, FileText, XCircle } from "lucide-react";
 
 interface DetailHeaderProps {
   pengajuan: PengajuanDetail | null;
   allDocumentsVerified?: boolean;
+  hasSkUploaded?: boolean;
+  onReject?: () => void;
 }
 
-export default function DetailHeader({ pengajuan, allDocumentsVerified = false }: DetailHeaderProps) {
+export default function DetailHeader({ pengajuan, allDocumentsVerified = false, hasSkUploaded = false, onReject }: DetailHeaderProps) {
   if (!pengajuan) {
     return null;
   }
@@ -55,6 +57,23 @@ export default function DetailHeader({ pengajuan, allDocumentsVerified = false }
               Upload SK
             </span>
           ) : null}
+          {allDocumentsVerified && !hasSkUploaded ? (
+            <button
+              onClick={onReject}
+              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 transition-colors text-sm font-semibold"
+            >
+              <XCircle size={16} />
+              Tolak Pengajuan
+            </button>
+          ) : (
+            <span
+              title={!allDocumentsVerified ? "Semua dokumen harus terverifikasi terlebih dahulu" : "SK sudah diupload, pengajuan tidak dapat ditolak"}
+              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-red-300 text-white cursor-not-allowed transition-colors text-sm font-semibold opacity-60"
+            >
+              <XCircle size={16} />
+              Tolak Pengajuan
+            </span>
+          )}
           <Link
             href="/admin/verifikasi-pengajuan"
             className="flex items-center gap-2 px-4 py-2 rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-50 transition-colors"

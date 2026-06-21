@@ -30,4 +30,11 @@ export interface PengajuanDetail {
   status: string;
   tanggal_pengajuan: string;
   dokumen: DokumenDetail[];
+  sk_kementerian?: {
+    id: number;
+    nomor_sk: string | null;
+    file_sk_path: string | null;
+    tanggal_terbit: string;
+    status_studi: string | null;
+  }[];
 }

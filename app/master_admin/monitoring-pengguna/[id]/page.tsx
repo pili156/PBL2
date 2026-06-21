@@ -102,66 +102,117 @@ export default async function EditUserPage({ params }: Props) {
         <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-6">
           <h3 className="text-sm font-semibold text-slate-800 mb-5 flex items-center gap-2">
             <User size={16} className="text-slate-400" />
-            Data Akun
+            ~
           </h3>
           <form action={updateProfileAction} className="space-y-4">
             <input type="hidden" name="id" value={user.id} />
+
+            {/* Identitas */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wider">Nama Lengkap</label>
-                <input
-                  type="text"
-                  name="nama_lengkap"
-                  defaultValue={user.master_dosen?.nama_lengkap || ''}
-                  required
-                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-slate-900"
-                />
+                <input type="text" name="nama_lengkap" defaultValue={user.master_dosen?.nama_lengkap || ''} required
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-slate-900" />
               </div>
               <div>
                 <label className="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wider">NIP</label>
-                <input
-                  type="text"
-                  name="nip"
-                  defaultValue={user.master_dosen?.nip || ''}
-                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-slate-900"
-                />
+                <input type="text" name="nip" defaultValue={user.master_dosen?.nip || ''}
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-slate-900" />
               </div>
             </div>
+
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wider">Email</label>
-                <input
-                  type="email"
-                  name="email"
-                  defaultValue={user.email || ''}
-                  required
-                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-slate-900"
-                />
+                <label className="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wider">NIDN</label>
+                <input type="text" name="nidn" defaultValue={user.master_dosen?.nidn || ''}
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-slate-900" />
               </div>
               <div>
-                <label className="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wider">Username</label>
-                <input
-                  type="text"
-                  defaultValue={user.username || ''}
-                  disabled
-                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm bg-slate-50 text-slate-400 cursor-not-allowed"
-                />
-                <p className="text-[10px] text-slate-400 mt-1">Username tidak dapat diubah</p>
+                <label className="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wider">Email</label>
+                <input type="email" name="email" defaultValue={user.email || ''} required
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-slate-900" />
               </div>
             </div>
-            <div>
-              <label className="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wider">Jurusan</label>
-              <input
-                type="text"
-                name="jurusan"
-                defaultValue={user.master_dosen?.jurusan || ''}
-                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-slate-900"
-              />
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wider">Email Pribadi</label>
+                <input type="email" name="email_pribadi" defaultValue={user.master_dosen?.email_pribadi || ''}
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-slate-900" />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wider">No. Telp</label>
+                <input type="text" name="no_telp" defaultValue={user.master_dosen?.no_telp || ''}
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-slate-900" />
+              </div>
             </div>
-            <button
-              type="submit"
-              className="flex items-center gap-2 bg-blue-600 text-white text-sm font-medium px-5 py-2.5 rounded-lg hover:bg-blue-700 transition-colors"
-            >
+
+            {/* Kelahiran & Identitas */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wider">Tempat Lahir</label>
+                <input type="text" name="tempat_lahir" defaultValue={user.master_dosen?.tempat_lahir || ''}
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-slate-900" />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wider">Tanggal Lahir</label>
+                <input type="date" name="tanggal_lahir"
+                  defaultValue={user.master_dosen?.tanggal_lahir ? user.master_dosen.tanggal_lahir.toISOString().split('T')[0] : ''}
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-slate-900" />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wider">Jenis Kelamin</label>
+                <select name="jenis_kelamin" defaultValue={user.master_dosen?.jenis_kelamin || ''}
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white text-slate-900">
+                  <option value="">-- Pilih --</option>
+                  <option value="Laki-laki">Laki-laki</option>
+                  <option value="Perempuan">Perempuan</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wider">Alamat</label>
+                <textarea name="alamat" defaultValue={user.master_dosen?.alamat || ''} rows={2}
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-slate-900 resize-none" />
+              </div>
+            </div>
+
+            {/* Kepegawaian */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wider">Pangkat / Golongan</label>
+                <input type="text" name="pangkat_golongan" defaultValue={user.master_dosen?.pangkat_golongan || ''}
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-slate-900" />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wider">Jabatan</label>
+                <input type="text" name="jabatan" defaultValue={user.master_dosen?.jabatan || ''}
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-slate-900" />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wider">Unit Kerja</label>
+                <input type="text" name="unit_kerja" defaultValue={user.master_dosen?.unit_kerja || ''}
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-slate-900" />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wider">Jurusan</label>
+                <input type="text" name="jurusan" defaultValue={user.master_dosen?.jurusan || ''}
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-slate-900" />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wider">Program Studi</label>
+              <input type="text" name="program_studi" defaultValue={user.master_dosen?.program_studi || ''}
+                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-slate-900" />
+            </div>
+
+            <button type="submit" className="flex items-center gap-2 bg-blue-600 text-white text-sm font-medium px-5 py-2.5 rounded-lg hover:bg-blue-700 transition-colors">
               <Save size={16} />
               Simpan Perubahan
             </button>

@@ -3,7 +3,9 @@ import { prisma } from '@/src/lib/prisma';
 import { headers } from 'next/headers';
 import { getStatusLabel } from '@/src/lib/status-utils';
 
-const determinePengajuanStatus = (dokumen: any[]): string => {
+const determinePengajuanStatus = (dokumen: any[], dbStatus?: string | null): string => {
+  if (dbStatus && dbStatus.toLowerCase() === 'ditolak') return 'ditolak';
+  
   if (!dokumen || dokumen.length === 0) return 'pending';
   
   const allTerverifikasi = dokumen.every((d) => d.status_verifikasi === 'terverifikasi');
@@ -38,7 +40,7 @@ export async function GET(request: Request) {
     if (status && status !== 'semua') {
       const dbStatus = getStatusLabel(status, 'pengajuan');
       whereClause.status = {
-        nama_status: dbStatus,
+        nama_status: { equals: dbStatus, mode: 'insensitive' },
       };
     }
 
@@ -80,7 +82,7 @@ export async function GET(request: Request) {
       ).length || 0;
       const total = dokumen.length || 0;
       
-      const calculatedStatus = determinePengajuanStatus(dokumen);
+      const calculatedStatus = determinePengajuanStatus(dokumen, p.status?.nama_status);
 
       return {
         id: p.id,
