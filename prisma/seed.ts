@@ -208,15 +208,18 @@ async function main() {
     });
   }
 
-  // --- 2.7 Master Bank ---
+  // --- 2.7 Master Bank (DIPERBAIKI) ---
   console.log('Seeding Master Bank...');
   const bankNames = ['BNI', 'BRI', 'BSI', 'BCA', 'Mandiri'];
   for (const nama of bankNames) {
-    await prisma.masterBank.upsert({
+    const existingBank = await prisma.masterBank.findFirst({
       where: { nama_bank: nama },
-      update: {},
-      create: { nama_bank: nama },
     });
+    if (!existingBank) {
+      await prisma.masterBank.create({
+        data: { nama_bank: nama },
+      });
+    }
   }
 
   console.log('Data Master (Role, Jenis Studi, Pendanaan, Status, Dokumen, Wilayah, Jurusan, Bank) telah siap.');
@@ -432,6 +435,22 @@ async function main() {
       waktu_kirim: new Date('2025-01-16T10:00:00+07:00'),
     },
   });
+
+  // ===============================================================
+  // === 5. RESET SEQUENCE POSTGRESQL (DIPERBAIKI) ===
+  // ===============================================================
+  console.log('Menyelaraskan sequence ID untuk PostgreSQL...');
+  try {
+    // Sinkronisasi auto-increment agar saat register akun baru ID tidak bertabrakan dengan ID hasil seed di atas
+    await prisma.$executeRawUnsafe(`SELECT setval(pg_get_serial_sequence('"users"', 'id'), coalesce(max(id), 1), max(id) IS NOT null) FROM "users";`);
+    await prisma.$executeRawUnsafe(`SELECT setval(pg_get_serial_sequence('"pengajuan_studi"', 'id'), coalesce(max(id), 1), max(id) IS NOT null) FROM "pengajuan_studi";`);
+    await prisma.$executeRawUnsafe(`SELECT setval(pg_get_serial_sequence('"monitoring_khs"', 'id'), coalesce(max(id), 1), max(id) IS NOT null) FROM "monitoring_khs";`);
+    await prisma.$executeRawUnsafe(`SELECT setval(pg_get_serial_sequence('"pengajuan_reimbursement"', 'id'), coalesce(max(id), 1), max(id) IS NOT null) FROM "pengajuan_reimbursement";`);
+    await prisma.$executeRawUnsafe(`SELECT setval(pg_get_serial_sequence('"pesan_komunikasi"', 'id'), coalesce(max(id), 1), max(id) IS NOT null) FROM "pesan_komunikasi";`);
+    console.log('Sequence ID database berhasil disinkronisasi.');
+  } catch (error) {
+    console.log('Catatan: Reset sequence gagal, abaikan jika kamu tidak menggunakan PostgreSQL.');
+  }
 
   console.log('Proses Seeding (SIGAP PBL2) Berhasil!');
   console.log('-----------------------------------');

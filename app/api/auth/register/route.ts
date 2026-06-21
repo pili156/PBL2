@@ -19,6 +19,7 @@ export async function POST(request: Request) {
     // Hal ini untuk mencegah error jika variabel ini belum didaftarkan ke Zod `registerSchema`
     const { jurusan, program_studi } = body;
 
+    // Cek apakah Email atau NIP sudah digunakan
     const existingUser = await prisma.user.findFirst({
       where: {
         OR: [
@@ -34,24 +35,27 @@ export async function POST(request: Request) {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
+    // Cari ID untuk role Dosen
     const roleDosen = await prisma.masterRole.findFirst({ where: { nama_role: "dosen" } });
 
     const autoUsername = email.split('@')[0];
     
-    // Menyimpan data tambahan jurusan dan prodi ke tabel master_dosen
+    // Menyimpan data user sekaligus membuat relasi profil jurusan dan prodi ke tabel master_dosen
     await prisma.user.create({
       data: {
         username: autoUsername,
         email: email,
         password_hash: hashedPassword,
-        role_id: roleDosen?.id || 2, 
+        // PERBAIKAN: Fallback id harus 3 (Dosen). Jika pakai 2, user baru bisa otomatis jadi Admin!
+        role_id: roleDosen?.id || 3, 
         status_akun: "pending",
         master_dosen: {
           create: {
             nip: nip,
             nama_lengkap: nama_lengkap,
-            jurusan: jurusan,
-            program_studi: program_studi,
+            // PERBAIKAN: Fallback string kosong agar Prisma tidak error jika data frontend terputus
+            jurusan: jurusan || "", 
+            program_studi: program_studi || "",
           }
         }
       }
@@ -61,6 +65,6 @@ export async function POST(request: Request) {
 
   } catch (error) {
     console.error("Register Error:", error);
-    return NextResponse.json({ error: "Terjadi kesalahan pada server." }, { status: 500 });
+    return NextResponse.json({ error: "Terjadi kesalahan pada server saat registrasi." }, { status: 500 });
   }
 }
