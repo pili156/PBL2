@@ -1,3 +1,4 @@
+// app/api/pengajuan/[id]/dokumen/[dokumenId]/route.ts
 import { NextResponse } from 'next/server';
 import { prisma } from '@/src/lib/prisma';
 import { writeFile, mkdir, unlink } from 'fs/promises';
@@ -13,6 +14,10 @@ export async function PUT(
     const parsedDokumenId = parseInt(dokumenId, 10);
     const parsedPengajuanId = parseInt(id, 10);
 
+    // 1. AMBIL HEADER IDENTITAS DARI MIDDLEWARE
+    const userId = request.headers.get('x-user-id');
+    const userRole = request.headers.get('x-user-role');
+
     if (isNaN(parsedDokumenId) || isNaN(parsedPengajuanId)) {
       return NextResponse.json({ error: 'ID tidak valid' }, { status: 400 });
     }
@@ -27,6 +32,19 @@ export async function PUT(
 
     if (existingDoc.pengajuan_id !== parsedPengajuanId) {
       return NextResponse.json({ error: 'Dokumen bukan milik pengajuan ini' }, { status: 403 });
+    }
+
+    // 2. VALIDASI KEPEMILIKAN (Tanpa include agar TypeScript tidak merah)
+    // Jika role dosen, kita query tabel pengajuan_studi secara terpisah untuk validasi user_id
+    if (userRole === 'dosen' && userId) {
+      const pengajuan = await prisma.pengajuanStudi.findUnique({
+        where: { id: parsedPengajuanId },
+        select: { user_id: true }
+      });
+      
+      if (!pengajuan || pengajuan.user_id !== parseInt(userId)) {
+        return NextResponse.json({ error: 'Akses Ditolak: Anda tidak berhak mengubah dokumen ini' }, { status: 403 });
+      }
     }
 
     const formData = await request.formData();
