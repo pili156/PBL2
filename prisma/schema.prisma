@@ -83,7 +83,13 @@ model MasterDosen {
   id               Int       @id @default(autoincrement())
   user_id          Int?      @unique
   nip              String?   @unique
+  nidn             String?
   nama_lengkap     String?
+  tempat_lahir     String?
+  tanggal_lahir    DateTime? @db.Date
+  jenis_kelamin    String?
+  email_pribadi    String?
+  alamat           String?
   pangkat_golongan String?
   jabatan          String?
   unit_kerja       String?

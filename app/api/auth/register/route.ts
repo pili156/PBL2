@@ -15,9 +15,8 @@ export async function POST(request: Request) {
 
     const { email, password, nip, nama_lengkap } = parsed.data;
     
-    // Tarik nilai jurusan dan program studi langsung dari body mentah
-    // Hal ini untuk mencegah error jika variabel ini belum didaftarkan ke Zod `registerSchema`
-    const { jurusan, program_studi } = body;
+    // Tarik nilai dari body mentah
+    const { jurusan, program_studi, nidn, tempat_lahir, tanggal_lahir, jenis_kelamin, email_pribadi, alamat } = body;
 
     // Cek apakah Email atau NIP sudah digunakan
     const existingUser = await prisma.user.findFirst({
@@ -53,9 +52,20 @@ export async function POST(request: Request) {
           create: {
             nip: nip,
             nama_lengkap: nama_lengkap,
+<<<<<<< HEAD
             // PERBAIKAN: Fallback string kosong agar Prisma tidak error jika data frontend terputus
             jurusan: jurusan || "", 
             program_studi: program_studi || "",
+=======
+            nidn: nidn || null,
+            tempat_lahir: tempat_lahir || null,
+            tanggal_lahir: tanggal_lahir ? new Date(tanggal_lahir) : null,
+            jenis_kelamin: jenis_kelamin || null,
+            email_pribadi: email_pribadi || null,
+            alamat: alamat || null,
+            jurusan: jurusan,
+            program_studi: program_studi,
+>>>>>>> b89cd71014d8a27631cfffb5ea009c1f0e1917e1
           }
         }
       }

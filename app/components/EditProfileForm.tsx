@@ -11,7 +11,13 @@ type ProfileData = {
   role: string;
   master_dosen: {
     nip?: string;
+    nidn?: string;
     nama_lengkap?: string;
+    tempat_lahir?: string;
+    tanggal_lahir?: string;
+    jenis_kelamin?: string;
+    email_pribadi?: string;
+    alamat?: string;
     pangkat_golongan?: string;
     jabatan?: string;
     unit_kerja?: string;
@@ -42,7 +48,13 @@ export default function EditProfileForm({ backUrl, apiUrl = "/api/user/profile" 
 
   const [formData, setFormData] = useState({
     nip: "",
+    nidn: "",
     nama_lengkap: "",
+    tempat_lahir: "",
+    tanggal_lahir: "",
+    jenis_kelamin: "",
+    email_pribadi: "",
+    alamat: "",
     pangkat_golongan: "",
     jabatan: "",
     unit_kerja: "",
@@ -79,7 +91,13 @@ export default function EditProfileForm({ backUrl, apiUrl = "/api/user/profile" 
       setProfileData(profileJson);
       setFormData({
         nip: profileJson.master_dosen?.nip || "",
+        nidn: profileJson.master_dosen?.nidn || "",
         nama_lengkap: profileJson.master_dosen?.nama_lengkap || "",
+        tempat_lahir: profileJson.master_dosen?.tempat_lahir || "",
+        tanggal_lahir: profileJson.master_dosen?.tanggal_lahir ? profileJson.master_dosen.tanggal_lahir.split("T")[0] : "",
+        jenis_kelamin: profileJson.master_dosen?.jenis_kelamin || "",
+        email_pribadi: profileJson.master_dosen?.email_pribadi || "",
+        alamat: profileJson.master_dosen?.alamat || "",
         pangkat_golongan: profileJson.master_dosen?.pangkat_golongan || "",
         jabatan: profileJson.master_dosen?.jabatan || "",
         unit_kerja: profileJson.master_dosen?.unit_kerja || "",
@@ -250,19 +268,101 @@ export default function EditProfileForm({ backUrl, apiUrl = "/api/user/profile" 
               <div>
                 <label className="block text-xs text-slate-500 mb-1.5">
                   <div className="flex items-center gap-1.5">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
-                    <span>No. Telp</span>
+                    <Hash size={12} />
+                    <span>NIDN</span>
                   </div>
                 </label>
                 <input
                   type="text"
-                  name="no_telp"
-                  value={formData.no_telp}
+                  name="nidn"
+                  value={formData.nidn}
                   onChange={handleChange}
+                  required
                   className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-slate-900"
-                  placeholder="Masukkan no. telepon"
+                  placeholder="Masukkan NIDN"
                 />
               </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs text-slate-500 mb-1.5">
+                  Tempat Lahir
+                </label>
+                <input
+                  type="text"
+                  name="tempat_lahir"
+                  value={formData.tempat_lahir}
+                  onChange={handleChange}
+                  required
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-slate-900"
+                  placeholder="Masukkan tempat lahir"
+                />
+              </div>
+              <div>
+                <label className="block text-xs text-slate-500 mb-1.5">
+                  Tanggal Lahir
+                </label>
+                <input
+                  type="date"
+                  name="tanggal_lahir"
+                  value={formData.tanggal_lahir}
+                  onChange={handleChange}
+                  required
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-slate-900"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs text-slate-500 mb-1.5">
+                  Jenis Kelamin
+                </label>
+                <select
+                  name="jenis_kelamin"
+                  value={formData.jenis_kelamin}
+                  onChange={handleChange}
+                  required
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-slate-900"
+                >
+                  <option value="">-- Pilih --</option>
+                  <option value="Laki-laki">Laki-laki</option>
+                  <option value="Perempuan">Perempuan</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs text-slate-500 mb-1.5">
+                  <div className="flex items-center gap-1.5">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="16" x="2" y="4" rx="2" /><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" /></svg>
+                    <span>Email Pribadi</span>
+                  </div>
+                </label>
+                <input
+                  type="email"
+                  name="email_pribadi"
+                  value={formData.email_pribadi}
+                  onChange={handleChange}
+                  required
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-slate-900"
+                  placeholder="Masukkan email pribadi"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-xs text-slate-500 mb-1.5">
+                Alamat
+              </label>
+              <textarea
+                name="alamat"
+                value={formData.alamat}
+                onChange={handleChange}
+                rows={2}
+                required
+                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-slate-900 resize-none"
+                placeholder="Masukkan alamat"
+              />
             </div>
 
             <div>

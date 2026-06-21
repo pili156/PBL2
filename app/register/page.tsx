@@ -33,6 +33,12 @@ export default function Register() {
     email: "",
     nama_lengkap: "",
     nip: "",
+    nidn: "",
+    tempat_lahir: "",
+    tanggal_lahir: "",
+    jenis_kelamin: "",
+    email_pribadi: "",
+    alamat: "",
     jurusan: "",
     program_studi: "",
     password: "",
@@ -199,6 +205,44 @@ export default function Register() {
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="14" x="2" y="5" rx="2" /><circle cx="8" cy="12" r="2" /><path d="M14 11h4" /><path d="M14 14h4" /></svg>
               </span>
               <input id="nip" name="nip" autoComplete="off" type="text" required placeholder="NIP" value={formData.nip} onChange={(e) => setFormData({...formData, nip: e.target.value})} className="w-full border border-gray-200 rounded-full pl-12 pr-4 py-3 text-sm text-gray-700 outline-none focus:border-blue-500 transition-colors bg-gray-50/50" />
+            </div>
+
+            <div className="relative">
+              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="14" x="2" y="5" rx="2" /><circle cx="8" cy="12" r="2" /><path d="M14 11h4" /><path d="M14 14h4" /></svg>
+              </span>
+              <input id="nidn" name="nidn" autoComplete="off" type="text" required placeholder="NIDN" value={formData.nidn} onChange={(e) => setFormData({...formData, nidn: e.target.value})} className="w-full border border-gray-200 rounded-full pl-12 pr-4 py-3 text-sm text-gray-700 outline-none focus:border-blue-500 transition-colors bg-gray-50/50" />
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div className="relative">
+                <input id="tempat_lahir" name="tempat_lahir" type="text" required placeholder="Tempat Lahir" value={formData.tempat_lahir} onChange={(e) => setFormData({...formData, tempat_lahir: e.target.value})} className="w-full border border-gray-200 rounded-full px-4 py-3 text-sm text-gray-700 outline-none focus:border-blue-500 transition-colors bg-gray-50/50" />
+              </div>
+              <div className="relative">
+                <input id="tanggal_lahir" name="tanggal_lahir" type="date" required placeholder="Tanggal Lahir" value={formData.tanggal_lahir} onChange={(e) => setFormData({...formData, tanggal_lahir: e.target.value})} className="w-full border border-gray-200 rounded-full px-4 py-3 text-sm text-gray-700 outline-none focus:border-blue-500 transition-colors bg-gray-50/50" />
+              </div>
+            </div>
+
+            <div className="relative">
+              <select id="jenis_kelamin" name="jenis_kelamin" required value={formData.jenis_kelamin} onChange={(e) => setFormData({...formData, jenis_kelamin: e.target.value})} className="w-full border border-gray-200 rounded-full px-4 py-3 text-sm text-gray-700 outline-none focus:border-blue-500 transition-colors bg-gray-50/50 appearance-none">
+                <option value="">Jenis Kelamin</option>
+                <option value="Laki-laki">Laki-laki</option>
+                <option value="Perempuan">Perempuan</option>
+              </select>
+              <div className="absolute inset-y-0 right-4 flex items-center pointer-events-none text-gray-400">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+              </div>
+            </div>
+
+            <div className="relative">
+              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="16" x="2" y="4" rx="2" /><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" /></svg>
+              </span>
+              <input id="email_pribadi" name="email_pribadi" type="email" required placeholder="Email Pribadi" value={formData.email_pribadi} onChange={(e) => setFormData({...formData, email_pribadi: e.target.value})} className="w-full border border-gray-200 rounded-full pl-12 pr-4 py-3 text-sm text-gray-700 outline-none focus:border-blue-500 transition-colors bg-gray-50/50" />
+            </div>
+
+            <div className="relative">
+              <textarea id="alamat" name="alamat" rows={2} required placeholder="Alamat" value={formData.alamat} onChange={(e) => setFormData({...formData, alamat: e.target.value})} className="w-full border border-gray-200 rounded-2xl px-4 py-3 text-sm text-gray-700 outline-none focus:border-blue-500 transition-colors bg-gray-50/50 resize-none" />
             </div>
 
             {/* DROPDOWN JURUSAN (DINAMIS) */}
