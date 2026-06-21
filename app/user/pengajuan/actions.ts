@@ -14,3 +14,14 @@ export async function getKampusDariDatabase() {
     return [];
   }
 }
+export async function getBeasiswaDariDatabase() {
+  try {
+    const data = await prisma.masterBeasiswa.findMany({ 
+      orderBy: { nama_beasiswa: "asc" } 
+    });
+    return JSON.parse(JSON.stringify(data));
+  } catch (error) {
+    console.error("Gagal mengambil data beasiswa:", error);
+    return [];
+  }
+}

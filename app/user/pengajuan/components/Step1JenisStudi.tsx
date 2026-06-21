@@ -5,7 +5,7 @@ import { useState, useEffect } from "react";
 import { Book, GraduationCap, Award, Wallet, MapPin, Save, ArrowRight, Loader2, Check, Building2 } from "lucide-react";
 import { StudyType, FundingType, StudyRegion } from "../type";
 import { STUDY_TYPES, FUNDING_TYPES, STUDY_REGIONS } from "../constants";
-import { getKampusDariDatabase } from "../actions";
+import { getKampusDariDatabase, getBeasiswaDariDatabase } from "../actions";
 
 type Props = {
   onNext: (data: {
@@ -31,16 +31,7 @@ interface SelectionState {
   studyRegion: boolean;
 }
 
-const DAFTAR_BEASISWA = [
-  "LPDP",
-  "BPI (Beasiswa Pendidikan Indonesia)",
-  "Beasiswa Unggulan Kemendikbud",
-  "AAS (Australia Awards Scholarships)",
-  "Lainnya..."
-];
-
 export default function Step1JenisStudi({ onNext }: Props) {
-  // STATE ASLI MILIKMU
   const [studyType, setStudyType] = useState<StudyType | null>(null);
   const [fundingType, setFundingType] = useState<FundingType | null>(null);
   const [studyRegion, setStudyRegion] = useState<StudyRegion | null>(null);
@@ -50,15 +41,19 @@ export default function Step1JenisStudi({ onNext }: Props) {
   const [autoSaveStatus, setAutoSaveStatus] = useState<"idle" | "saving" | "saved">("idle");
   const [isAnimating, setIsAnimating] = useState(false);
 
-  // STATE TAMBAHAN UNTUK FITUR BARU
+  // STATE DATABASE
   const [dbPtn, setDbPtn] = useState<any[]>([]);
+  const [dbBeasiswa, setDbBeasiswa] = useState<any[]>([]);
   const [beasiswaCustom, setBeasiswaCustom] = useState("");
   const [ptnCustom, setPtnCustom] = useState("");
 
-  // Ambil data PTN dari database
+  // Ambil data PTN dan Beasiswa dari database
   useEffect(() => {
     getKampusDariDatabase().then((data) => {
       if (data) setDbPtn(data);
+    });
+    getBeasiswaDariDatabase().then((data) => {
+      if (data) setDbBeasiswa(data);
     });
   }, []);
 
@@ -71,17 +66,10 @@ export default function Step1JenisStudi({ onNext }: Props) {
         if (data.fundingType) setFundingType(data.fundingType as FundingType);
         if (data.studyRegion) setStudyRegion(data.studyRegion as StudyRegion);
         
-        // Handle Beasiswa
         if (data.namaBeasiswa) {
-          if (!DAFTAR_BEASISWA.includes(data.namaBeasiswa)) {
-            setNamaBeasiswa("Lainnya...");
-            setBeasiswaCustom(data.namaBeasiswa);
-          } else {
-            setNamaBeasiswa(data.namaBeasiswa as string);
-          }
+          setNamaBeasiswa(data.namaBeasiswa as string);
         }
 
-        // Handle Perguruan Tinggi
         if (data.perguruanTinggi) {
           setPerguruanTinggi(data.perguruanTinggi as string);
         }
@@ -89,7 +77,7 @@ export default function Step1JenisStudi({ onNext }: Props) {
     }
   }, []);
 
-  // Perbaikan deteksi nilai PTN jika menggunakan custom text
+  // Deteksi nilai PTN jika custom text
   useEffect(() => {
     if (dbPtn.length > 0 && perguruanTinggi && studyRegion === "dalam_negeri") {
       const isExist = dbPtn.some(pt => pt.nama_pt === perguruanTinggi);
@@ -99,6 +87,17 @@ export default function Step1JenisStudi({ onNext }: Props) {
       }
     }
   }, [dbPtn, studyRegion]);
+
+  // Deteksi nilai Beasiswa jika custom text
+  useEffect(() => {
+    if (dbBeasiswa.length > 0 && namaBeasiswa && fundingType === "beasiswa") {
+      const isExist = dbBeasiswa.some(b => b.nama_beasiswa === namaBeasiswa);
+      if (!isExist && namaBeasiswa !== "Lainnya...") {
+        setBeasiswaCustom(namaBeasiswa);
+        setNamaBeasiswa("Lainnya...");
+      }
+    }
+  }, [dbBeasiswa, fundingType]);
 
   useEffect(() => {
     if (fundingType === "beasiswa") {
@@ -312,9 +311,10 @@ export default function Step1JenisStudi({ onNext }: Props) {
               className="w-full border border-gray-200 rounded-xl pl-12 pr-10 py-3 text-sm text-gray-700 outline-none focus:border-blue-500 transition-colors bg-white appearance-none"
             >
               <option value="" disabled>Pilih Jenis Beasiswa...</option>
-              {DAFTAR_BEASISWA.map(b => (
-                <option key={b} value={b}>{b}</option>
+              {dbBeasiswa.map(b => (
+                <option key={b.id} value={b.nama_beasiswa}>{b.nama_beasiswa}</option>
               ))}
+              <option value="Lainnya...">Lainnya...</option>
             </select>
             <div className="absolute inset-y-0 right-4 flex items-center pointer-events-none text-gray-400">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
@@ -347,7 +347,6 @@ export default function Step1JenisStudi({ onNext }: Props) {
               const Icon = ICON_MAP[type.icon as keyof typeof ICON_MAP];
               const isSelected = studyType === type.id;
               
-              // MENGUBAH REDAKSI KHUSUS UNTUK TAMPILAN
               let displayTitle = type.title;
               if (type.id === "tugas_belajar") displayTitle = "Tugas Belajar (Dibebastugaskan)";
               if (type.id === "izin_belajar") displayTitle = "Tugas Belajar (Tetap Menjalankan Kewajiban)";

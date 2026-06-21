@@ -319,3 +319,12 @@ model MasterPerguruanTinggi {
 
   @@map("master_perguruan_tinggi")
 }
+
+model MasterBeasiswa {
+  id            Int      @id @default(autoincrement())
+  nama_beasiswa String   @unique
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
+
+  @@map("master_beasiswa")
+}

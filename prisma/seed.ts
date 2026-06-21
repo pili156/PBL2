@@ -52,6 +52,7 @@ async function main() {
   // --- 1b. Bersihkan data lama (urutan berdasarkan dependensi) ---
   console.log('Membersihkan data lama...');
   const cleanUp = async (fn: () => Promise<any>) => { try { await fn(); } catch {} };
+  await cleanUp(() => prisma.masterBeasiswa.deleteMany()); // TAMBAHAN CLEANUP BEASISWA
   await cleanUp(() => prisma.activityLog.deleteMany());
   await cleanUp(() => prisma.pesanKomunikasi.deleteMany());
   await cleanUp(() => prisma.pengajuanReimbursement.deleteMany());
@@ -244,6 +245,22 @@ async function main() {
     const existingPT = await prisma.masterPerguruanTinggi.findFirst({ where: { nama_pt: nama } });
     if (!existingPT) {
       await prisma.masterPerguruanTinggi.create({ data: { nama_pt: nama } });
+    }
+  }
+
+  // --- 2.9 Master Beasiswa ---
+  console.log('Seeding Master Beasiswa...');
+  const daftarBeasiswa = [
+    "LPDP",
+    "BPI (Beasiswa Pendidikan Indonesia)",
+    "Beasiswa Unggulan Kemendikbud",
+    "AAS (Australia Awards Scholarships)"
+  ];
+  
+  for (const nama of daftarBeasiswa) {
+    const existingBeasiswa = await prisma.masterBeasiswa.findFirst({ where: { nama_beasiswa: nama } });
+    if (!existingBeasiswa) {
+      await prisma.masterBeasiswa.create({ data: { nama_beasiswa: nama } });
     }
   }
 
