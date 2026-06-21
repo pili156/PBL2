@@ -34,6 +34,7 @@ export const pengajuanSchema = z.object({
   jalur_pendanaan_id: z.number().int().positive().optional(),
   wilayah_studi: z.number().int().positive().optional(),
   perguruan_tinggi: z.string().min(1, "Perguruan tinggi wajib diisi").optional(),
+  nama_beasiswa: z.string().nullable().optional(),
 });
 
 export const profileSchema = z.object({
@@ -81,6 +82,8 @@ export const reimbursementSchema = z.object({
   tahun_ke: z.string().optional(),
   nominal: z.string().min(1, "Nominal wajib diisi"),
   catatan_keuangan: z.string().optional(),
+  nomor_rekening: z.string().min(1, "Nomor rekening wajib diisi"),
+  nama_bank: z.string().min(1, "Bank wajib dipilih"),
 });
 
 export const ipkSchema = z.number().min(0).max(4.00, "IPK tidak boleh lebih dari 4.00");

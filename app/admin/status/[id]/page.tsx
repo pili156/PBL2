@@ -17,7 +17,7 @@ export default function ManajemenStatusPage({ params }: Props) {
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [selectedStatus, setSelectedStatus] = useState("");
+
   const [uploading, setUploading] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -74,14 +74,9 @@ export default function ManajemenStatusPage({ params }: Props) {
       return;
     }
 
-    if (!selectedStatus) {
-      setMessage({ type: 'error', text: 'Silakan pilih status verifikasi terlebih dahulu' });
-      return;
-    }
-
     const formData = new FormData();
     formData.append('file', selectedFile);
-    formData.append('status_pengajuan', selectedStatus);
+    formData.append('status_pengajuan', 'diterima');
     formData.append('status_studi', 'aktif');
 
     setUploading(true);
@@ -98,7 +93,6 @@ export default function ManajemenStatusPage({ params }: Props) {
       if (response.ok) {
         setMessage({ type: 'success', text: 'SK berhasil diupload dan disimpan!' });
         setSelectedFile(null);
-        setSelectedStatus("");
         if (fileInputRef.current) {
           fileInputRef.current.value = '';
         }
@@ -221,23 +215,7 @@ export default function ManajemenStatusPage({ params }: Props) {
                 )}
               </label>
 
-              {/* Pemilihan Status Baru */}
-              <div className="mt-8 border-t border-slate-100 pt-6">
-                <label className="block text-sm font-bold text-slate-700 mb-2">Update Status Verifikasi Akhir</label>
-                <p className="text-xs text-slate-500 mb-4">Tentukan status pengajuan setelah SK ini diterbitkan.</p>
-                <select 
-                  name="status_pengajuan"
-                  value={selectedStatus}
-                  onChange={(e) => setSelectedStatus(e.target.value)}
-                  required
-                  className="w-full px-4 py-3.5 bg-white border border-slate-300 rounded-xl outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 text-sm text-slate-700 font-medium transition-all"
-                >
-                  <option value="" disabled>Pilih status persetujuan...</option>
-                  <option value="diterima">Diterima (Disetujui)</option>
-                  <option value="pending">Pending (Menunggu)</option>
-                  <option value="revisi">Butuh Revisi</option>
-                </select>
-              </div>
+
 
             </div>
           </div>
@@ -342,7 +320,7 @@ export default function ManajemenStatusPage({ params }: Props) {
               <div className="pt-2">
                 <button 
                   type="submit"
-                  disabled={uploading || !selectedStatus || !selectedFile}
+                  disabled={uploading || !selectedFile}
                   className="w-full bg-blue-600 text-white px-6 py-3.5 rounded-xl font-semibold text-sm shadow-md shadow-blue-500/20 hover:bg-blue-700 hover:shadow-lg hover:shadow-blue-500/30 transition-all active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
                   {uploading ? (

@@ -1,11 +1,13 @@
 import { headers } from 'next/headers';
 import { prisma } from '@/src/lib/prisma';
 import { notFound } from 'next/navigation';
-import { BookOpen, Wallet, GraduationCap, TrendingUp, DollarSign, ClipboardList } from 'lucide-react';
+import { BookOpen, Wallet, GraduationCap, TrendingUp, Coins, ClipboardList } from 'lucide-react';
 import Link from 'next/link';
 import { formatRupiah } from '@/src/lib/formatters';
 
 export const dynamic = 'force-dynamic';
+
+const STATUS_CAIR = ["dicairkan", "selesai"] as const;
 
 export default async function RiwayatRootPage() {
   const headersList = await headers();
@@ -22,7 +24,11 @@ export default async function RiwayatRootPage() {
           jenis_studi: true,
           jalur_pendanaan: true,
           monitoring_khs: true,
-          pengajuan_reimbursement: true,
+          pengajuan_reimbursement: {
+            include: {
+              dokumen_pengajuan: true,
+            },
+          },
         },
         orderBy: { created_at: 'desc' },
       },
@@ -30,6 +36,20 @@ export default async function RiwayatRootPage() {
   });
 
   if (!user) notFound();
+
+  // Helper function to determine effective status based on documents and pencairan status
+  const getEffectiveStatus = (item: typeof user.pengajuan_studi[0]['pengajuan_reimbursement'][0]): string => {
+    // Check if any document has revisi status
+    const hasDocumentRevision = item.dokumen_pengajuan?.some(
+      (doc) => doc.status_verifikasi === "revisi"
+    );
+
+    if (hasDocumentRevision) {
+      return "revisi";
+    }
+
+    return item.status_pencairan?.toLowerCase() ?? "pending";
+  };
 
   const totalPengajuan = user.pengajuan_studi.length;
   const latestPengajuan = user.pengajuan_studi[0];
@@ -45,8 +65,11 @@ export default async function RiwayatRootPage() {
       totalKhs++;
     }
     for (const r of p.pengajuan_reimbursement) {
-      if (r.status_pencairan === 'selesai' && r.nominal) {
-        totalBantuanCair += Number(r.nominal);
+      if (r.nominal) {
+        const effectiveStatus = getEffectiveStatus(r);
+        if ((STATUS_CAIR as readonly string[]).includes(effectiveStatus)) {
+          totalBantuanCair += Number(r.nominal);
+        }
       }
     }
   }
@@ -82,7 +105,7 @@ export default async function RiwayatRootPage() {
         <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-5">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-lg bg-amber-100 flex items-center justify-center">
-              <DollarSign size={20} className="text-amber-600" />
+              <Coins size={20} className="text-amber-600" />
             </div>
             <div>
               <p className="text-[10px] text-slate-400 uppercase tracking-wider">Bantuan Cair</p>
@@ -122,7 +145,10 @@ export default async function RiwayatRootPage() {
                 ? p.monitoring_khs.reduce((sum, k) => sum + Number(k.ipk || 0), 0) / khsCount
                 : 0;
               const totalCair = p.pengajuan_reimbursement
-                .filter(r => r.status_pencairan === 'selesai')
+                .filter(r => {
+                  const effectiveStatus = getEffectiveStatus(r);
+                  return (STATUS_CAIR as readonly string[]).includes(effectiveStatus);
+                })
                 .reduce((sum, r) => sum + Number(r.nominal || 0), 0);
 
               return (

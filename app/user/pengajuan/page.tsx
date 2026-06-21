@@ -141,6 +141,7 @@ export default function PengajuanPage() {
     fundingType: string;
     studyRegion: string;
     perguruanTinggi: string;
+    namaBeasiswa: string;
   }) => {
     setLoading(true);
     setError(null);
@@ -173,6 +174,7 @@ export default function PengajuanPage() {
           jalur_pendanaan_id: selectedJalurPendanaan?.id,
           wilayah_studi: selectedWilayah?.id,
           perguruan_tinggi: data.perguruanTinggi,
+          nama_beasiswa: data.namaBeasiswa || undefined,
         }),
       });
 
@@ -191,6 +193,7 @@ export default function PengajuanPage() {
         studyType: data.studyType as any,
         fundingType: data.fundingType as any,
         studyRegion: data.studyRegion as any,
+        namaBeasiswa: data.namaBeasiswa,
       }));
 
       localStorage.removeItem("pengajuan_step1_draft");

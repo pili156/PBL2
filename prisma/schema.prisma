@@ -173,6 +173,7 @@ model PengajuanStudi {
   status_id               Int?
   wilayah_studi           Int?
   perguruan_tinggi        String?
+  nama_beasiswa           String?
   activity_logs           ActivityLog[]
   dokumen_pengajuan       DokumenPengajuan[]
   monitoring_khs          MonitoringKhs[]
@@ -299,4 +300,31 @@ model MasterProgramStudi {
   jurusan      MasterJurusan @relation(fields: [jurusan_id], references: [id], onDelete: Cascade)
 
   @@map("master_program_studi")
+}
+
+model MasterBank {
+  id        Int      @id @default(autoincrement())
+  nama_bank String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("master_bank")
+}
+
+model MasterPerguruanTinggi {
+  id          Int      @id @default(autoincrement())
+  nama_pt     String   @unique
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  @@map("master_perguruan_tinggi")
+}
+
+model MasterBeasiswa {
+  id            Int      @id @default(autoincrement())
+  nama_beasiswa String   @unique
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
+
+  @@map("master_beasiswa")
 }

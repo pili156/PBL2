@@ -52,6 +52,7 @@ async function main() {
   // --- 1b. Bersihkan data lama (urutan berdasarkan dependensi) ---
   console.log('Membersihkan data lama...');
   const cleanUp = async (fn: () => Promise<any>) => { try { await fn(); } catch {} };
+  await cleanUp(() => prisma.masterBeasiswa.deleteMany()); // TAMBAHAN CLEANUP BEASISWA
   await cleanUp(() => prisma.activityLog.deleteMany());
   await cleanUp(() => prisma.pesanKomunikasi.deleteMany());
   await cleanUp(() => prisma.pengajuanReimbursement.deleteMany());
@@ -64,11 +65,13 @@ async function main() {
   await cleanUp(() => prisma.user.deleteMany());
   await cleanUp(() => prisma.masterProgramStudi.deleteMany());
   await cleanUp(() => prisma.masterJurusan.deleteMany());
+  await cleanUp(() => prisma.masterBank.deleteMany());
   await cleanUp(() => prisma.masterWilayah.deleteMany());
   await cleanUp(() => prisma.masterStatusPengajuan.deleteMany());
   await cleanUp(() => prisma.masterJalurPendanaan.deleteMany());
   await cleanUp(() => prisma.masterJenisStudi.deleteMany());
   await cleanUp(() => prisma.masterRole.deleteMany());
+  await cleanUp(() => prisma.masterPerguruanTinggi.deleteMany()); // TAMBAHAN CLEANUP
   // ===============================================================
   // === 2. MASTER DATA (Deterministic IDs) ===
   // ===============================================================
@@ -96,11 +99,31 @@ async function main() {
   await prisma.masterStatusPengajuan.create({ data: { id: 7, nama_status: 'terverifikasi' } });
   await prisma.masterStatusPengajuan.create({ data: { id: 8, nama_status: 'revisi' } });
 
-  // --- 2.5 Master Dokumen (Untuk Syarat Awal) ---
-  await prisma.masterDokumen.create({ data: { id: 1, nama_dokumen: 'SK CPNS', is_mandatory: true, syarat_wilayah: 'Semua' } });
-  await prisma.masterDokumen.create({ data: { id: 2, nama_dokumen: 'LoA (Letter of Acceptance) Universitas', is_mandatory: true, syarat_wilayah: 'Semua' } });
-  await prisma.masterDokumen.create({ data: { id: 3, nama_dokumen: 'Surat Izin Studi (Dari Kampus)', is_mandatory: true, syarat_wilayah: 'Semua' } });
-  await prisma.masterDokumen.create({ data: { id: 4, nama_dokumen: 'SK Tugas Belajar (Kementerian)', is_mandatory: true, syarat_wilayah: 'Semua' } });
+  // --- 2.5 Master Dokumen (Utuk Syarat Awal & Upload Pengajuan) ---
+  await prisma.masterDokumen.create({ data: { id: 1, nama_dokumen: 'Kartu Virtual ASN', is_mandatory: true, syarat_wilayah: 'Semua' } });
+  await prisma.masterDokumen.create({ data: { id: 2, nama_dokumen: 'SK CPNS', is_mandatory: false, syarat_wilayah: 'Semua' } });
+  await prisma.masterDokumen.create({ data: { id: 3, nama_dokumen: 'SK PNS', is_mandatory: false, syarat_wilayah: 'Semua' } });
+  await prisma.masterDokumen.create({ data: { id: 4, nama_dokumen: 'SK Pangkat Terakhir', is_mandatory: true, syarat_wilayah: 'Semua' } });
+  await prisma.masterDokumen.create({ data: { id: 5, nama_dokumen: 'SK Jabatan Terakhir', is_mandatory: true, syarat_wilayah: 'Semua' } });
+  await prisma.masterDokumen.create({ data: { id: 6, nama_dokumen: 'Penilaian Prestasi Kerja', is_mandatory: true, syarat_wilayah: 'Semua' } });
+  await prisma.masterDokumen.create({ data: { id: 7, nama_dokumen: 'Akta Nikah', is_mandatory: false, syarat_wilayah: 'Semua' } });
+  await prisma.masterDokumen.create({ data: { id: 8, nama_dokumen: 'KP-4', is_mandatory: false, syarat_wilayah: 'Semua' } });
+  await prisma.masterDokumen.create({ data: { id: 9, nama_dokumen: 'SK Kesehatan Jasmani', is_mandatory: true, syarat_wilayah: 'Semua' } });
+  await prisma.masterDokumen.create({ data: { id: 10, nama_dokumen: 'Surat Rekomendasi Atasan', is_mandatory: true, syarat_wilayah: 'Semua' } });
+  await prisma.masterDokumen.create({ data: { id: 11, nama_dokumen: 'Surat Keterangan Pimpinan', is_mandatory: true, syarat_wilayah: 'Semua' } });
+  await prisma.masterDokumen.create({ data: { id: 12, nama_dokumen: 'Perjanjian Tugas Belajar', is_mandatory: true, syarat_wilayah: 'Semua' } });
+  await prisma.masterDokumen.create({ data: { id: 13, nama_dokumen: 'Jaminan Pembiayaan', is_mandatory: false, syarat_wilayah: 'Semua' } });
+  await prisma.masterDokumen.create({ data: { id: 14, nama_dokumen: 'Fotokopi Surat LoA', is_mandatory: true, syarat_wilayah: 'Semua' } });
+  await prisma.masterDokumen.create({ data: { id: 15, nama_dokumen: 'Surat Pernyataan Pimpinan Unit', is_mandatory: true, syarat_wilayah: 'Semua' } });
+  await prisma.masterDokumen.create({ data: { id: 16, nama_dokumen: 'Surat Pernyataan Pegawai', is_mandatory: true, syarat_wilayah: 'Semua' } });
+  await prisma.masterDokumen.create({ data: { id: 17, nama_dokumen: 'Ijazah Pendidikan Terakhir', is_mandatory: true, syarat_wilayah: 'Semua' } });
+  await prisma.masterDokumen.create({ data: { id: 18, nama_dokumen: 'Surat Akreditasi Prodi & Kampus', is_mandatory: true, syarat_wilayah: 'Semua' } });
+  await prisma.masterDokumen.create({ data: { id: 19, nama_dokumen: 'Surat Persetujuan Seteng', is_mandatory: false, syarat_wilayah: 'Semua' } });
+  await prisma.masterDokumen.create({ data: { id: 20, nama_dokumen: 'SK Kesehatan Rohani', is_mandatory: true, syarat_wilayah: 'Semua' } });
+  await prisma.masterDokumen.create({ data: { id: 21, nama_dokumen: 'Formulir Bantuan Studi', is_mandatory: true, syarat_wilayah: 'Semua' } });
+  await prisma.masterDokumen.create({ data: { id: 22, nama_dokumen: 'Bukti Pembayaran SPP', is_mandatory: true, syarat_wilayah: 'Semua' } });
+  await prisma.masterDokumen.create({ data: { id: 23, nama_dokumen: 'Bukti Akreditasi Program Studi', is_mandatory: true, syarat_wilayah: 'Semua' } });
+  await prisma.masterDokumen.create({ data: { id: 24, nama_dokumen: 'Letter of Acceptance (LoA)', is_mandatory: true, syarat_wilayah: 'Semua' } });
   const wilayahDalamNegeri = await prisma.masterWilayah.create({ data: { id: 1, nama_wilayah: 'Dalam Negeri' } });
   const wilayahLuarNegeri = await prisma.masterWilayah.create({ data: { id: 2, nama_wilayah: 'Luar Negeri' } });
 
@@ -187,7 +210,59 @@ async function main() {
     });
   }
 
-  console.log('Data Master (Role, Jenis Studi, Pendanaan, Status, Dokumen, Wilayah, Jurusan) telah siap.');
+  // --- 2.7 Master Bank (DIPERBAIKI) ---
+  console.log('Seeding Master Bank...');
+  const bankNames = ['BNI', 'BRI', 'BSI', 'BCA', 'Mandiri'];
+  for (const nama of bankNames) {
+    const existingBank = await prisma.masterBank.findFirst({
+      where: { nama_bank: nama },
+    });
+    if (!existingBank) {
+      await prisma.masterBank.create({
+        data: { nama_bank: nama },
+      });
+    }
+  }
+
+  console.log('Data Master (Role, Jenis Studi, Pendanaan, Status, Dokumen, Wilayah, Jurusan, Bank) telah siap.');
+
+  // --- 2.8 Master Perguruan Tinggi Dalam Negeri ---
+  console.log('Seeding Master Perguruan Tinggi...');
+  const daftarPTN = [
+    "Universitas Gadjah Mada (UGM)",
+    "Universitas Indonesia (UI)",
+    "Institut Teknologi Bandung (ITB)",
+    "Universitas Diponegoro (UNDIP)",
+    "Universitas Negeri Semarang (UNNES)",
+    "Universitas Sebelas Maret (UNS)",
+    "Institut Teknologi Sepuluh Nopember (ITS)",
+    "Universitas Brawijaya (UB)",
+    "Universitas Airlangga (UNAIR)",
+    "Universitas Hasanuddin (UNHAS)"
+  ];
+  
+  for (const nama of daftarPTN) {
+    const existingPT = await prisma.masterPerguruanTinggi.findFirst({ where: { nama_pt: nama } });
+    if (!existingPT) {
+      await prisma.masterPerguruanTinggi.create({ data: { nama_pt: nama } });
+    }
+  }
+
+  // --- 2.9 Master Beasiswa ---
+  console.log('Seeding Master Beasiswa...');
+  const daftarBeasiswa = [
+    "LPDP",
+    "BPI (Beasiswa Pendidikan Indonesia)",
+    "Beasiswa Unggulan Kemendikbud",
+    "AAS (Australia Awards Scholarships)"
+  ];
+  
+  for (const nama of daftarBeasiswa) {
+    const existingBeasiswa = await prisma.masterBeasiswa.findFirst({ where: { nama_beasiswa: nama } });
+    if (!existingBeasiswa) {
+      await prisma.masterBeasiswa.create({ data: { nama_beasiswa: nama } });
+    }
+  }
 
   // ===============================================================
   // === 3. SEED USERS & DOSEN PROFILE (Budi Doremi) ===
@@ -400,6 +475,21 @@ async function main() {
       waktu_kirim: new Date('2025-01-16T10:00:00+07:00'),
     },
   });
+
+  // ===============================================================
+  // === 5. RESET SEQUENCE POSTGRESQL (DIPERBAIKI) ===
+  // ===============================================================
+  console.log('Menyelaraskan sequence ID untuk PostgreSQL...');
+  try {
+    await prisma.$executeRawUnsafe(`SELECT setval(pg_get_serial_sequence('"users"', 'id'), coalesce(max(id), 1), max(id) IS NOT null) FROM "users";`);
+    await prisma.$executeRawUnsafe(`SELECT setval(pg_get_serial_sequence('"pengajuan_studi"', 'id'), coalesce(max(id), 1), max(id) IS NOT null) FROM "pengajuan_studi";`);
+    await prisma.$executeRawUnsafe(`SELECT setval(pg_get_serial_sequence('"monitoring_khs"', 'id'), coalesce(max(id), 1), max(id) IS NOT null) FROM "monitoring_khs";`);
+    await prisma.$executeRawUnsafe(`SELECT setval(pg_get_serial_sequence('"pengajuan_reimbursement"', 'id'), coalesce(max(id), 1), max(id) IS NOT null) FROM "pengajuan_reimbursement";`);
+    await prisma.$executeRawUnsafe(`SELECT setval(pg_get_serial_sequence('"pesan_komunikasi"', 'id'), coalesce(max(id), 1), max(id) IS NOT null) FROM "pesan_komunikasi";`);
+    console.log('Sequence ID database berhasil disinkronisasi.');
+  } catch (error) {
+    console.log('Catatan: Reset sequence gagal, abaikan jika kamu tidak menggunakan PostgreSQL.');
+  }
 
   console.log('Proses Seeding (SIGAP PBL2) Berhasil!');
   console.log('-----------------------------------');

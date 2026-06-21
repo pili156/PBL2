@@ -28,7 +28,10 @@ export default function BantuanStudiCreatePage() {
     tahunAkademik: "",
     tahunKe: "1",
     nominal: "",
+    nomorRekening: "",
+    namaBank: "",
   });
+  const [bankList, setBankList] = useState<{ id: number; nama_bank: string }[]>([]);
   const [files, setFiles] = useState<Record<string, FileUploadState>>({
     formulir: { file: null, uploading: false, uploaded: false, error: null },
     bukti_spp: { file: null, uploading: false, uploaded: false, error: null },
@@ -65,6 +68,19 @@ export default function BantuanStudiCreatePage() {
       } catch {}
     }
     ensurePengajuanStudi();
+  }, []);
+
+  useEffect(() => {
+    async function fetchBanks() {
+      try {
+        const res = await fetch("/api/master-bank");
+        if (res.ok) {
+          const data = await res.json();
+          setBankList(data);
+        }
+      } catch {}
+    }
+    fetchBanks();
   }, []);
 
   const handleInputChange = (field: string, value: string) => {
@@ -126,6 +142,11 @@ export default function BantuanStudiCreatePage() {
       return;
     }
 
+    if (!formData.nomorRekening || !formData.namaBank) {
+      setError("Nomor Rekening dan Bank wajib diisi.");
+      return;
+    }
+
     const allHaveFiles = DOKUMEN_LIST.every((d) => files[d.key].file);
     if (!allHaveFiles) {
       setError("Semua file wajib diupload.");
@@ -147,6 +168,8 @@ export default function BantuanStudiCreatePage() {
       body.append("tahun_akademik", formData.tahunAkademik);
       body.append("tahun_ke", formData.tahunKe);
       body.append("nominal", formData.nominal);
+      body.append("nomor_rekening", formData.nomorRekening);
+      body.append("nama_bank", formData.namaBank);
 
       const response = await fetch("/api/user-reimbursement", {
         method: "POST",
@@ -251,6 +274,35 @@ export default function BantuanStudiCreatePage() {
               className="w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
             />
             <p className="text-xs text-slate-500">Nominal bantuan SPP yang diajukan (angka saja).</p>
+          </div>
+
+          <div className="space-y-2">
+            <label htmlFor="namaBank" className="text-sm font-medium text-slate-700">Bank *</label>
+            <select
+              id="namaBank"
+              value={formData.namaBank}
+              onChange={(e) => handleInputChange("namaBank", e.target.value)}
+              className="w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+            >
+              <option value="">Pilih Bank</option>
+              {bankList.map((bank) => (
+                <option key={bank.id} value={bank.nama_bank}>
+                  {bank.nama_bank}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="space-y-2">
+            <label htmlFor="nomorRekening" className="text-sm font-medium text-slate-700">Nomor Rekening *</label>
+            <input
+              id="nomorRekening"
+              type="text"
+              value={formData.nomorRekening}
+              onChange={(e) => handleInputChange("nomorRekening", e.target.value)}
+              placeholder="1234567890"
+              className="w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+            />
           </div>
         </div>
 
