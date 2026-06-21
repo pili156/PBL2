@@ -110,7 +110,14 @@ export default function DetailPage() {
       )}
 
       {/* Header */}
-      <DetailHeader pengajuan={pengajuan} />
+      <DetailHeader
+        pengajuan={pengajuan}
+        allDocumentsVerified={
+          pengajuan !== null &&
+          pengajuan.dokumen.length > 0 &&
+          pengajuan.dokumen.every((doc) => doc.status_verifikasi === "terverifikasi")
+        }
+      />
 
       {/* Info Cards */}
       {pengajuan && (

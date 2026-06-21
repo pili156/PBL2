@@ -1,45 +1,93 @@
-import { prisma } from '@/src/lib/prisma';
-import { Download, FileText, Calendar, BookOpen, Target, User } from 'lucide-react';
-import Link from 'next/link';
-import { notFound } from 'next/navigation';
-import { formatDateLong } from '@/src/lib/formatters';
+'use client';
 
-export const dynamic = 'force-dynamic';
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { Download, FileText, Calendar, BookOpen, Target, User, Clock } from 'lucide-react';
+import Link from 'next/link';
+import { formatDateLong } from '@/src/lib/formatters';
+import { getStatusLabel } from '@/src/lib/status-utils';
+import KhsVerification from './components/KhsVerification';
+
+interface KhsData {
+  id: number;
+  semester_ke?: number | null;
+  tahun_akademik?: string | null;
+  file_khs_path?: string | null;
+  ipk?: number | string | null;
+  tanggal_unggah?: Date | null;
+  catatan_evaluasi?: string | null;
+  status_evaluasi?: string | null;
+  pengajuan_studi?: {
+    user?: {
+      master_dosen?: {
+        nama_lengkap?: string;
+      };
+    };
+  };
+}
 
 interface Props {
   params: Promise<{ id_dosen: string; id: string }>;
 }
 
-export default async function DetailKhsPage({ params }: Props) {
-  const { id_dosen, id } = await params;
-  const khsId = Number(id);
-  const idDosen = Number(id_dosen);
+export default function DetailKhsPage({ params }: Props) {
+  const [khs, setKhs] = useState<KhsData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const router = useRouter();
 
-  if (isNaN(khsId) || isNaN(idDosen)) notFound();
+  useEffect(() => {
+    const fetchKhs = async () => {
+      try {
+        const { id_dosen, id } = await params;
+        const khsId = Number(id);
+        const idDosen = Number(id_dosen);
 
-  const khs = await prisma.monitoringKhs.findUnique({
-    where: { id: khsId },
-    include: {
-      pengajuan_studi: {
-        include: {
-          user: { include: { master_dosen: true } },
-        },
-      },
-    },
-  });
+        if (isNaN(khsId) || isNaN(idDosen)) {
+          return;
+        }
 
-  if (!khs) notFound();
+        const response = await fetch(`/api/admin/monitoring-khs/${khsId}`);
+        if (response.ok) {
+          const data = await response.json();
+          setKhs(data);
+        }
+      } catch (error) {
+        console.error('Error fetching KHS:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchKhs();
+  }, [params]);
+
+  if (loading) {
+    return <div className="p-6">Loading...</div>;
+  }
+
+  if (!khs) {
+    return <div className="p-6">KHS tidak ditemukan</div>;
+  }
 
   const ipkValue = khs.ipk ? Number(khs.ipk).toFixed(2) : '-';
   const isDisabled = !khs.file_khs_path;
   const namaDosen = khs.pengajuan_studi?.user?.master_dosen?.nama_lengkap || 'Dosen';
+  const statusLabel = getStatusLabel(khs.status_evaluasi, 'evaluasi');
+  const statusColor = khs.status_evaluasi === 'valid' || khs.status_evaluasi === 'diterima'
+    ? 'text-emerald-600'
+    : khs.status_evaluasi === 'revisi'
+    ? 'text-orange-600'
+    : khs.status_evaluasi === 'ditolak'
+    ? 'text-red-600'
+    : 'text-amber-600';
 
   const infoItems = [
     { icon: BookOpen, label: 'Semester', value: `Semester ${khs.semester_ke || '-'}` },
     { icon: Calendar, label: 'Tahun Akademik', value: khs.tahun_akademik || '-' },
     { icon: User, label: 'Dosen', value: namaDosen },
-    { icon: Calendar, label: 'Tanggal Upload', value: formatDateLong(khs.tanggal_unggah) },
+    { icon: Calendar, label: 'Tanggal Upload', value: khs.tanggal_unggah ? formatDateLong(khs.tanggal_unggah as any) : '-' },
     { icon: Target, label: 'IPK', value: `${ipkValue} / 4.00`, highlight: true },
+    { icon: Clock, label: 'Status', value: statusLabel, statusColor },
   ];
 
   return (
@@ -65,7 +113,7 @@ export default async function DetailKhsPage({ params }: Props) {
                     </div>
                     <div>
                       <p className="text-[10px] text-slate-400 font-medium">{item.label}</p>
-                      <p className={`text-sm ${item.highlight ? 'font-bold text-blue-600' : 'font-medium text-slate-800'}`}>
+                      <p className={`text-sm ${item.statusColor || item.highlight ? 'font-bold' : 'font-medium'} ${item.statusColor || 'text-slate-800'} ${item.highlight && !item.statusColor ? 'text-blue-600' : ''}`}>
                         {item.value}
                       </p>
                     </div>
@@ -95,6 +143,13 @@ export default async function DetailKhsPage({ params }: Props) {
               </a>
             </div>
           </div>
+
+          <KhsVerification
+            khsId={khs.id}
+            currentStatus={khs.status_evaluasi || 'pending'}
+            currentCatatan={khs.catatan_evaluasi || ''}
+            onSuccess={() => router.refresh()}
+          />
         </div>
 
         <div className="xl:col-span-3 bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden flex flex-col min-h-[500px]">

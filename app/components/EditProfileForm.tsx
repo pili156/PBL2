@@ -36,6 +36,9 @@ export default function EditProfileForm({ backUrl, apiUrl = "/api/user/profile" 
   const [successMsg, setSuccessMsg] = useState("");
 
   const [profileData, setProfileData] = useState<ProfileData | null>(null);
+  const [masterData, setMasterData] = useState<{ masterJabatan: { id: number; nama: string; singkatan: string; urutan: number }[]; masterPangkat: { id: number; pangkat: string; golongan: string }[] } | null>(null);
+  const [selectedPangkat, setSelectedPangkat] = useState("");
+  const [selectedJabatan, setSelectedJabatan] = useState("");
 
   const [formData, setFormData] = useState({
     nip: "",
@@ -54,24 +57,38 @@ export default function EditProfileForm({ backUrl, apiUrl = "/api/user/profile" 
 
   const fetchProfile = async () => {
     try {
-      const res = await fetch(apiUrl);
-      const data = await res.json();
+      const [profileRes, masterRes] = await Promise.all([
+        fetch(apiUrl),
+        fetch("/api/master-data"),
+      ]);
 
-      if (res.ok) {
-        setProfileData(data);
-        setFormData({
-          nip: data.master_dosen?.nip || "",
-          nama_lengkap: data.master_dosen?.nama_lengkap || "",
-          pangkat_golongan: data.master_dosen?.pangkat_golongan || "",
-          jabatan: data.master_dosen?.jabatan || "",
-          unit_kerja: data.master_dosen?.unit_kerja || "",
-          jurusan: data.master_dosen?.jurusan || "",
-          program_studi: data.master_dosen?.program_studi || "",
-          no_telp: data.master_dosen?.no_telp || "",
-        });
-      } else {
-        setErrorMsg(data.error || "Gagal memuat data profil");
+      const profileJson = await profileRes.json();
+      const masterJson = await masterRes.json();
+
+      if (!profileRes.ok) {
+        setErrorMsg(profileJson.error || "Gagal memuat data profil");
+        return;
       }
+
+      if (!masterRes.ok) {
+        setErrorMsg(masterJson.error || "Gagal memuat data master");
+      } else {
+        setMasterData({ masterJabatan: masterJson.masterJabatan || [], masterPangkat: masterJson.masterPangkat || [] });
+      }
+
+      setProfileData(profileJson);
+      setFormData({
+        nip: profileJson.master_dosen?.nip || "",
+        nama_lengkap: profileJson.master_dosen?.nama_lengkap || "",
+        pangkat_golongan: profileJson.master_dosen?.pangkat_golongan || "",
+        jabatan: profileJson.master_dosen?.jabatan || "",
+        unit_kerja: profileJson.master_dosen?.unit_kerja || "",
+        jurusan: profileJson.master_dosen?.jurusan || "",
+        program_studi: profileJson.master_dosen?.program_studi || "",
+        no_telp: profileJson.master_dosen?.no_telp || "",
+      });
+      setSelectedPangkat(profileJson.master_dosen?.pangkat_golongan || "");
+      setSelectedJabatan(profileJson.master_dosen?.jabatan || "");
     } catch (error) {
       setErrorMsg("Gagal terhubung ke server");
     } finally {
@@ -79,9 +96,16 @@ export default function EditProfileForm({ backUrl, apiUrl = "/api/user/profile" 
     }
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+
+    if (name === "pangkat_golongan") {
+      setSelectedPangkat(value);
+    }
+    if (name === "jabatan") {
+      setSelectedJabatan(value);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -263,14 +287,19 @@ export default function EditProfileForm({ backUrl, apiUrl = "/api/user/profile" 
                 <label className="block text-xs text-slate-500 mb-1.5">
                   Pangkat/Golongan
                 </label>
-                <input
-                  type="text"
+                <select
                   name="pangkat_golongan"
-                  value={formData.pangkat_golongan}
+                  value={selectedPangkat}
                   onChange={handleChange}
                   className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-slate-900"
-                  placeholder="Contoh: IV/a"
-                />
+                >
+                  <option value="">-- Pilih Pangkat --</option>
+                  {masterData?.masterPangkat.map((pangkat) => (
+                    <option key={pangkat.id} value={pangkat.golongan}>
+                      {pangkat.pangkat} ({pangkat.golongan})
+                    </option>
+                  ))}
+                </select>
               </div>
               <div>
                 <label className="block text-xs text-slate-500 mb-1.5">
@@ -279,14 +308,19 @@ export default function EditProfileForm({ backUrl, apiUrl = "/api/user/profile" 
                     <span>Jabatan</span>
                   </div>
                 </label>
-                <input
-                  type="text"
+                <select
                   name="jabatan"
-                  value={formData.jabatan}
+                  value={selectedJabatan}
                   onChange={handleChange}
                   className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-slate-900"
-                  placeholder="Masukkan jabatan"
-                />
+                >
+                  <option value="">-- Pilih Jabatan --</option>
+                  {masterData?.masterJabatan.map((jabatan) => (
+                    <option key={jabatan.id} value={jabatan.nama}>
+                      {jabatan.nama} ({jabatan.singkatan})
+                    </option>
+                  ))}
+                </select>
               </div>
             </div>
 

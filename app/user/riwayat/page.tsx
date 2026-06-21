@@ -22,7 +22,11 @@ export default async function RiwayatRootPage() {
           jenis_studi: true,
           jalur_pendanaan: true,
           monitoring_khs: true,
-          pengajuan_reimbursement: true,
+          pengajuan_reimbursement: {
+            include: {
+              dokumen_pengajuan: true,
+            },
+          },
         },
         orderBy: { created_at: 'desc' },
       },
@@ -30,6 +34,20 @@ export default async function RiwayatRootPage() {
   });
 
   if (!user) notFound();
+
+  // Helper function to determine effective status based on documents and pencairan status
+  const getEffectiveStatus = (item: typeof user.pengajuan_studi[0]['pengajuan_reimbursement'][0]): string => {
+    // Check if any document has revisi status
+    const hasDocumentRevision = item.dokumen_pengajuan?.some(
+      (doc) => doc.status_verifikasi === "revisi"
+    );
+
+    if (hasDocumentRevision) {
+      return "revisi";
+    }
+
+    return item.status_pencairan?.toLowerCase() ?? "pending";
+  };
 
   const totalPengajuan = user.pengajuan_studi.length;
   const latestPengajuan = user.pengajuan_studi[0];
@@ -45,8 +63,11 @@ export default async function RiwayatRootPage() {
       totalKhs++;
     }
     for (const r of p.pengajuan_reimbursement) {
-      if (r.status_pencairan === 'selesai' && r.nominal) {
-        totalBantuanCair += Number(r.nominal);
+      if (r.nominal) {
+        const effectiveStatus = getEffectiveStatus(r);
+        if (["dicairkan", "selesai"].includes(effectiveStatus)) {
+          totalBantuanCair += Number(r.nominal);
+        }
       }
     }
   }
@@ -122,7 +143,10 @@ export default async function RiwayatRootPage() {
                 ? p.monitoring_khs.reduce((sum, k) => sum + Number(k.ipk || 0), 0) / khsCount
                 : 0;
               const totalCair = p.pengajuan_reimbursement
-                .filter(r => r.status_pencairan === 'selesai')
+                .filter(r => {
+                  const effectiveStatus = getEffectiveStatus(r);
+                  return ["dicairkan", "selesai"].includes(effectiveStatus);
+                })
                 .reduce((sum, r) => sum + Number(r.nominal || 0), 0);
 
               return (

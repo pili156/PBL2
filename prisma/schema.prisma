@@ -70,10 +70,10 @@ model User {
   role_id          Int?
   status_akun      StatusAkun?       @default(pending)
   username         String?           @unique
+  activity_logs    ActivityLog[]
   master_dosen     MasterDosen?
   pengajuan_studi  PengajuanStudi[]
   pesan_komunikasi PesanKomunikasi[]
-  activity_logs    ActivityLog[]
   role             MasterRole?       @relation(fields: [role_id], references: [id])
 
   @@map("users")
@@ -122,11 +122,32 @@ model MasterStatusPengajuan {
 }
 
 model MasterWilayah {
-  id          Int              @id @default(autoincrement())
+  id           Int              @id @default(autoincrement())
   nama_wilayah String?
-  pengajuan   PengajuanStudi[]
+  pengajuan    PengajuanStudi[]
 
   @@map("master_wilayah")
+}
+
+model MasterJabatan {
+  id         Int      @id @default(autoincrement())
+  nama       String   @unique
+  singkatan  String   @unique
+  urutan     Int
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@map("master_jabatan")
+}
+
+model MasterPangkat {
+  id         Int      @id @default(autoincrement())
+  pangkat    String
+  golongan   String   @unique
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@map("master_pangkat")
 }
 
 model MasterDokumen {
@@ -152,6 +173,8 @@ model PengajuanStudi {
   status_id               Int?
   wilayah_studi           Int?
   perguruan_tinggi        String?
+  nama_beasiswa           String?
+  activity_logs           ActivityLog[]
   dokumen_pengajuan       DokumenPengajuan[]
   monitoring_khs          MonitoringKhs[]
   pengajuan_reimbursement PengajuanReimbursement[]
@@ -161,7 +184,6 @@ model PengajuanStudi {
   user                    User?                    @relation(fields: [user_id], references: [id])
   wilayah                 MasterWilayah?           @relation(fields: [wilayah_studi], references: [id])
   pesan_komunikasi        PesanKomunikasi[]
-  activity_logs           ActivityLog[]
   sk_kementerian          SkKementerian[]
 
   @@map("pengajuan_studi")
@@ -217,21 +239,21 @@ model MonitoringKhs {
 model PengajuanReimbursement {
   id                Int             @id @default(autoincrement())
   pengajuan_id      Int?
-  jenis_pengajuan   String?         @default("reimbursement")
   semester_ke       Int?
-  tahun_akademik    String?
-  tahun_ke          Int?
   file_bukti_bayar  String?
   nominal           Decimal?        @db.Decimal(12, 2)
   status_pencairan  StatusPencairan?  @default(pending)
   catatan_keuangan  String?
-  nomor_rekening    String?
-  nama_bank         String?
   created_at        DateTime?       @default(now()) @db.Timestamptz(6)
   tanggal_pencairan DateTime?       @db.Timestamptz(6)
   updated_at        DateTime?       @updatedAt @db.Timestamptz(6)
   pengajuan_studi     PengajuanStudi?    @relation(fields: [pengajuan_id], references: [id])
   dokumen_pengajuan   DokumenPengajuan[]
+  nama_bank         String?
+  nomor_rekening    String?
+  jenis_pengajuan   String?         @default("reimbursement")
+  tahun_akademik    String?
+  tahun_ke          Int?
 
   @@map("pengajuan_reimbursement")
 }
@@ -256,9 +278,35 @@ model ActivityLog {
   tipe         String?
   created_at   DateTime?       @default(now()) @db.Timestamptz(6)
   created_by   String?
-
-  user       User?           @relation(fields: [user_id], references: [id])
-  pengajuan  PengajuanStudi? @relation(fields: [pengajuan_id], references: [id])
+  pengajuan    PengajuanStudi? @relation(fields: [pengajuan_id], references: [id])
+  user         User?           @relation(fields: [user_id], references: [id])
 
   @@map("activity_logs")
+}
+
+model MasterJurusan {
+  id            Int                  @id @default(autoincrement())
+  nama_jurusan  String               @unique
+  program_studi MasterProgramStudi[]
+
+  @@map("master_jurusan")
+}
+
+model MasterProgramStudi {
+  id           Int           @id @default(autoincrement())
+  jurusan_id   Int
+  nama_prodi   String
+  
+  jurusan      MasterJurusan @relation(fields: [jurusan_id], references: [id], onDelete: Cascade)
+
+  @@map("master_program_studi")
+}
+
+model MasterBank {
+  id        Int      @id @default(autoincrement())
+  nama_bank String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("master_bank")
 }

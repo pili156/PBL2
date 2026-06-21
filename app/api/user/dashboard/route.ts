@@ -1,16 +1,19 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/src/lib/prisma';
+import { headers } from 'next/headers';
+import { getOverallPengajuanStatus } from '@/src/lib/status-utils';
 
-export async function GET(request: Request) {
+export async function GET() {
   try {
-    const userEmail = request.headers.get('x-user-email');
+    const headersList = await headers();
+    const userId = parseInt(headersList.get('x-user-id') || '0');
 
-    if (!userEmail) {
+    if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const user = await prisma.user.findUnique({
-      where: { email: userEmail },
+      where: { id: userId },
       include: {
         master_dosen: true,
         pengajuan_studi: {
@@ -20,14 +23,15 @@ export async function GET(request: Request) {
             status: true,
             jenis_studi: true,
             jalur_pendanaan: true,
-            // Ambil semua histori KHS untuk Timeline & Grafik IPK
             monitoring_khs: { orderBy: { semester_ke: 'asc' } },
-            // Ambil info SK
             sk_kementerian: { orderBy: { tanggal_terbit: 'desc' }, take: 1 },
-            // Ambil semua reimbursement
             pengajuan_reimbursement: { orderBy: { semester_ke: 'asc' } },
-            // Ambil dokumen berserta relasi nama dokumennya untuk checklist
-            dokumen_pengajuan: { include: { master_dokumen: true } }
+            dokumen_pengajuan: {
+              where: {
+                pengajuan_reimbursement_id: null,
+              },
+              include: { master_dokumen: true }
+            }
           }
         }
       }
@@ -39,7 +43,6 @@ export async function GET(request: Request) {
 
     const pengajuan = user.pengajuan_studi[0];
 
-    // 1. Data KHS (Timeline & IPK)
     const khsList = pengajuan?.monitoring_khs || [];
     const timelineKHS = khsList.map(khs => ({
       semester: khs.semester_ke,
@@ -54,10 +57,8 @@ export async function GET(request: Request) {
         ipk: Number(khs.ipk)
       }));
 
-    // 2. Data SK
     const skInfo = pengajuan?.sk_kementerian[0] || null;
 
-    // 3. Data Reimbursement (Summary & Chart)
     const reimbursements = pengajuan?.pengajuan_reimbursement || [];
     const grafikReimbursement = reimbursements.map(item => ({
       semester: `Sem ${item.semester_ke}`,
@@ -71,7 +72,6 @@ export async function GET(request: Request) {
       return acc;
     }, { diajukan: 0, dicairkan: 0, pending: 0 });
 
-    // 4. Checklist Dokumen
     const checklistDokumen = pengajuan?.dokumen_pengajuan.map(doc => ({
       nama: doc.master_dokumen?.nama_dokumen || 'Dokumen',
       status: doc.status_verifikasi || 'pending',
@@ -79,23 +79,27 @@ export async function GET(request: Request) {
       catatan: doc.catatan_revisi || null
     })) || [];
 
-    // 5. Progress Masa Studi (Asumsi Target 8 Semester)
-    // PERBAIKAN: Set default 0 agar tidak otomatis progress jalan jika belum ada pengajuan
+    // Calculate overall status based on documents
+    const dokumenData = pengajuan?.dokumen_pengajuan.map(doc => ({
+      file_path: doc.file_path,
+      status_verifikasi: doc.status_verifikasi || 'pending'
+    })) || [];
+    const calculatedStatus = getOverallPengajuanStatus(dokumenData);
+    // Use calculated status if available (has submitted documents), otherwise use database status
+    const overallStatusPengajuan = calculatedStatus !== null ? calculatedStatus : (pengajuan?.status?.nama_status || "Belum ada pengajuan");
+
     let currentSemester = 0;
     let progressPersen = 0;
-    const maxSemester = 8; 
+    const maxSemester = 8;
 
     if (pengajuan) {
-      // Jika KHS ada isinya, ambil semester tertinggi. Jika belum ada KHS, set semester ke 1.
       currentSemester = khsList.length > 0 ? Math.max(...khsList.map(k => k.semester_ke || 1)) : 1;
-      
-      // Hitung persen hanya jika sudah mengumpulkan KHS. Jika belum, set 0%.
       progressPersen = khsList.length > 0 ? Math.min(Math.round((currentSemester / maxSemester) * 100), 100) : 0;
     }
 
     const dashboardData = {
       nama_dosen: user.master_dosen?.nama_lengkap || user.username || "User",
-      status_pengajuan: pengajuan?.status?.nama_status || "Belum ada pengajuan",
+      status_pengajuan: overallStatusPengajuan,
       semester: currentSemester,
       progress_studi: progressPersen,
       wilayah_studi: pengajuan?.wilayah_studi || "Belum ditentukan",

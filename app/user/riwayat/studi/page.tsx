@@ -191,7 +191,7 @@ async function KhsTable({ pengajuan }: { pengajuan: any }) {
                         </Link>
                       )}
                       {(statusKHS === 'revisi' || statusKHS === 'pending') && item.data && (
-                        <Link href={`/user/laporanKHS/${item.data.id}/edit`} className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-blue-600 text-blue-600 rounded-lg text-xs font-bold hover:bg-blue-50 w-[110px] justify-center transition-all">
+                        <Link href={`/user/laporanKHS/${item.data.id}`} className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-blue-600 text-blue-600 rounded-lg text-xs font-bold hover:bg-blue-50 w-[110px] justify-center transition-all">
                           <Pencil size={14} /> Edit
                         </Link>
                       )}

@@ -1,9 +1,10 @@
 // app/user/laporanKHS/[id]/page.tsx
 import { getKHSById } from '../actions';
-import { ArrowLeft, AlertCircle, UploadCloud, FileText, CheckCircle2 } from 'lucide-react';
+import { ArrowLeft, AlertCircle, FileText, CheckCircle2 } from 'lucide-react';
 import { getStatusLabel } from '@/src/lib/status-utils';
 import Link from 'next/link';
 import StatusBadge from "@/src/components/StatusBadge";
+import ReuploadButton from '../ReuploadButton';
 import { notFound } from 'next/navigation';
 
 export const dynamic = 'force-dynamic';
@@ -180,12 +181,7 @@ export default async function DetailKHSUserPage({
 
             <div className="flex gap-3">
               {isRevisi && (
-                <Link 
-                  href={`/user/laporanKHS/${khsId}/edit`}
-                  className="flex-1 flex items-center justify-center gap-2 py-3 bg-blue-600 text-white text-sm font-bold rounded-lg hover:bg-blue-700 transition-colors shadow-sm"
-                >
-                  <UploadCloud size={18} /> Upload Ulang
-                </Link>
+                <ReuploadButton khsId={khsId} />
               )}
             </div>
 

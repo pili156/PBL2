@@ -67,6 +67,14 @@ export async function PUT(
       }
     }
 
+    // Cascade: update status reimbursement jika ada dokumen revisi
+    if (existingDoc.pengajuan_reimbursement_id && status_verifikasi === 'revisi') {
+      await prisma.pengajuanReimbursement.update({
+        where: { id: existingDoc.pengajuan_reimbursement_id },
+        data: { status_pencairan: 'revisi' },
+      });
+    }
+
     return NextResponse.json(updated, { status: 200 });
   } catch (error) {
     console.error('Error updating dokumen:', error);

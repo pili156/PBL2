@@ -65,13 +65,15 @@ export default async function DetailKeuanganPage({ params }: Props) {
   const isSelesai = status === 'dicairkan' || status === 'selesai';
   const isVerifikasi = status === 'dicairkan' || status === 'pending' || status === 'selesai';
   const hasBuktiTransfer = keuangan.file_bukti_bayar !== null;
+  const allDocsVerified = keuangan.dokumen_pengajuan.length > 0 &&
+    keuangan.dokumen_pengajuan.every(d => d.status_verifikasi === 'terverifikasi');
   const bank = keuangan.nama_bank || '-';
   const norek = keuangan.nomor_rekening || '-';
 
 
   const steps = [
     { icon: Check, label: 'Upload Bukti', sub: 'Dokumen pembayaran diunggah', date: keuangan.created_at, active: true, done: true },
-    { icon: Check, label: 'Verifikasi Admin', sub: 'Berkas dan nominal diverifikasi', date: isVerifikasi ? keuangan.updated_at : null, active: isVerifikasi, done: isVerifikasi },
+    { icon: Check, label: 'Verifikasi Admin', sub: allDocsVerified ? 'Berkas dan nominal diverifikasi' : 'Menunggu verifikasi dokumen', date: allDocsVerified ? keuangan.updated_at : null, active: allDocsVerified, done: allDocsVerified },
     { icon: Send, label: 'Dana Ditransfer', sub: hasBuktiTransfer ? (isSelesai ? 'Transfer ke rekening tujuan' : 'Menunggu konfirmasi') : 'Upload bukti transfer', date: isSelesai ? keuangan.tanggal_pencairan : null, active: hasBuktiTransfer, done: hasBuktiTransfer && isSelesai },
     { icon: Star, label: 'Selesai', sub: isSelesai ? 'Pencairan berhasil' : 'Menunggu', date: isSelesai ? keuangan.tanggal_pencairan : null, active: isSelesai, done: isSelesai },
   ];
@@ -133,6 +135,13 @@ export default async function DetailKeuanganPage({ params }: Props) {
                   </div>
                 </div>
               </div>
+            ) : !allDocsVerified ? (
+              <div className="p-4 bg-amber-50 border border-amber-100 rounded-lg flex items-center gap-3">
+                <Info size={16} className="text-amber-600 flex-shrink-0" />
+                <p className="text-xs text-amber-800 font-medium">
+                  Semua dokumen harus terverifikasi terlebih dahulu sebelum mengunggah bukti transfer.
+                </p>
+              </div>
             ) : (
               <form action={uploadBuktiTransfer} encType="multipart/form-data" className="space-y-4">
                 <input type="hidden" name="keuanganId" value={keuanganId} />
@@ -161,7 +170,7 @@ export default async function DetailKeuanganPage({ params }: Props) {
               <form className="space-y-4">
                 <input type="hidden" name="keuanganId" value={keuanganId} />
                 <textarea name="catatan"
-                  className="w-full text-sm p-3 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 min-h-[80px] transition-all"
+                  className="w-full text-sm p-3 text-slate-700 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 min-h-[80px] transition-all"
                   placeholder="Catatan verifikasi..."
                   defaultValue={keuangan.catatan_keuangan || ''} />
                 <div className="grid grid-cols-2 gap-3">

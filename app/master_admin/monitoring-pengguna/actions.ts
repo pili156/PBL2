@@ -56,11 +56,12 @@ export async function createUser(formData: FormData) {
   revalidatePath("/master_admin/monitoring-pengguna");
 }
 
-export async function updateUserById(formData: FormData) {
+// --- FUNGSI UPDATE DIPISAH MENJADI DUA ---
+
+export async function updateUserProfile(formData: FormData) {
   const userId = Number(formData.get("id"));
   const nama = formData.get("nama_lengkap") as string;
   const email = formData.get("email") as string;
-  const roleId = Number(formData.get("role_id"));
   const nip = formData.get("nip") as string;
   const jurusan = formData.get("jurusan") as string;
 
@@ -68,7 +69,6 @@ export async function updateUserById(formData: FormData) {
     where: { id: userId },
     data: {
       email,
-      role_id: roleId,
       master_dosen: {
         upsert: {
           create: { nip, nama_lengkap: nama, jurusan },
@@ -80,6 +80,20 @@ export async function updateUserById(formData: FormData) {
 
   revalidatePath("/master_admin/monitoring-pengguna");
 }
+
+export async function updateUserRole(formData: FormData) {
+  const userId = Number(formData.get("id"));
+  const roleId = Number(formData.get("role_id"));
+
+  await prisma.user.update({
+    where: { id: userId },
+    data: { role_id: roleId },
+  });
+
+  revalidatePath("/master_admin/monitoring-pengguna");
+}
+
+// ------------------------------------------
 
 export async function deleteUserById(userId: number) {
   await prisma.masterDosen.deleteMany({ where: { user_id: userId } });

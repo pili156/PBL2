@@ -234,7 +234,7 @@ export default function DocumentViewerSection({ documents }: { documents: Upload
                 placeholder="Catatan revisi (wajib jika revisi)..."
                 rows={3}
                 disabled={verifying}
-                className="w-full text-sm p-3 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 min-h-[80px] transition-all resize-none"
+                className="w-full text-sm text-slate-900 p-3 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 min-h-[80px] transition-all resize-none"
               />
 
               <div className="flex gap-3 justify-end pt-4 border-t border-slate-200">

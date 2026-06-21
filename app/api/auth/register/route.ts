@@ -1,3 +1,4 @@
+// app/api/auth/register/route.ts
 import { NextResponse } from 'next/server';
 import { prisma } from '@/src/lib/prisma';
 import bcrypt from 'bcryptjs';
@@ -13,6 +14,10 @@ export async function POST(request: Request) {
     }
 
     const { email, password, nip, nama_lengkap } = parsed.data;
+    
+    // Tarik nilai jurusan dan program studi langsung dari body mentah
+    // Hal ini untuk mencegah error jika variabel ini belum didaftarkan ke Zod `registerSchema`
+    const { jurusan, program_studi } = body;
 
     const existingUser = await prisma.user.findFirst({
       where: {
@@ -32,6 +37,8 @@ export async function POST(request: Request) {
     const roleDosen = await prisma.masterRole.findFirst({ where: { nama_role: "dosen" } });
 
     const autoUsername = email.split('@')[0];
+    
+    // Menyimpan data tambahan jurusan dan prodi ke tabel master_dosen
     await prisma.user.create({
       data: {
         username: autoUsername,
@@ -43,6 +50,8 @@ export async function POST(request: Request) {
           create: {
             nip: nip,
             nama_lengkap: nama_lengkap,
+            jurusan: jurusan,
+            program_studi: program_studi,
           }
         }
       }

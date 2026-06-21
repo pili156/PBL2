@@ -2,6 +2,47 @@
 import { prisma } from '../src/lib/prisma'; // Sesuaikan path ini dengan project kamu
 import bcrypt from 'bcryptjs';
 
+// --- DATA JURUSAN DAN PROGRAM STUDI ---
+const dataPolines = {
+  "Teknik Sipil": [
+    "D3 - Konstruksi Gedung",
+    "D3 - Konstruksi Sipil",
+    "D4 - Teknik Perawatan dan Perbaikan Gedung",
+    "D4 - Perancangan Jalan dan Jembatan",
+  ],
+  "Teknik Mesin": [
+    "D3 - Teknik Mesin",
+    "D3 - Teknik Konversi Energi",
+    "D4 - Teknik Mesin Produksi dan Perawatan",
+    "D4 - Teknologi Rekayasa Pembangkit Energi",
+  ],
+  "Teknik Elektro": [
+    "D3 - Teknik Listrik",
+    "D3 - Teknik Elektronika",
+    "D3 - Teknik Telekomunikasi",
+    "D3 - Teknik Informatika",
+    "D4 - Teknik Telekomunikasi",
+    "D4 - Teknologi Rekayasa Instalasi Listrik",
+    "D4 - Teknologi Rekayasa Komputer",
+    "D4 - Teknologi Rekayasa Elektronika",
+    "S2 Terapan - Teknik Telekomunikasi",
+  ],
+  "Akuntansi": [
+    "D3 - Akuntansi",
+    "D3 - Keuangan dan Perbankan",
+    "D4 - Komputerisasi Akuntansi",
+    "D4 - Perbankan Syariah",
+    "D4 - Analis Keuangan",
+    "D4 - Akuntansi Manajerial",
+  ],
+  "Administrasi Bisnis": [
+    "D3 - Administrasi Bisnis",
+    "D3 - Manajemen Pemasaran",
+    "D4 - Manajemen Bisnis Internasional",
+    "D4 - Administrasi Bisnis Terapan",
+  ],
+};
+
 async function main() {
   console.log('Memulai proses seeding (SIGAP Polines PBL2)...');
 
@@ -21,12 +62,14 @@ async function main() {
   await cleanUp(() => prisma.masterDokumen.deleteMany());
   await cleanUp(() => prisma.masterDosen.deleteMany());
   await cleanUp(() => prisma.user.deleteMany());
+  await cleanUp(() => prisma.masterProgramStudi.deleteMany());
+  await cleanUp(() => prisma.masterJurusan.deleteMany());
+  await cleanUp(() => prisma.masterBank.deleteMany());
   await cleanUp(() => prisma.masterWilayah.deleteMany());
   await cleanUp(() => prisma.masterStatusPengajuan.deleteMany());
   await cleanUp(() => prisma.masterJalurPendanaan.deleteMany());
   await cleanUp(() => prisma.masterJenisStudi.deleteMany());
   await cleanUp(() => prisma.masterRole.deleteMany());
-
   // ===============================================================
   // === 2. MASTER DATA (Deterministic IDs) ===
   // ===============================================================
@@ -54,15 +97,129 @@ async function main() {
   await prisma.masterStatusPengajuan.create({ data: { id: 7, nama_status: 'terverifikasi' } });
   await prisma.masterStatusPengajuan.create({ data: { id: 8, nama_status: 'revisi' } });
 
-  // --- 2.5 Master Dokumen (Untuk Syarat Awal) ---
-  await prisma.masterDokumen.create({ data: { id: 1, nama_dokumen: 'SK CPNS', is_mandatory: true, syarat_wilayah: 'Semua' } });
-  await prisma.masterDokumen.create({ data: { id: 2, nama_dokumen: 'LoA (Letter of Acceptance) Universitas', is_mandatory: true, syarat_wilayah: 'Semua' } });
-  await prisma.masterDokumen.create({ data: { id: 3, nama_dokumen: 'Surat Izin Studi (Dari Kampus)', is_mandatory: true, syarat_wilayah: 'Semua' } });
-  await prisma.masterDokumen.create({ data: { id: 4, nama_dokumen: 'SK Tugas Belajar (Kementerian)', is_mandatory: true, syarat_wilayah: 'Semua' } });
+  // --- 2.5 Master Dokumen (Utuk Syarat Awal & Upload Pengajuan) ---
+  await prisma.masterDokumen.create({ data: { id: 1, nama_dokumen: 'Kartu Virtual ASN', is_mandatory: true, syarat_wilayah: 'Semua' } });
+  await prisma.masterDokumen.create({ data: { id: 2, nama_dokumen: 'SK CPNS', is_mandatory: false, syarat_wilayah: 'Semua' } });
+  await prisma.masterDokumen.create({ data: { id: 3, nama_dokumen: 'SK PNS', is_mandatory: false, syarat_wilayah: 'Semua' } });
+  await prisma.masterDokumen.create({ data: { id: 4, nama_dokumen: 'SK Pangkat Terakhir', is_mandatory: true, syarat_wilayah: 'Semua' } });
+  await prisma.masterDokumen.create({ data: { id: 5, nama_dokumen: 'SK Jabatan Terakhir', is_mandatory: true, syarat_wilayah: 'Semua' } });
+  await prisma.masterDokumen.create({ data: { id: 6, nama_dokumen: 'Penilaian Prestasi Kerja', is_mandatory: true, syarat_wilayah: 'Semua' } });
+  await prisma.masterDokumen.create({ data: { id: 7, nama_dokumen: 'Akta Nikah', is_mandatory: false, syarat_wilayah: 'Semua' } });
+  await prisma.masterDokumen.create({ data: { id: 8, nama_dokumen: 'KP-4', is_mandatory: false, syarat_wilayah: 'Semua' } });
+  await prisma.masterDokumen.create({ data: { id: 9, nama_dokumen: 'SK Kesehatan Jasmani', is_mandatory: true, syarat_wilayah: 'Semua' } });
+  await prisma.masterDokumen.create({ data: { id: 10, nama_dokumen: 'Surat Rekomendasi Atasan', is_mandatory: true, syarat_wilayah: 'Semua' } });
+  await prisma.masterDokumen.create({ data: { id: 11, nama_dokumen: 'Surat Keterangan Pimpinan', is_mandatory: true, syarat_wilayah: 'Semua' } });
+  await prisma.masterDokumen.create({ data: { id: 12, nama_dokumen: 'Perjanjian Tugas Belajar', is_mandatory: true, syarat_wilayah: 'Semua' } });
+  await prisma.masterDokumen.create({ data: { id: 13, nama_dokumen: 'Jaminan Pembiayaan', is_mandatory: false, syarat_wilayah: 'Semua' } });
+  await prisma.masterDokumen.create({ data: { id: 14, nama_dokumen: 'Fotokopi Surat LoA', is_mandatory: true, syarat_wilayah: 'Semua' } });
+  await prisma.masterDokumen.create({ data: { id: 15, nama_dokumen: 'Surat Pernyataan Pimpinan Unit', is_mandatory: true, syarat_wilayah: 'Semua' } });
+  await prisma.masterDokumen.create({ data: { id: 16, nama_dokumen: 'Surat Pernyataan Pegawai', is_mandatory: true, syarat_wilayah: 'Semua' } });
+  await prisma.masterDokumen.create({ data: { id: 17, nama_dokumen: 'Ijazah Pendidikan Terakhir', is_mandatory: true, syarat_wilayah: 'Semua' } });
+  await prisma.masterDokumen.create({ data: { id: 18, nama_dokumen: 'Surat Akreditasi Prodi & Kampus', is_mandatory: true, syarat_wilayah: 'Semua' } });
+  await prisma.masterDokumen.create({ data: { id: 19, nama_dokumen: 'Surat Persetujuan Seteng', is_mandatory: false, syarat_wilayah: 'Semua' } });
+  await prisma.masterDokumen.create({ data: { id: 20, nama_dokumen: 'SK Kesehatan Rohani', is_mandatory: true, syarat_wilayah: 'Semua' } });
+  await prisma.masterDokumen.create({ data: { id: 21, nama_dokumen: 'Formulir Bantuan Studi', is_mandatory: true, syarat_wilayah: 'Semua' } });
+  await prisma.masterDokumen.create({ data: { id: 22, nama_dokumen: 'Bukti Pembayaran SPP', is_mandatory: true, syarat_wilayah: 'Semua' } });
+  await prisma.masterDokumen.create({ data: { id: 23, nama_dokumen: 'Bukti Akreditasi Program Studi', is_mandatory: true, syarat_wilayah: 'Semua' } });
+  await prisma.masterDokumen.create({ data: { id: 24, nama_dokumen: 'Letter of Acceptance (LoA)', is_mandatory: true, syarat_wilayah: 'Semua' } });
   const wilayahDalamNegeri = await prisma.masterWilayah.create({ data: { id: 1, nama_wilayah: 'Dalam Negeri' } });
   const wilayahLuarNegeri = await prisma.masterWilayah.create({ data: { id: 2, nama_wilayah: 'Luar Negeri' } });
 
-  console.log('Data Master (Role, Jenis Studi, Pendanaan, Status, Dokumen, Wilayah) telah siap.');
+  // --- 2.5 Master Jabatan & Master Pangkat ---
+  await prisma.masterJabatan.upsert({
+    where: { singkatan: 'AA' },
+    update: { nama: 'Asisten Ahli', urutan: 1 },
+    create: { nama: 'Asisten Ahli', singkatan: 'AA', urutan: 1 },
+  });
+  await prisma.masterJabatan.upsert({
+    where: { singkatan: 'L2' },
+    update: { nama: 'Lektor', urutan: 2 },
+    create: { nama: 'Lektor', singkatan: 'L2', urutan: 2 },
+  });
+  await prisma.masterJabatan.upsert({
+    where: { singkatan: 'LK' },
+    update: { nama: 'Lektor Kepala', urutan: 3 },
+    create: { nama: 'Lektor Kepala', singkatan: 'LK', urutan: 3 },
+  });
+  await prisma.masterJabatan.upsert({
+    where: { singkatan: 'GB' },
+    update: { nama: 'Profesor', urutan: 4 },
+    create: { nama: 'Profesor', singkatan: 'GB', urutan: 4 },
+  });
+
+  await prisma.masterPangkat.upsert({
+    where: { golongan: 'III/a' },
+    update: { pangkat: 'Penata Muda' },
+    create: { pangkat: 'Penata Muda', golongan: 'III/a' },
+  });
+  await prisma.masterPangkat.upsert({
+    where: { golongan: 'III/b' },
+    update: { pangkat: 'Penata Muda Tingkat I' },
+    create: { pangkat: 'Penata Muda Tingkat I', golongan: 'III/b' },
+  });
+  await prisma.masterPangkat.upsert({
+    where: { golongan: 'III/c' },
+    update: { pangkat: 'Penata' },
+    create: { pangkat: 'Penata', golongan: 'III/c' },
+  });
+  await prisma.masterPangkat.upsert({
+    where: { golongan: 'III/d' },
+    update: { pangkat: 'Penata Tingkat I' },
+    create: { pangkat: 'Penata Tingkat I', golongan: 'III/d' },
+  });
+  await prisma.masterPangkat.upsert({
+    where: { golongan: 'IV/a' },
+    update: { pangkat: 'Pembina' },
+    create: { pangkat: 'Pembina', golongan: 'IV/a' },
+  });
+  await prisma.masterPangkat.upsert({
+    where: { golongan: 'IV/b' },
+    update: { pangkat: 'Pembina Tingkat I' },
+    create: { pangkat: 'Pembina Tingkat I', golongan: 'IV/b' },
+  });
+  await prisma.masterPangkat.upsert({
+    where: { golongan: 'IV/c' },
+    update: { pangkat: 'Pembina Utama Muda' },
+    create: { pangkat: 'Pembina Utama Muda', golongan: 'IV/c' },
+  });
+  await prisma.masterPangkat.upsert({
+    where: { golongan: 'IV/d' },
+    update: { pangkat: 'Pembina Utama Madya' },
+    create: { pangkat: 'Pembina Utama Madya', golongan: 'IV/d' },
+  });
+  await prisma.masterPangkat.upsert({
+    where: { golongan: 'IV/e' },
+    update: { pangkat: 'Pembina Utama' },
+    create: { pangkat: 'Pembina Utama', golongan: 'IV/e' },
+  });
+
+  // --- 2.6 Master Jurusan & Program Studi ---
+  console.log('Seeding Jurusan dan Program Studi...');
+  for (const [jurusanName, prodiList] of Object.entries(dataPolines)) {
+    await prisma.masterJurusan.create({
+      data: {
+        nama_jurusan: jurusanName,
+        program_studi: {
+          create: prodiList.map((prodi) => ({
+            nama_prodi: prodi,
+          })),
+        },
+      },
+    });
+  }
+
+  // --- 2.7 Master Bank ---
+  console.log('Seeding Master Bank...');
+  const bankNames = ['BNI', 'BRI', 'BSI', 'BCA', 'Mandiri'];
+  for (const nama of bankNames) {
+    await prisma.masterBank.upsert({
+      where: { nama_bank: nama },
+      update: {},
+      create: { nama_bank: nama },
+    });
+  }
+
+  console.log('Data Master (Role, Jenis Studi, Pendanaan, Status, Dokumen, Wilayah, Jurusan, Bank) telah siap.');
 
   // ===============================================================
   // === 3. SEED USERS & DOSEN PROFILE (Budi Doremi) ===
@@ -107,11 +264,11 @@ async function main() {
   // --- 3.5 Buat Profil Dosen Lengkap Budi (Tabel MasterDosen) ---
   await prisma.masterDosen.create({
     data: {
-      user_id: userDosenBudi.id,
+      user: { connect: { id: userDosenBudi.id } }, // Diperbaiki: Menggunakan connect
       nip: '198273645',
       nama_lengkap: 'Budi Doremi, S.Kom., M.T.',
       pangkat_golongan: 'Penata Muda Tk I (III/b)',
-      jabatan: 'Asisten Ahli',
+      jabatan: 'Asisten Ahli', // Diperbaiki: Typo dari 'jabatu' menjadi 'jabatan'
       unit_kerja: 'Politeknik Negeri Semarang',
       jurusan: 'Teknik Elektro',
       program_studi: 'Teknik Informatika',
@@ -293,6 +450,5 @@ main()
     process.exit(1);
   })
   .finally(async () => {
-    await prisma.$disconnect();
+    if (prisma) await prisma.$disconnect();
   });
-  

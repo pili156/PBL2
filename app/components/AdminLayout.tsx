@@ -11,6 +11,8 @@ function getPageTitle(pathname: string, role: string): string {
   if (pathname.includes('/verifikasi-pengajuan')) return 'Verifikasi Pengajuan';
   if (pathname.includes('/riwayat-dosen')) return 'Monitoring Dosen';
   if (pathname.includes('/buku-induk')) return 'Buku Induk';
+  if (pathname.includes('/master-jabatan')) return 'Master Jabatan';
+  if (pathname.includes('/master-pangkat')) return 'Master Pangkat';
   if (pathname.includes('/profile')) return 'Profile';
   if (pathname.includes('/change-password')) return 'Ubah Password';
   if (pathname.includes('/bantuan-studi')) return 'Bantuan Studi';

@@ -3,7 +3,10 @@
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import BackLink from "@/app/components/BackLink";
-import { ArrowLeft, UploadCloud, Check, Loader2 } from "lucide-react";
+import { 
+  ArrowLeft, UploadCloud, Check, Loader2, 
+  User, FileText, MapPin, ShieldCheck, AlertCircle, FileCheck 
+} from "lucide-react";
 
 type Props = {
   params: Promise<{ id: string }>;
@@ -14,7 +17,7 @@ export default function ManajemenStatusPage({ params }: Props) {
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [selectedStatus, setSelectedStatus] = useState("");
+
   const [uploading, setUploading] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -71,14 +74,9 @@ export default function ManajemenStatusPage({ params }: Props) {
       return;
     }
 
-    if (!selectedStatus) {
-      setMessage({ type: 'error', text: 'Silakan pilih status verifikasi terlebih dahulu' });
-      return;
-    }
-
     const formData = new FormData();
     formData.append('file', selectedFile);
-    formData.append('status_pengajuan', selectedStatus);
+    formData.append('status_pengajuan', 'diterima');
     formData.append('status_studi', 'aktif');
 
     setUploading(true);
@@ -95,7 +93,6 @@ export default function ManajemenStatusPage({ params }: Props) {
       if (response.ok) {
         setMessage({ type: 'success', text: 'SK berhasil diupload dan disimpan!' });
         setSelectedFile(null);
-        setSelectedStatus("");
         if (fileInputRef.current) {
           fileInputRef.current.value = '';
         }
@@ -112,20 +109,22 @@ export default function ManajemenStatusPage({ params }: Props) {
 
   if (loading) {
     return (
-      <div className="p-8 bg-[#F8FAFC] min-h-screen flex items-center justify-center">
-        <div className="flex items-center gap-2 text-slate-500">
-          <Loader2 className="animate-spin" size={24} />
-          <span>Memuat data...</span>
-        </div>
+      <div className="flex-1 p-8 flex flex-col items-center justify-center min-h-screen bg-slate-50">
+        <Loader2 className="w-10 h-10 animate-spin text-blue-600 mb-4" />
+        <p className="text-sm font-medium text-slate-500">Memuat data pengajuan...</p>
       </div>
     );
   }
 
   if (!data) {
     return (
-      <div className="p-8 bg-[#F8FAFC] min-h-screen">
-        <div className="text-center">
-          <p className="text-red-500">Data tidak ditemukan</p>
+      <div className="p-8 bg-slate-50 min-h-screen flex items-center justify-center">
+        <div className="text-center bg-white p-8 rounded-2xl shadow-sm border border-slate-200 max-w-md w-full">
+          <div className="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
+            <AlertCircle size={32} />
+          </div>
+          <h2 className="text-xl font-bold text-slate-800 mb-2">Data Tidak Ditemukan</h2>
+          <p className="text-sm text-slate-500 mb-6">Pengajuan yang Anda cari tidak ada atau telah dihapus.</p>
           <BackLink href="/admin/status" />
         </div>
       </div>
@@ -133,36 +132,51 @@ export default function ManajemenStatusPage({ params }: Props) {
   }
 
   return (
-    <div className="p-8 bg-[#F8FAFC] min-h-screen">
-      {/* Header Section dengan Judul Baru */}
-      <div className="mb-10">
+    <div className="p-6 lg:p-8 bg-slate-50 min-h-screen">
+      {/* Header Section */}
+      <div className="mb-8">
         <div className="flex items-center gap-4 mb-2">
-          <Link href="/admin/status" className="p-2 hover:bg-gray-200 rounded-full transition-all" aria-label="Kembali">
-            <ArrowLeft size={28} className="text-[#0A192F]" />
+          <Link 
+            href="/admin/status" 
+            className="p-2 hover:bg-slate-200 bg-white shadow-sm border border-slate-200 rounded-full transition-all text-slate-600 hover:text-slate-900" 
+            aria-label="Kembali"
+          >
+            <ArrowLeft size={20} />
           </Link>
-          <h1 className="text-3xl font-bold text-[#0A192F]">Upload SK</h1>
+          <h1 className="text-2xl lg:text-3xl font-bold text-slate-900 tracking-tight">Upload SK & Verifikasi</h1>
         </div>
-        <p className="text-sm text-gray-400 font-medium ml-14">
-          Dashboard {'>'} <span className="text-gray-500 font-bold">Status</span>
+        <p className="text-sm text-slate-500 font-medium pl-14">
+          Manajemen Status <span className="mx-2">•</span> <span className="text-slate-800">Penerbitan Surat Keputusan</span>
         </p>
       </div>
 
+      {/* Alert Message */}
       {message && (
-        <div className={`mb-6 p-4 rounded-lg flex items-center gap-3 ${
-          message.type === 'success' ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-red-50 text-red-700 border border-red-200'
+        <div className={`mb-6 p-4 rounded-xl flex items-center gap-3 font-medium text-sm border shadow-sm ${
+          message.type === 'success' 
+            ? 'bg-emerald-50 text-emerald-700 border-emerald-200' 
+            : 'bg-red-50 text-red-700 border-red-200'
         }`}>
-          {message.type === 'success' ? <Check size={20} /> : <span className="text-xl">⚠️</span>}
+          {message.type === 'success' ? (
+            <div className="bg-emerald-100 p-1 rounded-full"><Check size={16} /></div>
+          ) : (
+            <div className="bg-red-100 p-1 rounded-full"><AlertCircle size={16} /></div>
+          )}
           {message.text}
         </div>
       )}
 
       <form onSubmit={handleSubmit}>
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 text-[#1F1F1F]">
-          {/* Kolom Kiri: Form Upload & Status */}
-          <div className="lg:col-span-2 bg-white p-10 rounded-3xl shadow-sm border border-gray-100 flex flex-col justify-between">
-            <div>
-              <h2 className="font-bold text-xl mb-2 text-[#0A192F]">Penerbitan Surat Keputusan</h2>
-              <p className="text-sm text-gray-400 mb-8 font-medium italic">Harap unggah dokumen resmi dalam format PDF (Maks. 5MB).</p>
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 lg:gap-8">
+          
+          {/* Kolom Kiri: Form Upload & Status (Mendominasi 2 Kolom) */}
+          <div className="xl:col-span-2 flex flex-col gap-6">
+            <div className="bg-white p-6 lg:p-8 rounded-2xl shadow-sm border border-slate-200 flex flex-col h-full">
+              
+              <div className="mb-6">
+                <h2 className="font-bold text-lg text-slate-900">Dokumen Surat Keputusan (SK)</h2>
+                <p className="text-sm text-slate-500 mt-1">Unggah dokumen resmi SK dalam format PDF. Ukuran maksimal 5MB.</p>
+              </div>
               
               <input
                 ref={fileInputRef}
@@ -173,133 +187,159 @@ export default function ManajemenStatusPage({ params }: Props) {
                 id="file-upload"
               />
               
+              {/* Dropzone Area */}
               <label 
                 htmlFor="file-upload"
-                className={`border-2 border-dashed rounded-2xl p-20 flex flex-col items-center justify-center cursor-pointer transition-all group ${
+                className={`flex-1 min-h-[250px] border-2 border-dashed rounded-xl p-8 lg:p-12 flex flex-col items-center justify-center cursor-pointer transition-all group ${
                   selectedFile 
-                    ? 'border-green-300 bg-green-50' 
-                    : 'border-blue-100 bg-blue-50/20 hover:bg-blue-50'
+                    ? 'border-emerald-300 bg-emerald-50/50 hover:bg-emerald-50' 
+                    : 'border-blue-200 bg-blue-50/30 hover:bg-blue-50/80 hover:border-blue-300'
                 }`}
               >
-                <div className={`bg-white p-6 rounded-full shadow-lg mb-6 group-hover:scale-110 transition-transform ${
-                  selectedFile ? 'bg-green-100' : ''
+                <div className={`p-4 rounded-full shadow-sm mb-5 transition-transform group-hover:scale-110 ${
+                  selectedFile ? 'bg-emerald-100 text-emerald-600' : 'bg-white border border-blue-100 text-blue-500'
                 }`}>
-                  {selectedFile ? (
-                    <Check size={48} className="text-green-600" />
-                  ) : (
-                    <UploadCloud size={48} className="text-[#0085FF]" />
-                  )}
+                  {selectedFile ? <Check size={32} /> : <UploadCloud size={32} />}
                 </div>
+                
                 {selectedFile ? (
                   <div className="text-center">
-                    <p className="text-base font-bold text-green-700 uppercase tracking-widest">{selectedFile.name}</p>
-                    <p className="text-[10px] text-green-600 mt-3 font-black">File dipilih - Klik untuk ganti</p>
+                    <p className="text-sm font-bold text-emerald-700">{selectedFile.name}</p>
+                    <p className="text-xs text-emerald-600/70 mt-2 font-medium">Klik untuk mengganti file dokumen</p>
                   </div>
                 ) : (
-                  <>
-                    <p className="text-base font-bold text-[#0A192F] uppercase tracking-widest">Klik untuk Unggah SK Resmi</p>
-                    <p className="text-[10px] text-gray-400 mt-3 font-black tracking-widest">SUPPORTED FORMAT: PDF ONLY</p>
-                  </>
+                  <div className="text-center">
+                    <p className="text-sm font-bold text-slate-700">Klik untuk mencari dokumen SK</p>
+                    <p className="text-xs text-slate-400 mt-2">Hanya mendukung format .PDF</p>
+                  </div>
                 )}
               </label>
 
-              {/* Dropdown Status: Kosong di awal, lalu pilih DITERIMA */}
-              <div className="mt-12">
-                <label className="block text-[10px] font-black text-[#434343] mb-4 uppercase tracking-[0.2em]">Update Status Verifikasi:</label>
-                <select 
-                  name="status_pengajuan"
-                  value={selectedStatus}
-                  onChange={(e) => setSelectedStatus(e.target.value)}
-                  required
-                  className="w-full p-4 bg-gray-50 border border-gray-200 rounded-2xl outline-none focus:border-[#0085FF] font-bold text-sm text-[#434343] cursor-pointer"
-                >
-                  <option value="">Pilih Status Baru...</option>
-                  <option value="diterima">DITERIMA</option>
-                  <option value="pending">PENDING</option>
-                  <option value="revisi">REVISI</option>
-                </select>
-              </div>
+
+
             </div>
           </div>
 
-          {/* Kolom Kanan: Informasi Dosen */}
-          <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 h-fit">
-            <h2 className="font-bold text-xl text-[#0A192F] mb-8 border-b border-gray-50 pb-5">Informasi Dosen</h2>
-            <div className="space-y-7">
-              <div className="flex flex-col">
-                <span className="text-[10px] text-gray-400 font-black uppercase mb-1.5 tracking-[0.15em]">Nama Lengkap</span>
-                <span className="font-bold text-[#1F1F1F] text-sm">{data.nama_lengkap || "-"}</span>
-              </div>
-              <div className="flex flex-col">
-                <span className="text-[10px] text-gray-400 font-black uppercase mb-1.5 tracking-[0.15em]">NIP</span>
-                <span className="font-bold font-mono text-[#1F1F1F] text-sm">{data.nip || "-"}</span>
-              </div>
-              <div className="flex flex-col">
-                <span className="text-[10px] text-gray-400 font-black uppercase mb-1.5 tracking-[0.15em]">Wilayah</span>
-                <span className="font-bold text-[#1F1F1F] text-sm">{data.wilayah_studi || "-"}</span>
+          {/* Kolom Kanan: Informasi Dosen & Histori SK */}
+          <div className="xl:col-span-1">
+            <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 sticky top-8 flex flex-col gap-6">
+              
+              <div>
+                <h2 className="font-bold text-lg text-slate-900 mb-5 flex items-center gap-2">
+                  <User size={18} className="text-slate-400" />
+                  Informasi Pemohon
+                </h2>
+                
+                <div className="space-y-4">
+                  <div>
+                    <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1 flex items-center gap-1.5">
+                      <User size={14} /> Nama Lengkap
+                    </label>
+                    <p className="font-semibold text-slate-800 text-sm bg-slate-50 px-3 py-2.5 rounded-lg border border-slate-100">
+                      {data.nama_lengkap || "-"}
+                    </p>
+                  </div>
+
+                  <div>
+                    <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1 flex items-center gap-1.5">
+                      <FileText size={14} /> NIP / Identitas
+                    </label>
+                    <p className="font-mono font-medium text-slate-700 text-sm bg-slate-50 px-3 py-2.5 rounded-lg border border-slate-100">
+                      {data.nip || "-"}
+                    </p>
+                  </div>
+
+                  <div>
+                    <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1 flex items-center gap-1.5">
+                      <MapPin size={14} /> Wilayah Studi
+                    </label>
+                    <p className="font-semibold text-slate-800 text-sm bg-slate-50 px-3 py-2.5 rounded-lg border border-slate-100">
+                      {data.wilayah_studi || "-"}
+                    </p>
+                  </div>
+
+                  <div className="pt-4 mt-2 border-t border-slate-100">
+                    <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                      <ShieldCheck size={14} /> Status Saat Ini
+                    </label>
+                    <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wide ${
+                      data.status === 'diterima' || data.status === 'terverifikasi'
+                        ? 'bg-emerald-100 text-emerald-700 border border-emerald-200' 
+                        : data.status === 'pending'
+                        ? 'bg-amber-100 text-amber-700 border border-amber-200'
+                        : 'bg-red-100 text-red-700 border border-red-200'
+                    }`}>
+                      <span className={`w-1.5 h-1.5 rounded-full ${
+                        data.status === 'diterima' || data.status === 'terverifikasi' ? 'bg-emerald-500' : 
+                        data.status === 'pending' ? 'bg-amber-500' : 'bg-red-500'
+                      }`} />
+                      {data.status || "pending"}
+                    </span>
+                  </div>
+                </div>
               </div>
 
-              <div className="pt-8 mt-4 border-t border-gray-50 flex justify-between items-center">
-                <span className="text-[10px] text-gray-400 font-black uppercase tracking-widest">Status Saat Ini</span>
-                <span className={`px-5 py-2 rounded-xl text-[10px] font-black uppercase tracking-[0.15em] ${
-                  data.status === 'diterima' || data.status === 'terverifikasi'
-                    ? 'bg-[#C4F2C9] text-[#2D7336]' 
-                    : 'bg-[#FFE2E2] text-[#CC3333]'
-                }`}>
-                  {data.status || "pending"}
-                </span>
-              </div>
-
+              {/* Histori SK (Jika Ada) */}
               {data.sk_kementerian && data.sk_kementerian.length > 0 && (
-                <div className="pt-6 mt-4 border-t border-gray-50">
-                  <span className="text-[10px] text-gray-400 font-black uppercase tracking-widest block mb-3">SK Tugas Belajar</span>
-                  {data.sk_kementerian.map((sk: any) => (
-                    <div key={sk.id} className="bg-blue-50 rounded-xl p-4 space-y-2">
-                      {sk.nomor_sk && (
-                        <div className="flex justify-between items-center">
-                          <span className="text-[10px] text-gray-400 font-black uppercase">Nomor SK</span>
-                          <span className="text-xs font-bold text-[#1F1F1F]">{sk.nomor_sk}</span>
-                        </div>
-                      )}
-                      {sk.tanggal_terbit && (
-                        <div className="flex justify-between items-center">
-                          <span className="text-[10px] text-gray-400 font-black uppercase">Terbit</span>
-                          <span className="text-xs font-bold text-[#1F1F1F]">{sk.tanggal_terbit}</span>
-                        </div>
-                      )}
-                      {sk.file_sk_path && (
-                        <a
-                          href={sk.file_sk_path}
-                          target="_blank"
-                          className="text-xs font-semibold text-blue-600 hover:text-blue-800 transition-colors block text-center mt-2"
-                        >
-                          Lihat Dokumen SK
-                        </a>
-                      )}
-                    </div>
-                  ))}
+                <div className="pt-5 border-t border-slate-100">
+                  <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3 flex items-center gap-1.5">
+                    <FileCheck size={14} /> Dokumen SK Diterbitkan
+                  </h3>
+                  <div className="space-y-3 max-h-48 overflow-y-auto pr-2 custom-scrollbar">
+                    {data.sk_kementerian.map((sk: any) => (
+                      <div key={sk.id} className="bg-blue-50/50 border border-blue-100 rounded-xl p-3.5 space-y-2">
+                        {sk.nomor_sk && (
+                          <div className="flex justify-between items-center">
+                            <span className="text-[11px] text-slate-500 font-medium">Nomor SK</span>
+                            <span className="text-xs font-bold text-slate-800">{sk.nomor_sk}</span>
+                          </div>
+                        )}
+                        {sk.tanggal_terbit && (
+                          <div className="flex justify-between items-center">
+                            <span className="text-[11px] text-slate-500 font-medium">Terbit</span>
+                            <span className="text-xs font-bold text-slate-800">{sk.tanggal_terbit}</span>
+                          </div>
+                        )}
+                        {sk.file_sk_path && (
+                          <a
+                            href={sk.file_sk_path}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-xs font-semibold text-blue-600 hover:text-blue-800 transition-colors block text-center pt-2 mt-2 border-t border-blue-200/50"
+                          >
+                            Lihat Dokumen
+                          </a>
+                        )}
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
+
+              {/* Action Button */}
+              <div className="pt-2">
+                <button 
+                  type="submit"
+                  disabled={uploading || !selectedFile}
+                  className="w-full bg-blue-600 text-white px-6 py-3.5 rounded-xl font-semibold text-sm shadow-md shadow-blue-500/20 hover:bg-blue-700 hover:shadow-lg hover:shadow-blue-500/30 transition-all active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                >
+                  {uploading ? (
+                    <>
+                      <Loader2 className="animate-spin" size={18} />
+                      Menyimpan...
+                    </>
+                  ) : (
+                    <>
+                      <UploadCloud size={18} />
+                      Simpan & Terbitkan SK
+                    </>
+                  )}
+                </button>
+              </div>
+
             </div>
           </div>
-        </div>
 
-        {/* Action Button */}
-        <div className="mt-12 flex justify-end">
-          <button 
-            type="submit"
-            disabled={uploading || !selectedStatus}
-            className="bg-[#0085FF] text-white px-14 py-4 rounded-2xl font-black text-[11px] uppercase tracking-[0.2em] shadow-xl shadow-blue-100 hover:bg-[#006ACC] hover:-translate-y-1 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-          >
-            {uploading ? (
-              <>
-                <Loader2 className="animate-spin" size={16} />
-               Mengupload...
-              </>
-            ) : (
-              'Simpan & Terbitkan SK'
-            )}
-          </button>
         </div>
       </form>
     </div>

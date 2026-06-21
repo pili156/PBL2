@@ -19,15 +19,24 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: parsed.error.issues[0].message }, { status: 400 });
     }
 
-    const { jenis_studi_id, jalur_pendanaan_id, wilayah_studi, perguruan_tinggi } = parsed.data;
+    const { jenis_studi_id, jalur_pendanaan_id, wilayah_studi, perguruan_tinggi, nama_beasiswa } = parsed.data;
 
+    // Try to locate a suitable "waiting" status in master data.
+    // Seed uses snake_case ('menunggu_verifikasi'), so search for common variants
+    // and fall back to a case-insensitive contains match for 'menunggu'.
     let statusMenunggu = await prisma.masterStatusPengajuan.findFirst({
-      where: { nama_status: 'Menunggu Verifikasi (Admin)' },
+      where: { nama_status: 'menunggu_verifikasi' },
     });
 
     if (!statusMenunggu) {
       statusMenunggu = await prisma.masterStatusPengajuan.findFirst({
-        where: { nama_status: { contains: 'Menunggu' } },
+        where: {
+          OR: [
+            { nama_status: { equals: 'menunggu_verifikasi', mode: 'insensitive' } },
+            { nama_status: { contains: 'menunggu', mode: 'insensitive' } },
+            { nama_status: { contains: 'menunggu_verifikasi', mode: 'insensitive' } },
+          ],
+        },
       });
     }
 
@@ -60,6 +69,7 @@ export async function POST(request: Request) {
         jalur_pendanaan_id: jalur_pendanaan_id ?? null,
         wilayah_studi: wilayah_studi ?? null,
         perguruan_tinggi: perguruan_tinggi ?? null,
+        nama_beasiswa: nama_beasiswa ?? null,
         status_id: statusMenunggu.id,
         tanggal_pengajuan: new Date(),
       },

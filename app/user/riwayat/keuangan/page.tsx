@@ -29,6 +29,9 @@ export default async function RiwayatKeuanganPage() {
     include: {
       pengajuan_reimbursement: {
         orderBy: { created_at: "desc" },
+        include: {
+          dokumen_pengajuan: true,
+        },
       },
     },
   });
@@ -41,12 +44,27 @@ export default async function RiwayatKeuanganPage() {
     }))
   );
 
+  // Helper function to determine effective status based on documents and pencairan status
+  const getEffectiveStatus = (item: typeof allRiwayat[0]): string => {
+    // Check if any document has revisi status
+    const hasDocumentRevision = item.dokumen_pengajuan?.some(
+      (doc) => doc.status_verifikasi === "revisi"
+    );
+
+    if (hasDocumentRevision) {
+      return "revisi";
+    }
+
+    return item.status_pencairan?.toLowerCase() ?? "pending";
+  };
+
   let totalBantuan = 0;
   let totalCair = 0;
   for (const r of allRiwayat) {
     if (r.nominal) {
       totalBantuan += Number(r.nominal);
-      if (r.status_pencairan === "selesai") {
+      const effectiveStatus = getEffectiveStatus(r);
+      if (["dicairkan", "selesai"].includes(effectiveStatus)) {
         totalCair += Number(r.nominal);
       }
     }
@@ -139,7 +157,12 @@ export default async function RiwayatKeuanganPage() {
                         ? new Date(item.tanggal_pencairan).toLocaleDateString("id-ID", { day: "2-digit", month: "long", year: "numeric" })
                         : "-"}
                     </td>
-                    <td className="py-4 px-4"><StatusBadge status={item.status_pencairan} domain="pencairan" size="sm" dot /></td>
+                    <td className="py-4 px-4"><StatusBadge 
+                      status={getEffectiveStatus(item)} 
+                      domain={item.dokumen_pengajuan?.some(doc => doc.status_verifikasi === "revisi") ? "verifikasi" : "pencairan"} 
+                      size="sm" 
+                      dot 
+                    /></td>
                     <td className="py-4 px-4 text-center">
                       {item.file_bukti_bayar ? (
                         <a

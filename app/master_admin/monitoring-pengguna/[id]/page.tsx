@@ -7,7 +7,7 @@ import {
 import Link from 'next/link';
 import BackLink from '@/app/components/BackLink';
 import { revalidatePath } from 'next/cache';
-import { updateUserById, resetPassword } from '../actions';
+import { updateUserProfile, updateUserRole, resetPassword } from '../actions';
 import DeleteUserButton from './DeleteUserButton';
 import ToggleSwitch from '../ToggleSwitch';
 import { formatDateTime } from '@/src/lib/formatters';
@@ -21,9 +21,15 @@ const ROLE_OPTIONS = [
   { id: 4, name: 'Keuangan' },
 ];
 
-async function updateUserAction(formData: FormData) {
+async function updateProfileAction(formData: FormData) {
   'use server';
-  await updateUserById(formData);
+  await updateUserProfile(formData);
+  redirect('/master_admin/monitoring-pengguna');
+}
+
+async function updateRoleAction(formData: FormData) {
+  'use server';
+  await updateUserRole(formData);
   redirect('/master_admin/monitoring-pengguna');
 }
 
@@ -98,7 +104,7 @@ export default async function EditUserPage({ params }: Props) {
             <User size={16} className="text-slate-400" />
             Data Akun
           </h3>
-          <form action={updateUserAction} className="space-y-4">
+          <form action={updateProfileAction} className="space-y-4">
             <input type="hidden" name="id" value={user.id} />
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
@@ -169,7 +175,7 @@ export default async function EditUserPage({ params }: Props) {
               Role & Status
             </h3>
             <div className="space-y-4">
-              <form action={updateUserAction}>
+              <form action={updateRoleAction}>
                 <input type="hidden" name="id" value={user.id} />
                 <label className="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wider">Role</label>
                 <div className="flex gap-3">
