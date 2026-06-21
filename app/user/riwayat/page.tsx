@@ -1,11 +1,13 @@
 import { headers } from 'next/headers';
 import { prisma } from '@/src/lib/prisma';
 import { notFound } from 'next/navigation';
-import { BookOpen, Wallet, GraduationCap, TrendingUp, DollarSign, ClipboardList } from 'lucide-react';
+import { BookOpen, Wallet, GraduationCap, TrendingUp, Coins, ClipboardList } from 'lucide-react';
 import Link from 'next/link';
 import { formatRupiah } from '@/src/lib/formatters';
 
 export const dynamic = 'force-dynamic';
+
+const STATUS_CAIR = ["dicairkan", "selesai"] as const;
 
 export default async function RiwayatRootPage() {
   const headersList = await headers();
@@ -65,7 +67,7 @@ export default async function RiwayatRootPage() {
     for (const r of p.pengajuan_reimbursement) {
       if (r.nominal) {
         const effectiveStatus = getEffectiveStatus(r);
-        if (["dicairkan", "selesai"].includes(effectiveStatus)) {
+        if ((STATUS_CAIR as readonly string[]).includes(effectiveStatus)) {
           totalBantuanCair += Number(r.nominal);
         }
       }
@@ -103,7 +105,7 @@ export default async function RiwayatRootPage() {
         <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-5">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-lg bg-amber-100 flex items-center justify-center">
-              <DollarSign size={20} className="text-amber-600" />
+              <Coins size={20} className="text-amber-600" />
             </div>
             <div>
               <p className="text-[10px] text-slate-400 uppercase tracking-wider">Bantuan Cair</p>
@@ -145,7 +147,7 @@ export default async function RiwayatRootPage() {
               const totalCair = p.pengajuan_reimbursement
                 .filter(r => {
                   const effectiveStatus = getEffectiveStatus(r);
-                  return ["dicairkan", "selesai"].includes(effectiveStatus);
+                  return (STATUS_CAIR as readonly string[]).includes(effectiveStatus);
                 })
                 .reduce((sum, r) => sum + Number(r.nominal || 0), 0);
 
