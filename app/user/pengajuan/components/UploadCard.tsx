@@ -13,7 +13,7 @@ type Props = {
   uploadProgress?: number;
   onUpload: (file: File) => void;
   onDelete?: () => void;
-  maxSize?: number; // DITAMBAHKAN
+  maxSize?: number;
   error?: string;
 };
 
@@ -26,7 +26,7 @@ export default function UploadCard({
   uploadProgress = 0,
   onUpload,
   onDelete,
-  maxSize, // DITAMBAHKAN
+  maxSize,
   error,
 }: Props) {
   const inputRef = useRef<HTMLInputElement>(null);
@@ -37,8 +37,7 @@ export default function UploadCard({
   const handleFileSelect = useCallback((selectedFile: File) => {
     setUploadError(null);
 
-    // GUNAKAN MAXSIZE DI SINI (Sesuai kodemu)
-    const limit = maxSize || 2097152; // Default 2MB jika tidak diset
+    const limit = maxSize || 2097152;
 
     if (selectedFile.size > limit) {
       setUploadError("Ukuran file terlalu besar! Maksimal " + (limit / 1024 / 1024) + "MB");
@@ -55,16 +54,26 @@ export default function UploadCard({
 
   const handleDragEnter = useCallback((e: React.DragEvent) => {
     e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  }, []);
+
+  // PERBAIKAN: Menambahkan handleDragOver agar dropzone terbuka
+  const handleDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
     setIsDragging(true);
   }, []);
 
   const handleDragLeave = useCallback((e: React.DragEvent) => {
     e.preventDefault();
+    e.stopPropagation();
     setIsDragging(false);
   }, []);
 
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
+    e.stopPropagation();
     setIsDragging(false);
 
     if (e.dataTransfer.files?.[0]) {
@@ -114,7 +123,6 @@ export default function UploadCard({
           <div className="flex items-center gap-2 mb-1">
             <h3 className="font-semibold text-gray-900">{title}</h3>
             
-            {/* PERBAIKAN: Conditional rendering untuk Badge */}
             {file ? (
               <span className="inline-flex items-center gap-1 text-xs font-semibold text-green-600 bg-green-100 px-2 py-1 rounded">
                 <CheckCircle size={14} /> DIUNGGAH
@@ -128,14 +136,13 @@ export default function UploadCard({
             <p className="text-sm text-gray-600">{description}</p>
           )}
         </div>
-        
-        {/* Kode {file && ... Uploaded} yang sebelumnya ada di sebelah kanan sudah dihapus agar rapi */}
       </div>
 
       {!file ? (
         <div
           onClick={() => inputRef.current?.click()}
           onDragEnter={handleDragEnter}
+          onDragOver={handleDragOver} // <-- PERBAIKAN DI SINI
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
           className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-all duration-300 ${
@@ -157,7 +164,6 @@ export default function UploadCard({
             <p className="text-sm font-medium text-gray-700 mb-1">
               {isDragging ? 'Lepaskan file di sini' : 'Klik untuk upload atau drag file di sini'}
             </p>
-            {/* PERUBAHAN TEKS: Tampil dinamis berdasarkan maxSize */}
             <p className="text-xs text-gray-500">Format: PDF • Max {maxSize ? maxSize / 1024 / 1024 : 2}MB</p>
           </div>
         </div>
