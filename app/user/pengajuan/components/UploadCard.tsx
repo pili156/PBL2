@@ -2,7 +2,7 @@
 
 import { Upload, File, Trash2, AlertCircle, CheckCircle, X, Loader2 } from "lucide-react";
 import { useRef, useState, useCallback } from "react";
-import { MAX_FILE_SIZE, ALLOWED_FILE_TYPES } from "../constants";
+import { ALLOWED_FILE_TYPES } from "../constants";
 
 type Props = {
   title: string;
@@ -13,7 +13,7 @@ type Props = {
   uploadProgress?: number;
   onUpload: (file: File) => void;
   onDelete?: () => void;
-  maxSize?: number;
+  maxSize?: number; // DITAMBAHKAN
   error?: string;
 };
 
@@ -26,6 +26,7 @@ export default function UploadCard({
   uploadProgress = 0,
   onUpload,
   onDelete,
+  maxSize, // DITAMBAHKAN
   error,
 }: Props) {
   const inputRef = useRef<HTMLInputElement>(null);
@@ -36,8 +37,11 @@ export default function UploadCard({
   const handleFileSelect = useCallback((selectedFile: File) => {
     setUploadError(null);
 
-    if (selectedFile.size > MAX_FILE_SIZE) {
-      setUploadError("Ukuran file tidak boleh lebih dari 2MB");
+    // GUNAKAN MAXSIZE DI SINI (Sesuai kodemu)
+    const limit = maxSize || 2097152; // Default 2MB jika tidak diset
+
+    if (selectedFile.size > limit) {
+      setUploadError("Ukuran file terlalu besar! Maksimal " + (limit / 1024 / 1024) + "MB");
       return;
     }
 
@@ -47,7 +51,7 @@ export default function UploadCard({
     }
 
     onUpload(selectedFile);
-  }, [onUpload]);
+  }, [onUpload, maxSize]);
 
   const handleDragEnter = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -153,7 +157,8 @@ export default function UploadCard({
             <p className="text-sm font-medium text-gray-700 mb-1">
               {isDragging ? 'Lepaskan file di sini' : 'Klik untuk upload atau drag file di sini'}
             </p>
-            <p className="text-xs text-gray-500">Format: PDF • Max 2MB</p>
+            {/* PERUBAHAN TEKS: Tampil dinamis berdasarkan maxSize */}
+            <p className="text-xs text-gray-500">Format: PDF • Max {maxSize ? maxSize / 1024 / 1024 : 2}MB</p>
           </div>
         </div>
       ) : (
