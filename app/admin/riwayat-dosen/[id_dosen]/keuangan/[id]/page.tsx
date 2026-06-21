@@ -161,7 +161,7 @@ export default async function DetailKeuanganPage({ params }: Props) {
               <form className="space-y-4">
                 <input type="hidden" name="keuanganId" value={keuanganId} />
                 <textarea name="catatan"
-                  className="w-full text-sm p-3 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 min-h-[80px] transition-all"
+                  className="w-full text-sm p-3 text-slate-700 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 min-h-[80px] transition-all"
                   placeholder="Catatan verifikasi..."
                   defaultValue={keuangan.catatan_keuangan || ''} />
                 <div className="grid grid-cols-2 gap-3">

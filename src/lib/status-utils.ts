@@ -192,3 +192,22 @@ export function normalizeStatus(status?: string | null): string {
 export function statusBadgeClass(status: string): string {
   return getStatusBadgeClass(status, 'pencairan');
 }
+
+/**
+ * Calculate overall pengajuan status based on submitted documents
+ * @param dokumen - Array of documents with file_path and status_verifikasi
+ * @returns 'terverifikasi', 'revisi', 'pending', or null if no documents submitted
+ */
+export function getOverallPengajuanStatus(dokumen: Array<{ file_path: string | null; status_verifikasi: string }>): string | null {
+  if (!dokumen || dokumen.length === 0) return null;
+  
+  const submittedDokumen = dokumen.filter((d) => d.file_path);
+  if (submittedDokumen.length === 0) return null;
+  
+  const allTerverifikasi = submittedDokumen.every((d) => d.status_verifikasi === 'terverifikasi');
+  const hasRevisi = submittedDokumen.some((d) => d.status_verifikasi === 'revisi');
+  
+  if (allTerverifikasi) return 'terverifikasi';
+  if (hasRevisi) return 'revisi';
+  return 'pending';
+}
