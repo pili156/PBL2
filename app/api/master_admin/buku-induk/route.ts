@@ -31,7 +31,13 @@ export async function GET(request: NextRequest) {
         return {
           id: d.id,
           nip: d.nip,
+          nidn: d.nidn,
           nama_lengkap: d.nama_lengkap,
+          tempat_lahir: d.tempat_lahir,
+          tanggal_lahir: d.tanggal_lahir,
+          jenis_kelamin: d.jenis_kelamin,
+          email_pribadi: d.email_pribadi,
+          alamat: d.alamat,
           jurusan: d.jurusan,
           jabatan: d.jabatan,
           program_studi: d.program_studi,

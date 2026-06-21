@@ -40,7 +40,13 @@ export const pengajuanSchema = z.object({
 export const profileSchema = z.object({
   username: z.string().optional(),
   nip: z.string().optional(),
+  nidn: z.string().min(1, "NIDN wajib diisi"),
   nama_lengkap: z.string().min(1, "Nama lengkap wajib diisi").optional(),
+  tempat_lahir: z.string().min(1, "Tempat lahir wajib diisi"),
+  tanggal_lahir: z.string().min(1, "Tanggal lahir wajib diisi"),
+  jenis_kelamin: z.string().min(1, "Jenis kelamin wajib diisi"),
+  email_pribadi: z.string().min(1, "Email pribadi wajib diisi"),
+  alamat: z.string().min(1, "Alamat wajib diisi"),
   pangkat_golongan: z.string().optional(),
   jabatan: z.string().optional(),
   unit_kerja: z.string().optional(),
