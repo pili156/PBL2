@@ -173,7 +173,7 @@ export default function PengajuanPage() {
   const progressStep = flowStep === "step1" ? 0 : flowStep === "step2" ? 1 : flowStep === "step3" ? currentGroupIndex + 1 : 5;
 
   const handleStep1Next = async (data: {
-    studyType: string;
+    studyType?: string;
     fundingType: string;
     studyRegion: string;
     perguruanTinggi: string;
@@ -185,9 +185,11 @@ export default function PengajuanPage() {
       console.log('[DEBUG] Input from Step1:', data);
       console.log('[DEBUG] masterData.jalurPendanaan:', masterData.jalurPendanaan);
       
-      const selectedJenisStudi = masterData.jenisStudi.find(
-        (j) => j.nama_jenis?.toLowerCase().includes(data.studyType.toLowerCase().replace(/_/g, ' '))
-      );
+      const selectedJenisStudi = data.studyType
+        ? masterData.jenisStudi.find(
+            (j) => j.nama_jenis?.toLowerCase().includes(data.studyType!.toLowerCase().replace(/_/g, ' '))
+          )
+        : undefined;
       const selectedJalurPendanaan = masterData.jalurPendanaan.find(
         (j) => j.nama_pendanaan?.toLowerCase().includes(data.fundingType.toLowerCase())
       );

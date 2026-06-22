@@ -7,7 +7,7 @@ import { STUDY_TYPES, FUNDING_TYPES, STUDY_REGIONS } from "../constants";
 
 type Props = {
   onNext: (data: {
-    studyType: StudyType;
+    studyType?: StudyType;
     fundingType: FundingType;
     studyRegion: StudyRegion;
     perguruanTinggi: string;
@@ -71,10 +71,10 @@ export default function Step1JenisStudi({ onNext, profileIncomplete = false }: P
 
   useEffect(() => {
     const canAutoSave =
-      studyType &&
       fundingType &&
       studyRegion &&
-      (fundingType !== "beasiswa" || namaBeasiswa.trim() !== "");
+      (fundingType !== "beasiswa" || namaBeasiswa.trim() !== "") &&
+      (fundingType !== "mandiri" || !!studyType);
 
     if (canAutoSave) {
       setAutoSaveStatus("saving");
@@ -94,24 +94,24 @@ export default function Step1JenisStudi({ onNext, profileIncomplete = false }: P
     setIsAnimating(true);
     setTimeout(() => {
       if (
-        studyType &&
         fundingType &&
         studyRegion &&
         perguruanTinggi.trim() !== "" &&
-        (fundingType !== "beasiswa" || namaBeasiswa.trim() !== "")
+        (fundingType !== "beasiswa" || namaBeasiswa.trim() !== "") &&
+        (fundingType !== "mandiri" || !!studyType)
       ) {
-        onNext({ studyType, fundingType, studyRegion, perguruanTinggi, namaBeasiswa });
+        onNext({ studyType: studyType ?? undefined, fundingType, studyRegion, perguruanTinggi, namaBeasiswa });
       }
       setIsAnimating(false);
     }, 300);
   };
 
   const isComplete =
-    studyType &&
     fundingType &&
     studyRegion &&
     perguruanTinggi.trim() !== "" &&
-    (fundingType !== "beasiswa" || namaBeasiswa.trim() !== "");
+    (fundingType !== "beasiswa" || namaBeasiswa.trim() !== "") &&
+    (fundingType !== "mandiri" || !!studyType);
 
   const allSelectionsMade = selections.studyType && selections.fundingType && selections.studyRegion;
   const shouldShowStudyType = fundingType === "mandiri";
