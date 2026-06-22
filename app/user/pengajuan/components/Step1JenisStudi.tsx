@@ -143,12 +143,13 @@ export default function Step1JenisStudi({ onNext, profileIncomplete = false }: P
     }
   }, [studyType, fundingType, studyRegion, perguruanTinggi, ptnCustom, namaBeasiswa, beasiswaCustom]);
 
+  // PERBAIKAN: Menggabungkan 2 variabel isComplete yang duplikat menjadi satu logika yang benar
   const isComplete =
-    studyType &&
     fundingType &&
     studyRegion &&
     getFinalPTN().trim() !== "" &&
-    (fundingType !== "beasiswa" || getFinalBeasiswa().trim() !== "");
+    (fundingType !== "beasiswa" || getFinalBeasiswa().trim() !== "") &&
+    (fundingType !== "mandiri" || !!studyType);
 
   const handleNext = () => {
     setIsAnimating(true);
@@ -165,13 +166,6 @@ export default function Step1JenisStudi({ onNext, profileIncomplete = false }: P
       setIsAnimating(false);
     }, 300);
   };
-
-  const isComplete =
-    fundingType &&
-    studyRegion &&
-    perguruanTinggi.trim() !== "" &&
-    (fundingType !== "beasiswa" || namaBeasiswa.trim() !== "") &&
-    (fundingType !== "mandiri" || !!studyType);
 
   const allSelectionsMade = selections.studyType && selections.fundingType && selections.studyRegion;
   const shouldShowStudyType = fundingType === "mandiri";
