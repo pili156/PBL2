@@ -19,6 +19,7 @@ interface DosenItem {
   nama_lengkap: string;
   nip: string | null;
   jurusan: string | null;
+  perguruan_tinggi: string | null;
   jenjang: string | null;
   jenis_pengajuan_studi: string | null;
   status_kuliah: string | null;
