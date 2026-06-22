@@ -142,6 +142,10 @@ export default function EditProfileForm({ backUrl, apiUrl = "/api/user/profile" 
 
       if (res.ok) {
         setSuccessMsg("Profil berhasil diperbarui!");
+        // PERBAIKAN POIN 1 & 2: Me-refresh halaman secara halus agar nama di Header berubah
+        setTimeout(() => {
+          window.location.reload();
+        }, 1000);
         if (profileData) {
           setProfileData({
             ...profileData,

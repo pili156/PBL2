@@ -59,7 +59,11 @@ export async function updateProfile(request: Request) {
     return NextResponse.json({ error: parsed.error.issues[0].message }, { status: 400 });
   }
 
-  const { username, nip, nidn, nama_lengkap, tempat_lahir, tanggal_lahir, jenis_kelamin, email_pribadi, alamat, pangkat_golongan, jabatan, unit_kerja, jurusan, program_studi, no_telp } = parsed.data;
+  // Ambil username terpisah langsung dari body (bebas dari aturan Zod Dosen)
+  const username = body.username;
+  
+  // Hapus kata username dari parsed.data agar tidak merah lagi
+  const { nip, nidn, nama_lengkap, tempat_lahir, tanggal_lahir, jenis_kelamin, email_pribadi, alamat, pangkat_golongan, jabatan, unit_kerja, jurusan, program_studi, no_telp } = parsed.data;
 
   const user = await prisma.user.findUnique({
     where: { email: userEmail },
@@ -69,6 +73,28 @@ export async function updateProfile(request: Request) {
   if (!user) {
     return NextResponse.json({ error: "User not found" }, { status: 404 });
   }
+
+  // --- PERBAIKAN: Cek apakah username bentrok dengan pengguna lain ---
+  const targetUsername = username || nama_lengkap || user.username;
+
+  if (targetUsername !== user.username) {
+    const existingUsername = await prisma.user.findUnique({
+      where: { username: targetUsername }
+    });
+
+    if (existingUsername) {
+      return NextResponse.json({ error: "Nama (Username) tersebut sudah digunakan oleh akun lain, silakan bedakan sedikit." }, { status: 400 });
+    }
+  }
+
+  // Eksekusi Update pada tabel User
+  await prisma.user.update({
+    where: { email: userEmail },
+    data: {
+      username: targetUsername,
+    }
+  });
+  // -------------------------------------------------------------------
 
   if (user.master_dosen) {
     if (nip && nip !== user.master_dosen.nip) {
