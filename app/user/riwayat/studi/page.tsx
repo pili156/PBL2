@@ -1,6 +1,6 @@
 import { headers } from 'next/headers';
 import { prisma } from '@/src/lib/prisma';
-import { Plus, Eye, Pencil, Upload, Info, Building2, GraduationCap } from 'lucide-react';
+import { Plus, Eye, Upload, Info, Building2, GraduationCap, Pencil } from 'lucide-react';
 import Link from 'next/link';
 
 export const dynamic = 'force-dynamic';
@@ -115,19 +115,27 @@ export default async function RiwayatStudiPage({
 
 async function KhsTable({ pengajuan }: { pengajuan: any }) {
   const khsList = pengajuan.monitoring_khs || [];
-  const maxSemester = khsList.reduce((max: number, k: any) => Math.max(max, k.semester_ke || 0), 0);
-  const totalSemester = Math.max(maxSemester + 1, 2);
-
-  const tabelKHS = Array.from({ length: totalSemester }, (_, i) => {
-    const semesterKe = i + 1;
-    const dataKHS = khsList.find((k: any) => k.semester_ke === semesterKe);
-    return { semester_ke: semesterKe, data: dataKHS || null };
-  });
+  
+  // Filter hanya KHS yang telah dikirim (sudah ada datanya)
+  const uploadedKhsList = khsList.filter((k: any) => k && k.id);
+  
+  const tabelKHS = uploadedKhsList.map((dataKHS: any) => ({
+    semester_ke: dataKHS.semester_ke,
+    data: dataKHS,
+  }));
 
   return (
     <>
-      <div className="overflow-x-auto">
-        <table className="w-full text-left">
+      {tabelKHS.length === 0 ? (
+        <div className="text-center py-10 text-slate-500">
+          <p>Belum ada KHS yang dikirim.</p>
+          <Link href="/user/laporanKHS/upload" className="text-blue-600 font-bold text-sm mt-2 inline-block hover:underline">
+            Upload KHS Pertama
+          </Link>
+        </div>
+      ) : (
+        <div className="overflow-x-auto">
+          <table className="w-full text-left">
           <thead>
             <tr className="border-b border-slate-200 text-xs font-bold text-slate-800">
               <th className="py-4 px-2 w-12 text-center">No</th>
@@ -142,9 +150,17 @@ async function KhsTable({ pengajuan }: { pengajuan: any }) {
           <tbody>
             {tabelKHS.map((item, index) => {
               const isUploaded = !!item.data;
-              const statusKHS = isUploaded
-                ? (item.data!.status_evaluasi || 'pending')
-                : 'BELUM UPLOAD';
+              const rawStatus = item.data!.status_evaluasi?.toLowerCase().trim() || 'pending';
+              
+              // Mapping status dari database ke kategori UI
+              let statusKHS = 'pending';
+              if (['valid', 'diterima', 'terverifikasi', 'selesai', 'disetujui'].includes(rawStatus)) {
+                statusKHS = 'valid';
+              } else if (['revisi', 'perlu_revisi', 'ditolak'].includes(rawStatus)) {
+                statusKHS = 'revisi';
+              } else if (['pending', 'menunggu_verifikasi', 'draft'].includes(rawStatus)) {
+                statusKHS = 'pending';
+              }
 
               return (
                 <tr key={index} className="border-b border-slate-50 hover:bg-slate-50 transition-colors">
@@ -163,23 +179,28 @@ async function KhsTable({ pengajuan }: { pengajuan: any }) {
                   </td>
                   <td className="py-4 px-4">
                     {statusKHS === 'valid' && (
-                      <span className="inline-flex items-center gap-1.5 text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-md">
-                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> VALID
+                      <span className="inline-flex items-center gap-1.5 text-[10px] font-bold text-green-700 bg-green-100 px-2.5 py-1 rounded-md">
+                        <span className="w-1.5 h-1.5 rounded-full bg-green-600"></span> VALID
                       </span>
                     )}
                     {statusKHS === 'pending' && (
-                      <span className="inline-flex items-center gap-1.5 text-[10px] font-bold text-blue-600 bg-blue-50 px-2.5 py-1 rounded-md">
-                        <span className="w-1.5 h-1.5 rounded-full bg-blue-500"></span> PENDING
+                      <span className="inline-flex items-center gap-1.5 text-[10px] font-bold text-indigo-700 bg-indigo-100 px-2.5 py-1 rounded-md">
+                        <span className="w-1.5 h-1.5 rounded-full bg-indigo-600"></span> PENDING
                       </span>
                     )}
                     {statusKHS === 'revisi' && (
-                      <span className="inline-flex items-center gap-1.5 text-[10px] font-bold text-amber-600 bg-amber-50 px-2.5 py-1 rounded-md">
-                        <span className="w-1.5 h-1.5 rounded-full bg-amber-500"></span> REVISI
+                      <span className="inline-flex items-center gap-1.5 text-[10px] font-bold text-red-700 bg-red-100 px-2.5 py-1 rounded-md">
+                        <span className="w-1.5 h-1.5 rounded-full bg-red-600"></span> REVISI
                       </span>
                     )}
-                    {statusKHS === 'BELUM UPLOAD' && (
-                      <span className="inline-flex items-center gap-1.5 text-[10px] font-bold text-slate-500 bg-slate-100 px-2.5 py-1 rounded-md">
-                        <span className="w-1.5 h-1.5 rounded-full bg-slate-400"></span> BELUM UPLOAD
+                    {statusKHS === 'belum upload' && (
+                      <span className="inline-flex items-center gap-1.5 text-[10px] font-bold text-gray-600 bg-gray-100 px-2.5 py-1 rounded-md">
+                        <span className="w-1.5 h-1.5 rounded-full bg-gray-500"></span> BELUM UPLOAD
+                      </span>
+                    )}
+                    {!['valid', 'pending', 'revisi', 'belum upload'].includes(statusKHS) && (
+                      <span className="inline-flex items-center gap-1.5 text-[10px] font-bold text-gray-600 bg-gray-100 px-2.5 py-1 rounded-md">
+                        <span className="w-1.5 h-1.5 rounded-full bg-gray-500"></span> {statusKHS.toUpperCase()}
                       </span>
                     )}
                   </td>
@@ -190,14 +211,14 @@ async function KhsTable({ pengajuan }: { pengajuan: any }) {
                           <Eye size={14} /> Lihat Detail
                         </Link>
                       )}
-                      {(statusKHS === 'revisi' || statusKHS === 'pending') && item.data && (
+                      {statusKHS === 'revisi' && item.data && (
                         <Link href={`/user/laporanKHS/${item.data.id}`} className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-blue-600 text-blue-600 rounded-lg text-xs font-bold hover:bg-blue-50 w-[110px] justify-center transition-all">
                           <Pencil size={14} /> Edit
                         </Link>
                       )}
-                      {statusKHS === 'BELUM UPLOAD' && (
-                        <Link href={`/user/laporanKHS/upload?semester=${item.semester_ke}`} className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-blue-600 text-blue-600 rounded-lg text-xs font-bold hover:bg-blue-50 w-[110px] justify-center transition-all">
-                          <Upload size={14} /> Upload
+                      {statusKHS === 'pending' && item.data && (
+                        <Link href={`/user/laporanKHS/${item.data.id}`} className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-blue-600 text-blue-600 rounded-lg text-xs font-bold hover:bg-blue-50 w-[110px] justify-center transition-all">
+                          <Pencil size={14} /> Edit
                         </Link>
                       )}
                     </div>
@@ -207,7 +228,8 @@ async function KhsTable({ pengajuan }: { pengajuan: any }) {
             })}
           </tbody>
         </table>
-      </div>
+        </div>
+      )}
 
       <div className="bg-slate-50 border border-blue-100 rounded-xl p-4 flex flex-col sm:flex-row gap-4 sm:items-center text-xs">
         <div className="flex items-center gap-2 text-blue-600 font-bold shrink-0">

@@ -21,7 +21,7 @@ export default function TabNavigation() {
 
   const isActive = (tab: Tab) => {
     if (tab.href === '/user/riwayat/studi') {
-      return pathname === '/user/riwayat' || pathname === '/user/riwayat/studi' || pathname.startsWith('/user/riwayat/studi/');
+      return pathname === '/user/riwayat/studi' || pathname.startsWith('/user/riwayat/studi/');
     }
     return pathname === tab.href || pathname.startsWith(tab.href + '/');
   };

@@ -54,6 +54,7 @@ export default function PengajuanPage() {
   const [isInitialized, setIsInitialized] = useState(false);
   const [hasCompletedPengajuan, setHasCompletedPengajuan] = useState(false);
   const [profileIncomplete, setProfileIncomplete] = useState(false);
+  const [rejectedPengajuan, setRejectedPengajuan] = useState(false);
 
   useEffect(() => {
     async function fetchProfile() {
@@ -125,7 +126,9 @@ export default function PengajuanPage() {
           //
           
           if (data.status === 'ditolak') {
-            await fetch('/api/user/pengajuan', { method: 'DELETE' });
+            setRejectedPengajuan(true);
+            setHasCompletedPengajuan(true);
+            setFlowStep("completed");
             setIsInitialized(true);
             return;
           }
@@ -378,26 +381,50 @@ export default function PengajuanPage() {
 
           {flowStep === "completed" && (
             <div className="space-y-6">
-              <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4 flex items-center gap-3">
-                <div className="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center">
-                  <CheckCircle size={20} className="text-emerald-600" />
+              {rejectedPengajuan ? (
+                <div className="bg-red-50 border border-red-200 rounded-xl p-8 text-center">
+                  <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <AlertCircle size={32} className="text-red-600" />
+                  </div>
+                  <h3 className="text-2xl font-bold text-red-800 mb-2">Pengajuan Ditolak</h3>
+                  <p className="text-red-600 mb-6 max-w-md mx-auto">
+                    Pengajuan Anda sebelumnya ditolak oleh admin. Silakan buat pengajuan baru dengan data yang lebih lengkap.
+                  </p>
+                  <button
+                    onClick={() => {
+                      setRejectedPengajuan(false);
+                      setHasCompletedPengajuan(false);
+                      setFlowStep("step1");
+                    }}
+                    className="inline-flex items-center gap-2 px-6 py-3 bg-red-600 text-white rounded-lg font-semibold hover:bg-red-700 transition-all shadow-md"
+                  >
+                    Buat Pengajuan Baru
+                  </button>
                 </div>
-                <div>
-                  <h3 className="font-semibold text-emerald-900">Pengajuan Berhasil Dikirim</h3>
-                  <p className="text-sm text-emerald-700">Pengajuan Anda akan diproses dalam 2-5 hari kerja.</p>
-                </div>
-              </div>
-              <DocumentStatusList />
-              <div className="flex gap-4 justify-center pt-4">
-                <button
-                  onClick={() => {
-                    router.push("/user/dashboard");
-                  }}
-                  className="inline-flex items-center gap-2 px-6 py-3 bg-slate-200 text-slate-700 rounded-lg font-semibold hover:bg-slate-300 transition-all"
-                >
-                  Kembali
-                </button>
-              </div>
+              ) : (
+                <>
+                  <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4 flex items-center gap-3">
+                    <div className="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center">
+                      <CheckCircle size={20} className="text-emerald-600" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-emerald-900">Pengajuan Berhasil Dikirim</h3>
+                      <p className="text-sm text-emerald-700">Pengajuan Anda akan diproses dalam 2-5 hari kerja.</p>
+                    </div>
+                  </div>
+                  <DocumentStatusList />
+                  <div className="flex gap-4 justify-center pt-4">
+                    <button
+                      onClick={() => {
+                        router.push("/user/dashboard");
+                      }}
+                      className="inline-flex items-center gap-2 px-6 py-3 bg-slate-200 text-slate-700 rounded-lg font-semibold hover:bg-slate-300 transition-all"
+                    >
+                      Kembali
+                    </button>
+                  </div>
+                </>
+              )}
             </div>
           )}
         </div>

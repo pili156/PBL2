@@ -5,7 +5,6 @@ import { ArrowLeft, UploadCloud, Info, AlertCircle } from 'lucide-react';
 import Link from 'next/link';
 import { uploadKHS } from './actions';
 import FileDropzone from './FileDropzone';
-import { getTahunAkademikOptions } from '@/src/lib/tahun-akademik';
 
 export default function UploadKHSForm({ prefillSemester, existingSemesters }: {
   prefillSemester: string;
@@ -66,16 +65,13 @@ export default function UploadKHSForm({ prefillSemester, existingSemesters }: {
               <label className="block text-sm font-bold text-slate-900 mb-2">
                 Tahun Akademik <span className="text-red-500">*</span>
               </label>
-              <select
+              <input
+                type="text"
                 name="tahun_akademik"
+                placeholder="Contoh: 2024/2025 Ganjil"
                 className="w-full p-3 bg-white border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none text-slate-900"
                 required
-              >
-                <option value="">Pilih Tahun Akademik</option>
-                {getTahunAkademikOptions().map((tahun) => (
-                  <option key={tahun} value={tahun}>{tahun}</option>
-                ))}
-              </select>
+              />
             </div>
           </div>
 

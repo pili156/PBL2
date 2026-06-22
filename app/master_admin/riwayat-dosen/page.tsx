@@ -59,7 +59,10 @@ async function getSummaryData() {
   ).length;
 
   const belumUploadKhs = allDosen.filter((d) =>
-    d.pengajuan_studi.some((p) => p.monitoring_khs.length === 0)
+    d.pengajuan_studi.some((p) => 
+      p.monitoring_khs.length === 0 && 
+      p.status?.nama_status?.toLowerCase() !== 'ditolak'
+    )
   ).length;
 
   const pengajuanKeuanganPending = allDosen.flatMap((d) =>
