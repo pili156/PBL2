@@ -2,19 +2,20 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Book, GraduationCap, Award, Wallet, MapPin, Save, ArrowRight, Loader2, Check, Building2 } from "lucide-react";
+import { Book, GraduationCap, Award, Wallet, MapPin, Save, ArrowRight, Loader2, Check, Building2, AlertTriangle } from "lucide-react";
 import { StudyType, FundingType, StudyRegion } from "../type";
 import { STUDY_TYPES, FUNDING_TYPES, STUDY_REGIONS } from "../constants";
 import { getKampusDariDatabase, getBeasiswaDariDatabase } from "../actions";
 
 type Props = {
   onNext: (data: {
-    studyType: StudyType;
+    studyType?: StudyType;
     fundingType: FundingType;
     studyRegion: StudyRegion;
     perguruanTinggi: string;
     namaBeasiswa: string;
   }) => void;
+  profileIncomplete?: boolean;
 };
 
 const ICON_MAP = {
@@ -31,7 +32,7 @@ interface SelectionState {
   studyRegion: boolean;
 }
 
-export default function Step1JenisStudi({ onNext }: Props) {
+export default function Step1JenisStudi({ onNext, profileIncomplete = false }: Props) {
   const [studyType, setStudyType] = useState<StudyType | null>(null);
   const [fundingType, setFundingType] = useState<FundingType | null>(null);
   const [studyRegion, setStudyRegion] = useState<StudyRegion | null>(null);
@@ -123,10 +124,10 @@ export default function Step1JenisStudi({ onNext }: Props) {
     const finalBeasiswa = getFinalBeasiswa();
 
     const canAutoSave =
-      studyType &&
       fundingType &&
       studyRegion &&
-      (fundingType !== "beasiswa" || finalBeasiswa.trim() !== "");
+      (fundingType !== "beasiswa" || namaBeasiswa.trim() !== "") &&
+      (fundingType !== "mandiri" || !!studyType);
 
     if (canAutoSave) {
       setAutoSaveStatus("saving");
@@ -152,23 +153,28 @@ export default function Step1JenisStudi({ onNext }: Props) {
   const handleNext = () => {
     setIsAnimating(true);
     setTimeout(() => {
-      if (isComplete) {
-        onNext({ 
-          studyType: studyType!, 
-          fundingType: fundingType!, 
-          studyRegion: studyRegion!, 
-          perguruanTinggi: getFinalPTN(), 
-          namaBeasiswa: fundingType === "beasiswa" ? getFinalBeasiswa() : "" 
-        });
+      if (
+        fundingType &&
+        studyRegion &&
+        perguruanTinggi.trim() !== "" &&
+        (fundingType !== "beasiswa" || namaBeasiswa.trim() !== "") &&
+        (fundingType !== "mandiri" || !!studyType)
+      ) {
+        onNext({ studyType: studyType ?? undefined, fundingType, studyRegion, perguruanTinggi, namaBeasiswa });
       }
       setIsAnimating(false);
     }, 300);
   };
 
+  const isComplete =
+    fundingType &&
+    studyRegion &&
+    perguruanTinggi.trim() !== "" &&
+    (fundingType !== "beasiswa" || namaBeasiswa.trim() !== "") &&
+    (fundingType !== "mandiri" || !!studyType);
+
   const allSelectionsMade = selections.studyType && selections.fundingType && selections.studyRegion;
-  const shouldShowStudyType =
-    fundingType === "mandiri" ||
-    (fundingType === "beasiswa" && getFinalBeasiswa().trim() !== "");
+  const shouldShowStudyType = fundingType === "mandiri";
   const shouldShowRegionAndPT = !!fundingType;
 
   let stepCounter = 2;
@@ -507,12 +513,36 @@ export default function Step1JenisStudi({ onNext }: Props) {
         </div>
       </div>
 
-      <div className="flex justify-end gap-3">
+      {profileIncomplete && (
+        <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-xl flex items-start gap-3">
+          <AlertTriangle size={20} className="text-amber-600 mt-0.5 shrink-0" />
+          <div>
+            <p className="font-semibold text-amber-800">Profil Belum Lengkap</p>
+            <p className="text-sm text-amber-700 mt-1">
+              Silakan lengkapi data profil Anda terlebih dahulu sebelum melanjutkan pengajuan.{" "}
+              <a href="/user/profile" className="font-semibold underline hover:text-amber-900">
+                Lengkapi Profil
+              </a>
+            </p>
+          </div>
+        </div>
+      )}
+
+      <div className="flex justify-end items-center gap-4">
+        {profileIncomplete && (
+          <a
+            href="/user/profile"
+            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-amber-700 bg-amber-50 border border-amber-300 rounded-lg hover:bg-amber-100 transition-colors"
+          >
+            <AlertTriangle size={16} />
+            Isi Data Profil
+          </a>
+        )}
         <button
-          disabled={!isComplete || isAnimating}
+          disabled={!isComplete || isAnimating || profileIncomplete}
           onClick={handleNext}
           className={`px-8 py-3 rounded-lg font-semibold transition-all flex items-center gap-2 ${
-            isComplete && !isAnimating
+            isComplete && !isAnimating && !profileIncomplete
               ? "bg-blue-600 text-white hover:bg-blue-700 shadow-md hover:shadow-lg"
               : "bg-gray-200 text-gray-500 cursor-not-allowed"
           }`}

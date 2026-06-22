@@ -113,7 +113,10 @@ export default function EditProfileForm({ backUrl, apiUrl = "/api/user/profile" 
     }
   };
 
+<<<<<<< HEAD
   // PERBAIKAN: Menambahkan HTMLTextAreaElement agar textarea Alamat tidak merah
+=======
+>>>>>>> 18c749c4ef1398d9b309d233b8e09309563fee19
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -483,6 +486,20 @@ export default function EditProfileForm({ backUrl, apiUrl = "/api/user/profile" 
                   placeholder="Masukkan program studi"
                 />
               </div>
+            </div>
+
+            <div>
+              <label className="block text-xs text-slate-500 mb-1.5">
+                No. Telepon
+              </label>
+              <input
+                type="tel"
+                name="no_telp"
+                value={formData.no_telp}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-slate-900"
+                placeholder="Masukkan nomor telepon"
+              />
             </div>
 
             <div className="pt-4">

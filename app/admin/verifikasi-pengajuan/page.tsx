@@ -64,6 +64,13 @@ export default function VerifikasiPengajuanPage() {
       iconColor: "text-red-600",
     },
     {
+      label: "Ditolak",
+      count: data.filter((d) => d.status === "ditolak").length,
+      color: "bg-red-100",
+      icon: AlertTriangle,
+      iconColor: "text-red-600",
+    },
+    {
       label: "Terverifikasi",
       count: data.filter((d) => d.status === "terverifikasi").length,
       color: "bg-green-100",
@@ -97,7 +104,7 @@ export default function VerifikasiPengajuanPage() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         {stats.map((stat, idx) => {
           const Icon = stat.icon;
           return (
@@ -141,6 +148,7 @@ export default function VerifikasiPengajuanPage() {
           <option value="semua">Semua Status</option>
           <option value="pending">Pending</option>
           <option value="revisi">Revisi</option>
+          <option value="ditolak">Ditolak</option>
           <option value="terverifikasi">Terverifikasi</option>
         </select>
 

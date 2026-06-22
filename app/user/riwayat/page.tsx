@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 import { BookOpen, Wallet, GraduationCap, TrendingUp, Coins, ClipboardList } from 'lucide-react';
 import Link from 'next/link';
 import { formatRupiah } from '@/src/lib/formatters';
+import { getStatusLabel, getStatusBadgeClass } from '@/src/lib/status-utils';
 
 export const dynamic = 'force-dynamic';
 
@@ -166,8 +167,8 @@ export default async function RiwayatRootPage() {
                   </div>
                   <div className="flex items-center gap-3">
                     <span className="text-xs text-slate-500">{formatRupiah(totalCair)} cair</span>
-                    <span className="inline-block px-2 py-0.5 bg-blue-100 text-blue-700 rounded text-[10px] font-bold">
-                      {p.status?.nama_status || '-'}
+                    <span className={`inline-block px-2 py-0.5 rounded text-[10px] font-bold ${getStatusBadgeClass(p.status?.nama_status, 'pengajuan')}`}>
+                      {getStatusLabel(p.status?.nama_status, 'pengajuan')}
                     </span>
                   </div>
                 </div>

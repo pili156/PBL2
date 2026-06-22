@@ -73,13 +73,38 @@ export default function DetailPage() {
           type: "success",
           text: `Dokumen berhasil diperbarui dengan status ${status}`,
         });
-        // Refresh data
         await fetchDetail();
       } else {
         setMessage({ type: "error", text: "Gagal memperbarui dokumen" });
       }
     } catch (error) {
       console.error("Error updating document:", error);
+      setMessage({ type: "error", text: "Terjadi kesalahan" });
+    } finally {
+      setUpdating(false);
+    }
+  };
+
+  const handleReject = async () => {
+    if (!pengajuan) return;
+    const confirmed = window.confirm("Apakah Anda yakin ingin menolak pengajuan ini?");
+    if (!confirmed) return;
+
+    setUpdating(true);
+    try {
+      const response = await fetch(`/api/admin/pengajuan-monitoring/${id}/reject`, {
+        method: "POST",
+      });
+
+      if (response.ok) {
+        setMessage({ type: "success", text: "Pengajuan berhasil ditolak" });
+        await fetchDetail();
+      } else {
+        const result = await response.json();
+        setMessage({ type: "error", text: result?.error || "Gagal menolak pengajuan" });
+      }
+    } catch (error) {
+      console.error("Error rejecting pengajuan:", error);
       setMessage({ type: "error", text: "Terjadi kesalahan" });
     } finally {
       setUpdating(false);
@@ -117,6 +142,12 @@ export default function DetailPage() {
           pengajuan.dokumen.length > 0 &&
           pengajuan.dokumen.every((doc) => doc.status_verifikasi === "terverifikasi")
         }
+        hasSkUploaded={
+          pengajuan !== null &&
+          pengajuan.sk_kementerian !== undefined &&
+          pengajuan.sk_kementerian.some((sk) => sk.file_sk_path !== null)
+        }
+        onReject={handleReject}
       />
 
       {/* Info Cards */}

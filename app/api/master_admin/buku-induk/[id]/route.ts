@@ -17,9 +17,10 @@ interface BukuIndukInput {
 
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const id = Number(params.id);
+  const { id: idParam } = await params;
+  const id = Number(idParam);
   if (Number.isNaN(id)) {
     return NextResponse.json({ error: "ID tidak valid." }, { status: 400 });
   }
@@ -42,9 +43,10 @@ export async function GET(
 
 export async function PUT(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const id = Number(params.id);
+  const { id: idParam } = await params;
+  const id = Number(idParam);
   if (Number.isNaN(id)) {
     return NextResponse.json({ error: "ID tidak valid." }, { status: 400 });
   }
@@ -101,9 +103,10 @@ export async function PUT(
 
 export async function DELETE(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const id = Number(params.id);
+  const { id: idParam } = await params;
+  const id = Number(idParam);
   if (Number.isNaN(id)) {
     return NextResponse.json({ error: "ID tidak valid." }, { status: 400 });
   }

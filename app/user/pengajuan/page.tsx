@@ -53,6 +53,36 @@ export default function PengajuanPage() {
   const [error, setError] = useState<string | null>(null);
   const [isInitialized, setIsInitialized] = useState(false);
   const [hasCompletedPengajuan, setHasCompletedPengajuan] = useState(false);
+  const [profileIncomplete, setProfileIncomplete] = useState(false);
+
+  useEffect(() => {
+    async function fetchProfile() {
+      try {
+        const res = await fetch('/api/user/profile');
+        if (!res.ok) {
+          // If the profile endpoint returns non-ok (401/404/etc.) we should
+          // consider the profile incomplete so the UI shows the warning and
+          // guides the user to complete their profile.
+          console.warn('[fetchProfile] non-ok response', res.status);
+          setProfileIncomplete(true);
+          return;
+        }
+
+        const data = await res.json();
+        const dosen = data.master_dosen;
+        if (!dosen) {
+          setProfileIncomplete(true);
+          return;
+        }
+        const requiredFields = ['nidn', 'tempat_lahir', 'tanggal_lahir', 'jenis_kelamin', 'email_pribadi', 'alamat'];
+        const missing = requiredFields.some((field) => !dosen[field] || String(dosen[field]).trim() === '');
+        setProfileIncomplete(missing);
+      } catch (error) {
+        console.error('Failed to fetch profile:', error);
+      }
+    }
+    fetchProfile();
+  }, []);
 
   useEffect(() => {
     async function fetchMasterData() {
@@ -94,6 +124,12 @@ export default function PengajuanPage() {
           const data = await response.json();
           //
           
+          if (data.status === 'ditolak') {
+            await fetch('/api/user/pengajuan', { method: 'DELETE' });
+            setIsInitialized(true);
+            return;
+          }
+
           if (COMPLETED_STATUSES.includes(data.status)) {
             //
             setHasCompletedPengajuan(true);
@@ -137,7 +173,7 @@ export default function PengajuanPage() {
   const progressStep = flowStep === "step1" ? 0 : flowStep === "step2" ? 1 : flowStep === "step3" ? currentGroupIndex + 1 : 5;
 
   const handleStep1Next = async (data: {
-    studyType: string;
+    studyType?: string;
     fundingType: string;
     studyRegion: string;
     perguruanTinggi: string;
@@ -149,9 +185,11 @@ export default function PengajuanPage() {
       console.log('[DEBUG] Input from Step1:', data);
       console.log('[DEBUG] masterData.jalurPendanaan:', masterData.jalurPendanaan);
       
-      const selectedJenisStudi = masterData.jenisStudi.find(
-        (j) => j.nama_jenis?.toLowerCase().includes(data.studyType.toLowerCase().replace(/_/g, ' '))
-      );
+      const selectedJenisStudi = data.studyType
+        ? masterData.jenisStudi.find(
+            (j) => j.nama_jenis?.toLowerCase().includes(data.studyType!.toLowerCase().replace(/_/g, ' '))
+          )
+        : undefined;
       const selectedJalurPendanaan = masterData.jalurPendanaan.find(
         (j) => j.nama_pendanaan?.toLowerCase().includes(data.fundingType.toLowerCase())
       );
@@ -317,7 +355,7 @@ export default function PengajuanPage() {
 
         <div className="bg-white p-6 md:p-8 rounded-xl shadow-sm min-h-[700px]">
           {flowStep === "step1" && (
-            <Step1JenisStudi onNext={handleStep1Next} />
+            <Step1JenisStudi onNext={handleStep1Next} profileIncomplete={profileIncomplete} />
           )}
 
           {flowStep === "step2" && (

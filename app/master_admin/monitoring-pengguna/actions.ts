@@ -63,7 +63,35 @@ export async function updateUserProfile(formData: FormData) {
   const nama = formData.get("nama_lengkap") as string;
   const email = formData.get("email") as string;
   const nip = formData.get("nip") as string;
+  const nidn = formData.get("nidn") as string;
+  const tempat_lahir = formData.get("tempat_lahir") as string;
+  const tanggal_lahir = formData.get("tanggal_lahir") as string;
+  const jenis_kelamin = formData.get("jenis_kelamin") as string;
+  const email_pribadi = formData.get("email_pribadi") as string;
+  const alamat = formData.get("alamat") as string;
+  const pangkat_golongan = formData.get("pangkat_golongan") as string;
+  const jabatan = formData.get("jabatan") as string;
+  const unit_kerja = formData.get("unit_kerja") as string;
   const jurusan = formData.get("jurusan") as string;
+  const program_studi = formData.get("program_studi") as string;
+  const no_telp = formData.get("no_telp") as string;
+
+  const dosenData = {
+    nip: nip || null,
+    nidn: nidn || null,
+    nama_lengkap: nama,
+    tempat_lahir: tempat_lahir || null,
+    tanggal_lahir: tanggal_lahir ? new Date(tanggal_lahir) : null,
+    jenis_kelamin: jenis_kelamin || null,
+    email_pribadi: email_pribadi || null,
+    alamat: alamat || null,
+    pangkat_golongan: pangkat_golongan || null,
+    jabatan: jabatan || null,
+    unit_kerja: unit_kerja || null,
+    jurusan: jurusan || null,
+    program_studi: program_studi || null,
+    no_telp: no_telp || null,
+  };
 
   await prisma.user.update({
     where: { id: userId },
@@ -71,8 +99,8 @@ export async function updateUserProfile(formData: FormData) {
       email,
       master_dosen: {
         upsert: {
-          create: { nip, nama_lengkap: nama, jurusan },
-          update: { nip, nama_lengkap: nama, jurusan },
+          create: dosenData,
+          update: dosenData,
         },
       },
     },
