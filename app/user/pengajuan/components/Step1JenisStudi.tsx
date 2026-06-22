@@ -165,9 +165,7 @@ export default function Step1JenisStudi({ onNext, profileIncomplete = false }: P
   };
 
   const allSelectionsMade = selections.studyType && selections.fundingType && selections.studyRegion;
-  const shouldShowStudyType =
-    fundingType === "mandiri" ||
-    (fundingType === "beasiswa" && getFinalBeasiswa().trim() !== "");
+  const shouldShowStudyType = fundingType === "mandiri";
   const shouldShowRegionAndPT = !!fundingType;
 
   let stepCounter = 2;
@@ -535,14 +533,16 @@ export default function Step1JenisStudi({ onNext, profileIncomplete = false }: P
           disabled={!isComplete || isAnimating || profileIncomplete}
           onClick={handleNext}
           className={`px-8 py-3 rounded-lg font-semibold transition-all flex items-center gap-2 ${
-            isComplete && !isAnimating && !profileIncomplete
-              ? "bg-blue-600 text-white hover:bg-blue-700 shadow-md hover:shadow-lg"
-              : "bg-gray-200 text-gray-500 cursor-not-allowed"
+            profileIncomplete
+              ? "bg-red-100 text-red-600 cursor-not-allowed border border-red-300"
+              : isComplete && !isAnimating
+                ? "bg-blue-600 text-white hover:bg-blue-700 shadow-md hover:shadow-lg"
+                : "bg-gray-200 text-gray-500 cursor-not-allowed"
           }`}
         >
           {isAnimating && <Loader2 size={20} className="animate-spin" />}
-          Lanjutkan Pengajuan
-          <ArrowRight size={20} />
+          {profileIncomplete ? "Lengkapi data profile" : "Lanjutkan Pengajuan"}
+          {profileIncomplete ? <AlertTriangle size={20} /> : <ArrowRight size={20} />}
         </button>
       </div>
     </div>

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { ROLE_DISPLAY } from "@/src/lib/constants/roles";
 // PERBAIKAN: Menambahkan icon Phone untuk Nomor HP
 import { User, Mail, Shield, Briefcase, BadgeCheck, Save, ArrowLeft, Loader2, Hash, Phone } from "lucide-react";
+import { getJurusanData } from "@/app/register/actions";
 
 type ProfileData = {
   email: string;
@@ -44,6 +45,8 @@ export default function EditProfileForm({ backUrl, apiUrl = "/api/user/profile" 
   const [masterData, setMasterData] = useState<{ masterJabatan: { id: number; nama: string; singkatan: string; urutan: number }[]; masterPangkat: { id: number; pangkat: string; golongan: string }[] } | null>(null);
   const [selectedPangkat, setSelectedPangkat] = useState("");
   const [selectedJabatan, setSelectedJabatan] = useState("");
+  const [dataJurusan, setDataJurusan] = useState<any[]>([]);
+  const [isLoadingJurusan, setIsLoadingJurusan] = useState(true);
 
   const [formData, setFormData] = useState({
     nip: "",
@@ -68,9 +71,10 @@ export default function EditProfileForm({ backUrl, apiUrl = "/api/user/profile" 
 
   const fetchProfile = async () => {
     try {
-      const [profileRes, masterRes] = await Promise.all([
+      const [profileRes, masterRes, jurusanData] = await Promise.all([
         fetch(apiUrl),
         fetch("/api/master-data"),
+        getJurusanData(),
       ]);
 
       const profileJson = await profileRes.json();
@@ -85,6 +89,10 @@ export default function EditProfileForm({ backUrl, apiUrl = "/api/user/profile" 
         setErrorMsg(masterJson.error || "Gagal memuat data master");
       } else {
         setMasterData({ masterJabatan: masterJson.masterJabatan || [], masterPangkat: masterJson.masterPangkat || [] });
+      }
+
+      if (jurusanData) {
+        setDataJurusan(jurusanData);
       }
 
       setProfileData(profileJson);
@@ -110,6 +118,7 @@ export default function EditProfileForm({ backUrl, apiUrl = "/api/user/profile" 
       setErrorMsg("Gagal terhubung ke server");
     } finally {
       setLoading(false);
+      setIsLoadingJurusan(false);
     }
   };
 
@@ -125,6 +134,17 @@ export default function EditProfileForm({ backUrl, apiUrl = "/api/user/profile" 
       setSelectedJabatan(value);
     }
   };
+
+  const handleJurusanChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setFormData((prev) => ({
+      ...prev,
+      jurusan: e.target.value,
+      program_studi: "",
+    }));
+  };
+
+  const selectedJurusanObj = dataJurusan.find((j) => j.nama_jurusan === formData.jurusan);
+  const availableProdi = selectedJurusanObj ? selectedJurusanObj.program_studi : [];
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -461,27 +481,45 @@ export default function EditProfileForm({ backUrl, apiUrl = "/api/user/profile" 
                 <label className="block text-xs text-slate-500 mb-1.5">
                   Jurusan
                 </label>
-                <input
-                  type="text"
-                  name="jurusan"
-                  value={formData.jurusan}
-                  onChange={handleChange}
-                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-slate-900"
-                  placeholder="Masukkan jurusan"
-                />
+                <div className="relative">
+                  <select
+                    name="jurusan"
+                    value={formData.jurusan}
+                    onChange={handleJurusanChange}
+                    disabled={isLoadingJurusan || dataJurusan.length === 0}
+                    className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-slate-900 appearance-none"
+                  >
+                    <option value="" disabled>{isLoadingJurusan ? "Memuat..." : "Pilih Jurusan"}</option>
+                    {dataJurusan.map((jrs) => (
+                      <option key={jrs.id} value={jrs.nama_jurusan}>{jrs.nama_jurusan}</option>
+                    ))}
+                  </select>
+                  <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none text-gray-400">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+                  </div>
+                </div>
               </div>
               <div>
                 <label className="block text-xs text-slate-500 mb-1.5">
                   Program Studi
                 </label>
-                <input
-                  type="text"
-                  name="program_studi"
-                  value={formData.program_studi}
-                  onChange={handleChange}
-                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-slate-900"
-                  placeholder="Masukkan program studi"
-                />
+                <div className="relative">
+                  <select
+                    name="program_studi"
+                    value={formData.program_studi}
+                    onChange={handleChange}
+                    disabled={!formData.jurusan || availableProdi.length === 0}
+                    className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-slate-900 appearance-none"
+                  >
+                    <option value="" disabled>{!formData.jurusan ? "Pilih Jurusan Dahulu" : "Pilih Program Studi"}</option>
+                    {availableProdi.map((prodi) => (
+                      <option key={prodi.id} value={prodi.nama_prodi}>{prodi.nama_prodi}</option>
+                    ))}
+                  </select>
+                  <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none text-gray-400">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+                  </div>
+                </div>
               </div>
             </div>
 
