@@ -1,3 +1,4 @@
+// app/user/pengajuan/components/Step3DocumentUpload.tsx
 "use client";
 
 import { useState, useMemo, useCallback } from "react";
@@ -176,6 +177,7 @@ export default function Step3DocumentUpload({
                       ? () => onDocumentDelete(doc.id as DocumentType)
                       : undefined
                   }
+                  maxSize={5242880} // PENAMBAHAN PROPS MAX SIZE 5MB DI SINI
                 />
               </div>
               {isUploading && (
@@ -205,7 +207,7 @@ export default function Step3DocumentUpload({
           <div>
             <p className="font-semibold text-gray-900 mb-1">Format yang didukung:</p>
             <p className="text-sm text-gray-600">
-              PDF • Maksimal 2MB per file
+              PDF • Maksimal 5MB per file {/* PERUBAHAN TEKS INFORMASI KE 5MB DI SINI */}
             </p>
           </div>
         </div>

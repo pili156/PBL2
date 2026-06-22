@@ -52,6 +52,7 @@ async function main() {
   // --- 1b. Bersihkan data lama (urutan berdasarkan dependensi) ---
   console.log('Membersihkan data lama...');
   const cleanUp = async (fn: () => Promise<any>) => { try { await fn(); } catch {} };
+  await cleanUp(() => prisma.masterBeasiswa.deleteMany()); // TAMBAHAN CLEANUP BEASISWA
   await cleanUp(() => prisma.activityLog.deleteMany());
   await cleanUp(() => prisma.pesanKomunikasi.deleteMany());
   await cleanUp(() => prisma.pengajuanReimbursement.deleteMany());
@@ -70,6 +71,7 @@ async function main() {
   await cleanUp(() => prisma.masterJalurPendanaan.deleteMany());
   await cleanUp(() => prisma.masterJenisStudi.deleteMany());
   await cleanUp(() => prisma.masterRole.deleteMany());
+  await cleanUp(() => prisma.masterPerguruanTinggi.deleteMany()); // TAMBAHAN CLEANUP
   // ===============================================================
   // === 2. MASTER DATA (Deterministic IDs) ===
   // ===============================================================
@@ -208,18 +210,59 @@ async function main() {
     });
   }
 
-  // --- 2.7 Master Bank ---
+  // --- 2.7 Master Bank (DIPERBAIKI) ---
   console.log('Seeding Master Bank...');
   const bankNames = ['BNI', 'BRI', 'BSI', 'BCA', 'Mandiri'];
   for (const nama of bankNames) {
-    await prisma.masterBank.upsert({
+    const existingBank = await prisma.masterBank.findFirst({
       where: { nama_bank: nama },
-      update: {},
-      create: { nama_bank: nama },
     });
+    if (!existingBank) {
+      await prisma.masterBank.create({
+        data: { nama_bank: nama },
+      });
+    }
   }
 
   console.log('Data Master (Role, Jenis Studi, Pendanaan, Status, Dokumen, Wilayah, Jurusan, Bank) telah siap.');
+
+  // --- 2.8 Master Perguruan Tinggi Dalam Negeri ---
+  console.log('Seeding Master Perguruan Tinggi...');
+  const daftarPTN = [
+    "Universitas Gadjah Mada (UGM)",
+    "Universitas Indonesia (UI)",
+    "Institut Teknologi Bandung (ITB)",
+    "Universitas Diponegoro (UNDIP)",
+    "Universitas Negeri Semarang (UNNES)",
+    "Universitas Sebelas Maret (UNS)",
+    "Institut Teknologi Sepuluh Nopember (ITS)",
+    "Universitas Brawijaya (UB)",
+    "Universitas Airlangga (UNAIR)",
+    "Universitas Hasanuddin (UNHAS)"
+  ];
+  
+  for (const nama of daftarPTN) {
+    const existingPT = await prisma.masterPerguruanTinggi.findFirst({ where: { nama_pt: nama } });
+    if (!existingPT) {
+      await prisma.masterPerguruanTinggi.create({ data: { nama_pt: nama } });
+    }
+  }
+
+  // --- 2.9 Master Beasiswa ---
+  console.log('Seeding Master Beasiswa...');
+  const daftarBeasiswa = [
+    "LPDP",
+    "BPI (Beasiswa Pendidikan Indonesia)",
+    "Beasiswa Unggulan Kemendikbud",
+    "AAS (Australia Awards Scholarships)"
+  ];
+  
+  for (const nama of daftarBeasiswa) {
+    const existingBeasiswa = await prisma.masterBeasiswa.findFirst({ where: { nama_beasiswa: nama } });
+    if (!existingBeasiswa) {
+      await prisma.masterBeasiswa.create({ data: { nama_beasiswa: nama } });
+    }
+  }
 
   // ===============================================================
   // === 3. SEED USERS & DOSEN PROFILE (Budi Doremi) ===
@@ -432,6 +475,21 @@ async function main() {
       waktu_kirim: new Date('2025-01-16T10:00:00+07:00'),
     },
   });
+
+  // ===============================================================
+  // === 5. RESET SEQUENCE POSTGRESQL (DIPERBAIKI) ===
+  // ===============================================================
+  console.log('Menyelaraskan sequence ID untuk PostgreSQL...');
+  try {
+    await prisma.$executeRawUnsafe(`SELECT setval(pg_get_serial_sequence('"users"', 'id'), coalesce(max(id), 1), max(id) IS NOT null) FROM "users";`);
+    await prisma.$executeRawUnsafe(`SELECT setval(pg_get_serial_sequence('"pengajuan_studi"', 'id'), coalesce(max(id), 1), max(id) IS NOT null) FROM "pengajuan_studi";`);
+    await prisma.$executeRawUnsafe(`SELECT setval(pg_get_serial_sequence('"monitoring_khs"', 'id'), coalesce(max(id), 1), max(id) IS NOT null) FROM "monitoring_khs";`);
+    await prisma.$executeRawUnsafe(`SELECT setval(pg_get_serial_sequence('"pengajuan_reimbursement"', 'id'), coalesce(max(id), 1), max(id) IS NOT null) FROM "pengajuan_reimbursement";`);
+    await prisma.$executeRawUnsafe(`SELECT setval(pg_get_serial_sequence('"pesan_komunikasi"', 'id'), coalesce(max(id), 1), max(id) IS NOT null) FROM "pesan_komunikasi";`);
+    console.log('Sequence ID database berhasil disinkronisasi.');
+  } catch (error) {
+    console.log('Catatan: Reset sequence gagal, abaikan jika kamu tidak menggunakan PostgreSQL.');
+  }
 
   console.log('Proses Seeding (SIGAP PBL2) Berhasil!');
   console.log('-----------------------------------');

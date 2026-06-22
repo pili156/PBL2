@@ -5,9 +5,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { getJurusanData } from "./actions"; // IMPORT SERVER ACTION DI SINI
+import { getJurusanData, getPangkatData, getJabatanData } from "./actions"; 
 
-// Tipe Data untuk hasil fetch dari Database
 interface ProgramStudi {
   id: number;
   nama_prodi: string;
@@ -25,47 +24,58 @@ export default function Register() {
   const [errorMsg, setErrorMsg] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
   
-  // State untuk menyimpan data dari database
   const [dataJurusan, setDataJurusan] = useState<Jurusan[]>([]);
-  const [isLoadingJurusan, setIsLoadingJurusan] = useState(true);
+  const [dataPangkat, setDataPangkat] = useState<any[]>([]);
+  const [dataJabatan, setDataJabatan] = useState<any[]>([]);
+  const [isLoadingMaster, setIsLoadingMaster] = useState(true);
 
   const [formData, setFormData] = useState({
     email: "",
+    password: "",
+    konfirmasi_password: "",
     nama_lengkap: "",
-    nip: "",
-    nidn: "",
     tempat_lahir: "",
     tanggal_lahir: "",
     jenis_kelamin: "",
+    no_telp: "",
     email_pribadi: "",
     alamat: "",
+    nip: "",
+    nidn: "",
+    pangkat_golongan: "",
+    jabatan: "",
+    unit_kerja: "",
     jurusan: "",
     program_studi: "",
-    password: "",
-    konfirmasi_password: "",
   });
 
-  // Ambil data jurusan MENGGUNAKAN SERVER ACTION
   useEffect(() => {
-    const fetchJurusan = async () => {
+    const fetchMasterData = async () => {
       try {
-        const data = await getJurusanData(); // Panggil fungsi server langsung
-        setDataJurusan(data);
+        const [jurusanRes, pangkatRes, jabatanRes] = await Promise.all([
+          getJurusanData(),
+          getPangkatData(),
+          getJabatanData()
+        ]);
+        
+        if (jurusanRes) setDataJurusan(jurusanRes);
+        if (pangkatRes) setDataPangkat(pangkatRes);
+        if (jabatanRes) setDataJabatan(jabatanRes);
       } catch (error) {
-        console.error("Gagal memuat data jurusan:", error);
+        console.error("Gagal memuat data master:", error);
       } finally {
-        setIsLoadingJurusan(false);
+        setIsLoadingMaster(false);
       }
     };
 
-    fetchJurusan();
+    fetchMasterData();
   }, []);
 
   const handleJurusanChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setFormData({
       ...formData,
       jurusan: e.target.value,
-      program_studi: "", // Reset prodi saat jurusan diganti
+      program_studi: "", 
     });
   };
 
@@ -127,35 +137,38 @@ export default function Register() {
     }
   };
 
-  // Mencari daftar prodi berdasarkan nama jurusan yang dipilih
   const selectedJurusanObj = dataJurusan.find(j => j.nama_jurusan === formData.jurusan);
   const availableProdi = selectedJurusanObj ? selectedJurusanObj.program_studi : [];
 
+  const inputClass = "w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm text-gray-900 focus:border-[#005B9F] focus:ring-1 focus:ring-[#005B9F] outline-none transition-colors bg-white disabled:bg-gray-100 disabled:text-gray-500 placeholder-gray-400";
+  const labelClass = "block text-sm font-semibold text-gray-700 mb-1.5";
+
   return (
-    <div className="flex min-h-screen w-full relative font-sans bg-[#005B9F]">
-      <div className="absolute inset-0 lg:w-[60%] z-0">
+    // PERBAIKAN: Menggunakan h-screen overflow-hidden agar body tidak bisa di-scroll, murni split screen
+    <div className="flex h-screen w-full relative font-sans bg-[#005B9F] overflow-hidden">
+      
+      {/* --- SISI KIRI (Teks & Background) --- */}
+      <div className="hidden lg:flex relative w-[40%] flex-col justify-center px-10 xl:px-16 z-10">
         <div
-          className="absolute inset-0 bg-cover bg-center fixed lg:absolute"
+          className="absolute inset-0 bg-cover bg-center -z-10"
           style={{ backgroundImage: "url('/auth/background2.jpeg')" }}
         />
-        <div className="absolute inset-0 bg-[#005B9F] opacity-70 fixed lg:absolute" />
-      </div>
+        <div className="absolute inset-0 bg-[#005B9F] opacity-85 -z-10" />
 
-      <div className="relative z-10 hidden w-[55%] flex-col justify-center px-16 lg:flex">
-        <div className="text-white mt-10 fixed top-1/2 -translate-y-1/2">
+        <div className="text-white z-10">
           <Image
             src="/auth/logo2.png"
             alt="Logo Polines"
-            width={120}
-            height={120}
-            className="mb-6"
+            width={110}
+            height={110}
+            className="mb-8"
           />
-          <h1 className="text-5xl font-bold mb-2 tracking-wide">SIGAP</h1>
-          <h2 className="text-2xl font-medium mb-6 leading-snug w-[80%]">
+          <h1 className="text-4xl xl:text-5xl font-bold mb-3 tracking-wide">SIGAP</h1>
+          <h2 className="text-xl xl:text-2xl font-medium mb-6 leading-snug">
             Sistem Informasi Gelar <br /> Akademik Polines
           </h2>
           <div className="w-[50px] h-[4px] bg-[#F6EB16] mb-6"></div>
-          <p className="text-sm font-light w-[85%] leading-relaxed max-w-md opacity-90">
+          <p className="text-sm font-light leading-relaxed opacity-90 pr-8 xl:pr-12">
             Platform terintegrasi untuk pengajuan, verifikasi, monitoring studi
             lanjut, hingga pengelolaan reimbursement dosen secara efisien dalam
             satu sistem.
@@ -163,163 +176,211 @@ export default function Register() {
         </div>
       </div>
 
-      <div className="relative z-10 flex w-full lg:w-[45%] flex-col justify-center items-center bg-white lg:rounded-l-2xl shadow-[-10px_0_20px_rgba(0,0,0,0.05)] ml-auto min-h-screen py-10 lg:py-0">
-        <div className="w-full max-w-md p-8 lg:p-12">
-          <div className="text-center mb-6">
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">Buat Akun</h2>
-            <p className="text-sm text-gray-500">Daftar untuk mengakses sistem</p>
+      {/* --- SISI KANAN (Formulir yang bisa di-scroll) --- */}
+      <div className="flex-1 w-full lg:w-[60%] h-full overflow-y-auto bg-gray-50 lg:rounded-l-[2.5rem] shadow-[-15px_0_30px_rgba(0,0,0,0.15)] z-20 relative">
+        <div className="w-full max-w-3xl mx-auto px-6 py-10 lg:px-14 lg:py-12">
+          
+          <div className="mb-8">
+            <h2 className="text-3xl font-bold text-gray-900 mb-2">Pendaftaran Akun</h2>
+            <p className="text-sm text-gray-500">Lengkapi formulir di bawah ini untuk mendaftar ke sistem SIGAP.</p>
           </div>
 
           {errorMsg && (
-            <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-600 text-sm rounded-lg text-center">
+            <div className="mb-6 p-4 bg-red-50 border-l-4 border-red-500 text-red-700 text-sm rounded-r-lg shadow-sm">
+              <p className="font-bold mb-1">Pendaftaran Gagal</p>
               {errorMsg}
             </div>
           )}
 
           {successMsg && (
-            <div className="mb-4 p-3 bg-green-50 border border-green-200 text-green-600 text-sm rounded-lg text-center">
+            <div className="mb-6 p-4 bg-green-50 border-l-4 border-green-500 text-green-700 text-sm rounded-r-lg shadow-sm">
+              <p className="font-bold mb-1">Berhasil</p>
               {successMsg}
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+          <form onSubmit={handleSubmit} className="flex flex-col gap-8">
             
-            <div className="relative">
-              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="16" x="2" y="4" rx="2" /><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" /></svg>
-              </span>
-              <input id="email" name="email" autoComplete="email" type="email" required placeholder="Email Polines (@polines.ac.id)" value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} className={`w-full border rounded-full pl-12 pr-4 py-3 text-sm text-gray-700 outline-none transition-colors bg-gray-50/50 ${errorMsg.includes("Email") || errorMsg.includes("@polines") ? "border-red-400 focus:border-red-500" : "border-gray-200 focus:border-blue-500"}`} />
-            </div>
-
-            <div className="relative">
-              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>
-              </span>
-              <input id="nama_lengkap" name="nama_lengkap" autoComplete="name" type="text" required placeholder="Nama Lengkap dengan gelar" value={formData.nama_lengkap} onChange={(e) => setFormData({...formData, nama_lengkap: e.target.value})} className="w-full border border-gray-200 rounded-full pl-12 pr-4 py-3 text-sm text-gray-700 outline-none focus:border-blue-500 transition-colors bg-gray-50/50" />
-            </div>
-
-            <div className="relative">
-              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="14" x="2" y="5" rx="2" /><circle cx="8" cy="12" r="2" /><path d="M14 11h4" /><path d="M14 14h4" /></svg>
-              </span>
-              <input id="nip" name="nip" autoComplete="off" type="text" required placeholder="NIP" value={formData.nip} onChange={(e) => setFormData({...formData, nip: e.target.value})} className="w-full border border-gray-200 rounded-full pl-12 pr-4 py-3 text-sm text-gray-700 outline-none focus:border-blue-500 transition-colors bg-gray-50/50" />
-            </div>
-
-            <div className="relative">
-              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="14" x="2" y="5" rx="2" /><circle cx="8" cy="12" r="2" /><path d="M14 11h4" /><path d="M14 14h4" /></svg>
-              </span>
-              <input id="nidn" name="nidn" autoComplete="off" type="text" required placeholder="NIDN" value={formData.nidn} onChange={(e) => setFormData({...formData, nidn: e.target.value})} className="w-full border border-gray-200 rounded-full pl-12 pr-4 py-3 text-sm text-gray-700 outline-none focus:border-blue-500 transition-colors bg-gray-50/50" />
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              <div className="relative">
-                <input id="tempat_lahir" name="tempat_lahir" type="text" required placeholder="Tempat Lahir" value={formData.tempat_lahir} onChange={(e) => setFormData({...formData, tempat_lahir: e.target.value})} className="w-full border border-gray-200 rounded-full px-4 py-3 text-sm text-gray-700 outline-none focus:border-blue-500 transition-colors bg-gray-50/50" />
-              </div>
-              <div className="relative">
-                <input id="tanggal_lahir" name="tanggal_lahir" type="date" required placeholder="Tanggal Lahir" value={formData.tanggal_lahir} onChange={(e) => setFormData({...formData, tanggal_lahir: e.target.value})} className="w-full border border-gray-200 rounded-full px-4 py-3 text-sm text-gray-700 outline-none focus:border-blue-500 transition-colors bg-gray-50/50" />
+            {/* BAGIAN 1: INFORMASI AKUN */}
+            <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+              <h3 className="text-lg font-bold text-[#005B9F] mb-4 border-b border-gray-100 pb-2">1. Informasi Akun</h3>
+              <div className="grid grid-cols-1 gap-5">
+                <div>
+                  <label className={labelClass}>Email Polines <span className="text-red-500">*</span></label>
+                  <input type="email" required placeholder="contoh@polines.ac.id" value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} className={inputClass} />
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                  <div>
+                    <label className={labelClass}>Password <span className="text-red-500">*</span></label>
+                    <input type="password" required minLength={8} placeholder="Min. 8 karakter" value={formData.password} onChange={(e) => setFormData({...formData, password: e.target.value})} className={inputClass} />
+                  </div>
+                  <div>
+                    <label className={labelClass}>Konfirmasi Password <span className="text-red-500">*</span></label>
+                    <input type="password" required placeholder="Ulangi password" value={formData.konfirmasi_password} onChange={(e) => setFormData({...formData, konfirmasi_password: e.target.value})} className={inputClass} />
+                  </div>
+                </div>
+                <p className="text-xs text-gray-500 bg-blue-50 p-3 rounded-lg border border-blue-100">
+                  <span className="font-semibold text-blue-700">Info Password:</span> Harus mengandung minimal 8 karakter, 1 huruf kapital, dan 1 karakter unik (!@#$%^&*).
+                </p>
               </div>
             </div>
 
-            <div className="relative">
-              <select id="jenis_kelamin" name="jenis_kelamin" required value={formData.jenis_kelamin} onChange={(e) => setFormData({...formData, jenis_kelamin: e.target.value})} className="w-full border border-gray-200 rounded-full px-4 py-3 text-sm text-gray-700 outline-none focus:border-blue-500 transition-colors bg-gray-50/50 appearance-none">
-                <option value="">Jenis Kelamin</option>
-                <option value="Laki-laki">Laki-laki</option>
-                <option value="Perempuan">Perempuan</option>
-              </select>
-              <div className="absolute inset-y-0 right-4 flex items-center pointer-events-none text-gray-400">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+            {/* BAGIAN 2: DATA PRIBADI */}
+            <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+              <h3 className="text-lg font-bold text-[#005B9F] mb-4 border-b border-gray-100 pb-2">2. Data Pribadi</h3>
+              <div className="grid grid-cols-1 gap-5">
+                <div>
+                  <label className={labelClass}>Nama Lengkap (beserta gelar) <span className="text-red-500">*</span></label>
+                  <input type="text" required placeholder="Contoh: Dr. Budi Santoso, S.T., M.T." value={formData.nama_lengkap} onChange={(e) => setFormData({...formData, nama_lengkap: e.target.value})} className={inputClass} />
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                  <div>
+                    <label className={labelClass}>Tempat Lahir <span className="text-red-500">*</span></label>
+                    <input type="text" required placeholder="Kota kelahiran" value={formData.tempat_lahir} onChange={(e) => setFormData({...formData, tempat_lahir: e.target.value})} className={inputClass} />
+                  </div>
+                  <div>
+                    <label className={labelClass}>Tanggal Lahir <span className="text-red-500">*</span></label>
+                    <input type="date" required value={formData.tanggal_lahir} onChange={(e) => setFormData({...formData, tanggal_lahir: e.target.value})} className={inputClass} />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                  <div>
+                    <label className={labelClass}>Jenis Kelamin <span className="text-red-500">*</span></label>
+                    <div className="relative">
+                      <select required value={formData.jenis_kelamin} onChange={(e) => setFormData({...formData, jenis_kelamin: e.target.value})} className={`${inputClass} appearance-none`}>
+                        <option value="" disabled>Pilih Jenis Kelamin</option>
+                        <option value="Laki-laki">Laki-laki</option>
+                        <option value="Perempuan">Perempuan</option>
+                      </select>
+                      <div className="absolute inset-y-0 right-4 flex items-center pointer-events-none text-gray-500">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+                      </div>
+                    </div>
+                  </div>
+                  <div>
+                    <label className={labelClass}>Nomor HP (WhatsApp) <span className="text-red-500">*</span></label>
+                    <input type="tel" required placeholder="08xxxxxxxxxx" value={formData.no_telp} onChange={(e) => setFormData({...formData, no_telp: e.target.value})} className={inputClass} />
+                  </div>
+                </div>
+
+                <div>
+                  <label className={labelClass}>Email Pribadi (Cadangan) <span className="text-red-500">*</span></label>
+                  <input type="email" required placeholder="contoh@gmail.com" value={formData.email_pribadi} onChange={(e) => setFormData({...formData, email_pribadi: e.target.value})} className={inputClass} />
+                </div>
+
+                <div>
+                  <label className={labelClass}>Alamat Domisili <span className="text-red-500">*</span></label>
+                  <textarea rows={3} required placeholder="Masukkan alamat lengkap..." value={formData.alamat} onChange={(e) => setFormData({...formData, alamat: e.target.value})} className={`${inputClass} resize-none`} />
+                </div>
               </div>
             </div>
 
-            <div className="relative">
-              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="16" x="2" y="4" rx="2" /><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" /></svg>
-              </span>
-              <input id="email_pribadi" name="email_pribadi" type="email" required placeholder="Email Pribadi" value={formData.email_pribadi} onChange={(e) => setFormData({...formData, email_pribadi: e.target.value})} className="w-full border border-gray-200 rounded-full pl-12 pr-4 py-3 text-sm text-gray-700 outline-none focus:border-blue-500 transition-colors bg-gray-50/50" />
-            </div>
+            {/* BAGIAN 3: DATA KEPEGAWAIAN */}
+            <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+              <h3 className="text-lg font-bold text-[#005B9F] mb-4 border-b border-gray-100 pb-2">3. Data Kepegawaian & Akademik</h3>
+              <div className="grid grid-cols-1 gap-5">
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                  <div>
+                    <label className={labelClass}>NIP <span className="text-red-500">*</span></label>
+                    <input type="text" required placeholder="Nomor Induk Pegawai" value={formData.nip} onChange={(e) => setFormData({...formData, nip: e.target.value})} className={inputClass} />
+                  </div>
+                  <div>
+                    <label className={labelClass}>NIDN <span className="text-red-500">*</span></label>
+                    <input type="text" required placeholder="Nomor Induk Dosen Nasional" value={formData.nidn} onChange={(e) => setFormData({...formData, nidn: e.target.value})} className={inputClass} />
+                  </div>
+                </div>
 
-            <div className="relative">
-              <textarea id="alamat" name="alamat" rows={2} required placeholder="Alamat" value={formData.alamat} onChange={(e) => setFormData({...formData, alamat: e.target.value})} className="w-full border border-gray-200 rounded-2xl px-4 py-3 text-sm text-gray-700 outline-none focus:border-blue-500 transition-colors bg-gray-50/50 resize-none" />
-            </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                  <div>
+                    <label className={labelClass}>Pangkat / Golongan <span className="text-red-500">*</span></label>
+                    <div className="relative">
+                      <select required value={formData.pangkat_golongan} onChange={(e) => setFormData({...formData, pangkat_golongan: e.target.value})} disabled={isLoadingMaster || dataPangkat.length === 0} className={`${inputClass} appearance-none`}>
+                        <option value="" disabled>{isLoadingMaster ? "Memuat..." : "Pilih Golongan"}</option>
+                        {dataPangkat.map((p) => (
+                          <option key={p.id} value={`${p.pangkat} (${p.golongan})`}>{p.pangkat} ({p.golongan})</option>
+                        ))}
+                      </select>
+                      <div className="absolute inset-y-0 right-4 flex items-center pointer-events-none text-gray-500">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+                      </div>
+                    </div>
+                  </div>
+                  <div>
+                    <label className={labelClass}>Jabatan Fungsional <span className="text-red-500">*</span></label>
+                    <div className="relative">
+                      <select required value={formData.jabatan} onChange={(e) => setFormData({...formData, jabatan: e.target.value})} disabled={isLoadingMaster || dataJabatan.length === 0} className={`${inputClass} appearance-none`}>
+                        <option value="" disabled>{isLoadingMaster ? "Memuat..." : "Pilih Jabatan"}</option>
+                        {dataJabatan.map((j) => (
+                          <option key={j.id} value={j.nama}>{j.nama}</option>
+                        ))}
+                      </select>
+                      <div className="absolute inset-y-0 right-4 flex items-center pointer-events-none text-gray-500">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+                      </div>
+                    </div>
+                  </div>
+                </div>
 
-            {/* DROPDOWN JURUSAN (DINAMIS) */}
-            <div className="relative">
-              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="4" y="2" width="16" height="20" rx="2" ry="2" /><path d="M9 22v-4h6v4" /><path d="M8 6h.01" /><path d="M16 6h.01" /><path d="M12 6h.01" /><path d="M12 10h.01" /><path d="M12 14h.01" /><path d="M16 10h.01" /><path d="M16 14h.01" /><path d="M8 10h.01" /><path d="M8 14h.01" /></svg>
-              </span>
-              <select 
-                id="jurusan"
-                name="jurusan"
-                required
-                value={formData.jurusan}
-                onChange={handleJurusanChange}
-                disabled={isLoadingJurusan}
-                className="w-full border border-gray-200 rounded-full pl-12 pr-10 py-3 text-sm text-gray-700 outline-none focus:border-blue-500 transition-colors bg-gray-50/50 appearance-none disabled:bg-gray-100"
-              >
-                <option value="" disabled>
-                  {isLoadingJurusan ? "Memuat data jurusan..." : "Pilih Jurusan"}
-                </option>
-                {dataJurusan.map((jrs) => (
-                  <option key={jrs.id} value={jrs.nama_jurusan}>{jrs.nama_jurusan}</option>
-                ))}
-              </select>
-              <div className="absolute inset-y-0 right-4 flex items-center pointer-events-none text-gray-400">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+                <div>
+                  <label className={labelClass}>Unit Kerja <span className="text-red-500">*</span></label>
+                  <input type="text" required placeholder="Contoh: Jurusan Teknik Elektro" value={formData.unit_kerja} onChange={(e) => setFormData({...formData, unit_kerja: e.target.value})} className={inputClass} />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mt-2">
+                  <div>
+                    <label className={labelClass}>Jurusan <span className="text-red-500">*</span></label>
+                    <div className="relative">
+                      <select required value={formData.jurusan} onChange={handleJurusanChange} disabled={isLoadingMaster || dataJurusan.length === 0} className={`${inputClass} appearance-none border-blue-200 bg-blue-50/30`}>
+                        <option value="" disabled>{isLoadingMaster ? "Memuat..." : "Pilih Jurusan"}</option>
+                        {dataJurusan.map((jrs) => (
+                          <option key={jrs.id} value={jrs.nama_jurusan}>{jrs.nama_jurusan}</option>
+                        ))}
+                      </select>
+                      <div className="absolute inset-y-0 right-4 flex items-center pointer-events-none text-gray-500">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+                      </div>
+                    </div>
+                  </div>
+                  <div>
+                    <label className={labelClass}>Program Studi <span className="text-red-500">*</span></label>
+                    <div className="relative">
+                      <select required disabled={!formData.jurusan || availableProdi.length === 0} value={formData.program_studi} onChange={(e) => setFormData({...formData, program_studi: e.target.value})} className={`${inputClass} appearance-none border-blue-200 bg-blue-50/30`}>
+                        <option value="" disabled>{!formData.jurusan ? "Pilih Jurusan Dahulu" : "Pilih Program Studi"}</option>
+                        {availableProdi.map((prodi) => (
+                          <option key={prodi.id} value={prodi.nama_prodi}>{prodi.nama_prodi}</option>
+                        ))}
+                      </select>
+                      <div className="absolute inset-y-0 right-4 flex items-center pointer-events-none text-gray-500">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
               </div>
             </div>
 
-            {/* DROPDOWN PROGRAM STUDI (DINAMIS) */}
-            <div className="relative">
-              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20" /></svg>
-              </span>
-              <select 
-                id="program_studi"
-                name="program_studi"
-                required
-                disabled={!formData.jurusan || isLoadingJurusan}
-                value={formData.program_studi}
-                onChange={(e) => setFormData({...formData, program_studi: e.target.value})}
-                className="w-full border border-gray-200 rounded-full pl-12 pr-10 py-3 text-sm text-gray-700 outline-none focus:border-blue-500 transition-colors bg-gray-50/50 appearance-none disabled:bg-gray-100 disabled:text-gray-400"
-              >
-                <option value="" disabled>
-                  {!formData.jurusan ? "Pilih Jurusan Dahulu" : "Pilih Program Studi"}
-                </option>
-                {availableProdi.map((prodi) => (
-                  <option key={prodi.id} value={prodi.nama_prodi}>{prodi.nama_prodi}</option>
-                ))}
-              </select>
-              <div className="absolute inset-y-0 right-4 flex items-center pointer-events-none text-gray-400">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
-              </div>
+            <div className="pt-2">
+              <button type="submit" disabled={loading} className="w-full py-4 bg-[#005B9F] hover:bg-[#004A85] text-white rounded-xl font-bold text-base shadow-md hover:shadow-lg transition-all disabled:opacity-70 flex justify-center items-center gap-2">
+                {loading ? (
+                  <>
+                    <svg className="animate-spin -ml-1 mr-2 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                    Memproses Pendaftaran...
+                  </>
+                ) : "Daftar Akun Sekarang"}
+              </button>
+              
+              <p className="text-center text-sm text-gray-500 mt-6 mb-8">
+                Sudah punya akun?{" "}
+                <Link href="/login" className="text-[#005B9F] font-bold hover:underline">
+                  Masuk di sini
+                </Link>
+              </p>
             </div>
-
-            <div className="relative">
-              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></svg>
-              </span>
-              <input id="password" name="password" autoComplete="new-password" type="password" required minLength={8} placeholder="Min. 8 karakter, 1 huruf kapital, 1 karakter unik" value={formData.password} onChange={(e) => setFormData({...formData, password: e.target.value})} className={`w-full border rounded-full pl-12 pr-4 py-3 text-sm text-gray-700 outline-none transition-colors bg-gray-50/50 ${errorMsg.includes("lemah") ? "border-red-400 focus:border-red-500" : "border-gray-200 focus:border-blue-500"}`} />
-            </div>
-
-            <div className="relative">
-              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></svg>
-              </span>
-              <input id="konfirmasi_password" name="konfirmasi_password" autoComplete="new-password" type="password" required placeholder="Konfirmasi Password" value={formData.konfirmasi_password} onChange={(e) => setFormData({...formData, konfirmasi_password: e.target.value})} className={`w-full border rounded-full pl-12 pr-4 py-3 text-sm text-gray-700 outline-none transition-colors bg-gray-50/50 ${errorMsg.includes("cocok") ? "border-red-400 focus:border-red-500" : "border-gray-200 focus:border-blue-500"}`} />
-            </div>
-
-            <button type="submit" disabled={loading} className="w-full py-3.5 mt-2 bg-[#005B9F] hover:bg-[#004A85] text-white rounded-full font-medium text-sm transition-colors disabled:opacity-50">
-              {loading ? "Memproses..." : "Register"}
-            </button>
           </form>
-          
-          <p className="text-center text-xs text-gray-500 mt-6">
-            Sudah punya akun?{" "}
-            <Link href="/login" className="text-[#005B9F] font-medium hover:underline">
-              Masuk
-            </Link>
-          </p>
         </div>
       </div>
     </div>

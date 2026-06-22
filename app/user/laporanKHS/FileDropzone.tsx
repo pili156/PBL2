@@ -43,6 +43,7 @@ export default function FileDropzone({ name, accept = '.pdf', maxSizeMB = 2, cur
 
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
+    e.stopPropagation(); // PERBAIKAN: Hentikan propagasi
     setDragOver(false);
     const f = e.dataTransfer.files?.[0];
     if (f) handleFile(f);
@@ -58,8 +59,10 @@ export default function FileDropzone({ name, accept = '.pdf', maxSizeMB = 2, cur
               ? 'border-red-300 bg-red-50/30'
               : 'border-blue-200 bg-blue-50/30 hover:bg-blue-50/60'
         }`}
-        onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
-        onDragLeave={() => setDragOver(false)}
+        // PERBAIKAN: Tambahkan onDragEnter dan pastikan semuanya di-preventDefault
+        onDragEnter={(e) => { e.preventDefault(); e.stopPropagation(); setDragOver(true); }}
+        onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); setDragOver(true); }}
+        onDragLeave={(e) => { e.preventDefault(); e.stopPropagation(); setDragOver(false); }}
         onDrop={handleDrop}
         onClick={() => inputRef.current?.click()}
       >

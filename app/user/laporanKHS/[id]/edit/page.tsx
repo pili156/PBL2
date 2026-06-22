@@ -1,3 +1,4 @@
+// app/user/laporanKHS/[id]/edit/page.tsx
 import { ArrowLeft, UploadCloud, Info, FileText } from 'lucide-react';
 import Link from 'next/link';
 import { getKHSById, updateKHS } from '../../actions';
@@ -52,6 +53,11 @@ export default async function EditKHSPage({
         </h3>
 
         <form action={handleUpdate} className="space-y-6">
+          
+          {/* PENAMBAHAN HIDDEN INPUTS UNTUK MENCEGAH DATA HILANG SAAT SUBMIT (POIN 11) */}
+          <input type="hidden" name="pengajuan_id" value={khs.pengajuan_id || ''} />
+          <input type="hidden" name="existing_file_path" value={khs.file_khs_path || ''} />
+          <input type="hidden" name="status_evaluasi" value="pending" />
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
