@@ -31,18 +31,18 @@ export default function AdminComments({
 
   return (
     <div className="bg-white rounded-lg border border-slate-200 p-6">
-      <h3 className="text-lg font-semibold mb-4">Catatan Admin</h3>
+      <h3 className="text-lg font-semibold mb-4 text-black">Catatan Admin</h3>
 
       <div className="space-y-4">
         <div>
-          <label className="block text-sm font-medium text-slate-700 mb-2">
+          <label className="block text-sm font-medium text-black mb-2">
             Tambahkan catatan mengenai dokumen ini (opsional kecuali jika meminta revisi)...
           </label>
           <textarea
             value={catatan}
             onChange={(e) => setCatatan(e.target.value)}
             placeholder="Ketikkan catatan Anda di sini..."
-            className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+            className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none text-black"
             rows={4}
             disabled={!document || isLoading}
           />

@@ -24,6 +24,7 @@ type PengajuanData = {
   id: number;
   jenis_studi: string | null;
   jalur_pendanaan: string | null;
+  nama_beasiswa: string | null;
   wilayah_studi: string | null;
   status: string;
   tanggal_pengajuan: string;
@@ -188,7 +189,7 @@ export default function DocumentStatusList() {
           </div>
           <div className="bg-slate-50 p-4 rounded-lg">
             <p className="text-xs text-slate-400 mb-1">Pendanaan</p>
-            <p className="font-medium text-slate-900">{data.jalur_pendanaan || '-'}</p>
+            <p className="font-medium text-slate-900">{data.nama_beasiswa || 'Mandiri'}</p>
           </div>
           <div className="bg-slate-50 p-4 rounded-lg">
             <p className="text-xs text-slate-400 mb-1">Wilayah</p>
