@@ -4,7 +4,6 @@ import Link from 'next/link';
 import { getKHSById, updateKHS } from '../../actions';
 import { notFound } from 'next/navigation';
 import FileDropzone from '../../FileDropzone';
-import { getTahunAkademikOptions } from '@/src/lib/tahun-akademik';
 
 export const dynamic = 'force-dynamic';
 
@@ -80,17 +79,14 @@ export default async function EditKHSPage({
               <label className="block text-sm font-bold text-slate-700 mb-2">
                 Tahun Akademik <span className="text-red-500">*</span>
               </label>
-              <select
+              <input
+                type="text"
                 name="tahun_akademik"
                 defaultValue={khs.tahun_akademik || ''}
+                placeholder="Contoh: 2024/2025 Ganjil"
                 className="w-full p-3 bg-white border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none font-medium"
                 required
-              >
-                <option value="">Pilih Tahun Akademik</option>
-                {getTahunAkademikOptions().map((tahun) => (
-                  <option key={tahun} value={tahun}>{tahun}</option>
-                ))}
-              </select>
+              />
             </div>
           </div>
 

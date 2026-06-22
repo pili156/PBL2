@@ -126,8 +126,7 @@ export default function Step1JenisStudi({ onNext, profileIncomplete = false }: P
     const canAutoSave =
       fundingType &&
       studyRegion &&
-      (fundingType !== "beasiswa" || namaBeasiswa.trim() !== "") &&
-      (fundingType !== "mandiri" || !!studyType);
+      (fundingType !== "beasiswa" || finalBeasiswa.trim() !== "");
 
     if (canAutoSave) {
       setAutoSaveStatus("saving");
@@ -143,25 +142,23 @@ export default function Step1JenisStudi({ onNext, profileIncomplete = false }: P
     }
   }, [studyType, fundingType, studyRegion, perguruanTinggi, ptnCustom, namaBeasiswa, beasiswaCustom]);
 
-  // PERBAIKAN: Menggabungkan 2 variabel isComplete yang duplikat menjadi satu logika yang benar
   const isComplete =
     fundingType &&
     studyRegion &&
     getFinalPTN().trim() !== "" &&
-    (fundingType !== "beasiswa" || getFinalBeasiswa().trim() !== "") &&
-    (fundingType !== "mandiri" || !!studyType);
+    (fundingType !== "beasiswa" || getFinalBeasiswa().trim() !== "");
 
   const handleNext = () => {
     setIsAnimating(true);
     setTimeout(() => {
-      if (
-        fundingType &&
-        studyRegion &&
-        perguruanTinggi.trim() !== "" &&
-        (fundingType !== "beasiswa" || namaBeasiswa.trim() !== "") &&
-        (fundingType !== "mandiri" || !!studyType)
-      ) {
-        onNext({ studyType: studyType ?? undefined, fundingType, studyRegion, perguruanTinggi, namaBeasiswa });
+      if (isComplete) {
+        onNext({ 
+          studyType: studyType!, 
+          fundingType: fundingType!, 
+          studyRegion: studyRegion!, 
+          perguruanTinggi: getFinalPTN(), 
+          namaBeasiswa: fundingType === "beasiswa" ? getFinalBeasiswa() : "" 
+        });
       }
       setIsAnimating(false);
     }, 300);
@@ -536,14 +533,16 @@ export default function Step1JenisStudi({ onNext, profileIncomplete = false }: P
           disabled={!isComplete || isAnimating || profileIncomplete}
           onClick={handleNext}
           className={`px-8 py-3 rounded-lg font-semibold transition-all flex items-center gap-2 ${
-            isComplete && !isAnimating && !profileIncomplete
-              ? "bg-blue-600 text-white hover:bg-blue-700 shadow-md hover:shadow-lg"
-              : "bg-gray-200 text-gray-500 cursor-not-allowed"
+            profileIncomplete
+              ? "bg-red-100 text-red-600 cursor-not-allowed border border-red-300"
+              : isComplete && !isAnimating
+                ? "bg-blue-600 text-white hover:bg-blue-700 shadow-md hover:shadow-lg"
+                : "bg-gray-200 text-gray-500 cursor-not-allowed"
           }`}
         >
           {isAnimating && <Loader2 size={20} className="animate-spin" />}
-          Lanjutkan Pengajuan
-          <ArrowRight size={20} />
+          {profileIncomplete ? "Lengkapi data profile" : "Lanjutkan Pengajuan"}
+          {profileIncomplete ? <AlertTriangle size={20} /> : <ArrowRight size={20} />}
         </button>
       </div>
     </div>

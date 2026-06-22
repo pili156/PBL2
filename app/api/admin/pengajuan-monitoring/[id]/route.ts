@@ -58,6 +58,7 @@ export async function GET(
       nama_lengkap: dosen?.nama_lengkap || pengajuan.user?.username || 'Unknown',
       nip: dosen?.nip || 'N/A',
       jenis_studi: pengajuan.jenis_studi?.nama_jenis || 'N/A',
+      jenis_studi_id: pengajuan.jenis_studi_id || null,
       jalur_pendanaan: pengajuan.jalur_pendanaan?.nama_pendanaan || 'N/A',
       wilayah_studi: pengajuan.wilayah?.nama_wilayah || 'N/A',
       status: pengajuan.status?.nama_status || 'N/A',
@@ -159,6 +160,48 @@ export async function PUT(
     console.error('Error updating dokumen:', error);
     return NextResponse.json(
       { error: 'Failed to update' },
+      { status: 500 }
+    );
+  }
+}
+
+export async function PATCH(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const headersList = await headers();
+    if (!isAdminRole(headersList.get('x-user-role'))) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
+    const { id } = await params;
+    const pengajuanId = parseInt(id);
+    const body = await request.json();
+    const { jenis_studi_id } = body;
+
+    if (isNaN(pengajuanId)) {
+      return NextResponse.json({ error: 'Invalid pengajuan ID' }, { status: 400 });
+    }
+
+    const pengajuan = await prisma.pengajuanStudi.findUnique({
+      where: { id: pengajuanId },
+    });
+
+    if (!pengajuan) {
+      return NextResponse.json({ error: 'Pengajuan not found' }, { status: 404 });
+    }
+
+    const updated = await prisma.pengajuanStudi.update({
+      where: { id: pengajuanId },
+      data: { jenis_studi_id: jenis_studi_id ?? null },
+    });
+
+    return NextResponse.json({ success: true, pengajuan: updated }, { status: 200 });
+  } catch (error) {
+    console.error('Error updating pengajuan:', error);
+    return NextResponse.json(
+      { error: 'Failed to update pengajuan' },
       { status: 500 }
     );
   }

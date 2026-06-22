@@ -19,10 +19,22 @@ export default function DetailPage() {
     type: "success" | "error";
     text: string;
   } | null>(null);
+  const [masterJenisStudi, setMasterJenisStudi] = useState<{ id: number; nama_jenis: string }[]>([]);
 
   useEffect(() => {
     fetchDetail();
+    fetchMasterData();
   }, [id]);
+
+  const fetchMasterData = async () => {
+    try {
+      const res = await fetch('/api/master-data');
+      const data = await res.json();
+      setMasterJenisStudi(data.jenisStudi || []);
+    } catch (error) {
+      console.error('Error fetching master data:', error);
+    }
+  };
 
   useEffect(() => {
     if (pengajuan && pengajuan.dokumen.length > 0) {
@@ -111,6 +123,30 @@ export default function DetailPage() {
     }
   };
 
+  const handleUpdateJenisStudi = async (jenisStudiId: number | null) => {
+    if (!pengajuan) return;
+    setUpdating(true);
+    try {
+      const response = await fetch(`/api/admin/pengajuan-monitoring/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ jenis_studi_id: jenisStudiId }),
+      });
+
+      if (response.ok) {
+        setMessage({ type: "success", text: "Jenis studi berhasil diperbarui" });
+        await fetchDetail();
+      } else {
+        setMessage({ type: "error", text: "Gagal memperbarui jenis studi" });
+      }
+    } catch (error) {
+      console.error("Error updating jenis studi:", error);
+      setMessage({ type: "error", text: "Terjadi kesalahan" });
+    } finally {
+      setUpdating(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="max-w-7xl mx-auto">
@@ -155,9 +191,17 @@ export default function DetailPage() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div className="bg-white p-4 rounded-lg border border-slate-200">
             <p className="text-xs text-slate-600 font-medium">JENIS STUDI</p>
-            <p className="text-sm font-semibold text-slate-900 mt-2">
-              {pengajuan.jenis_studi}
-            </p>
+            <select
+              value={pengajuan.jenis_studi_id || ""}
+              onChange={(e) => handleUpdateJenisStudi(e.target.value ? Number(e.target.value) : null)}
+              disabled={updating}
+              className="w-full mt-2 px-3 py-2 border border-slate-300 rounded-lg text-sm font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white disabled:opacity-50"
+            >
+              <option value="" disabled>Pilih Jenis Studi</option>
+              {masterJenisStudi.map((js) => (
+                <option key={js.id} value={js.id}>{js.nama_jenis}</option>
+              ))}
+            </select>
           </div>
           <div className="bg-white p-4 rounded-lg border border-slate-200">
             <p className="text-xs text-slate-600 font-medium">JALUR PENDANAAN</p>

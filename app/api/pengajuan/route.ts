@@ -55,7 +55,26 @@ export async function POST(request: Request) {
       const existingPengajuan = await prisma.pengajuanStudi.findFirst({
         where: { user_id: userId },
         orderBy: { created_at: 'desc' },
+        include: { status: true },
       });
+
+      // Jika pengajuan lama ditolak, buat pengajuan baru
+      if (existingPengajuan?.status?.nama_status === 'ditolak') {
+        const pengajuan = await prisma.pengajuanStudi.create({
+          data: {
+            user_id: userId,
+            jenis_studi_id: jenis_studi_id ?? null,
+            jalur_pendanaan_id: jalur_pendanaan_id ?? null,
+            wilayah_studi: wilayah_studi ?? null,
+            perguruan_tinggi: perguruan_tinggi ?? null,
+            nama_beasiswa: nama_beasiswa ?? null,
+            status_id: statusMenunggu.id,
+            tanggal_pengajuan: new Date(),
+          },
+        });
+        return NextResponse.json({ pengajuan }, { status: 201 });
+      }
+
       return NextResponse.json({ 
         pengajuan: existingPengajuan, 
         message: 'Menggunakan pengajuan yang sudah ada' 

@@ -1,10 +1,10 @@
 import { prisma } from '@/src/lib/prisma';
 import {
-  Check, GraduationCap, Target, BookOpen, Wallet,
-  Calendar, ChevronRight,
+  GraduationCap, Target, Wallet,
 } from 'lucide-react';
 import { notFound } from 'next/navigation';
 import { formatRupiah, formatDate } from '@/src/lib/formatters';
+import TimelineSteps from '@/app/components/TimelineSteps';
 
 export const dynamic = 'force-dynamic';
 
@@ -112,45 +112,11 @@ export default async function DashboardDosen({ params }: Props) {
             </span>
           </div>
         </div>
-        <div className="overflow-x-auto">
-          <div className="relative min-w-[540px]">
-            <div className="absolute inset-x-0 flex" style={{ top: '24px' }}>
-              {steps.map((step, i) => (
-                <div key={i} className="flex-1 flex">
-                  <div className={`flex-1 h-1 ${
-                    i === 0
-                      ? 'invisible'
-                      : steps[i - 1].done
-                      ? 'bg-emerald-500'
-                      : 'bg-slate-200'
-                  }`} />
-                  <div className={`flex-1 h-1 ${
-                    i === steps.length - 1
-                      ? 'invisible'
-                      : step.done
-                      ? 'bg-emerald-500'
-                      : 'bg-slate-200'
-                  }`} />
-                </div>
-              ))}
-            </div>
-            <div className="flex">
-              {steps.map((step, i) => (
-                <div key={i} className="flex-1 flex flex-col items-center">
-                  <div className={`w-12 h-12 rounded-full flex items-center justify-center border-4 border-white shadow-md relative z-10 transition-all duration-500 ${
-                    step.done
-                      ? 'bg-emerald-500 text-white'
-                      : 'bg-white text-slate-400'
-                  }`}>
-                    {step.done ? <Check size={20} strokeWidth={3} /> : <GraduationCap size={20} />}
-                  </div>
-                  <p className="text-[11px] font-semibold text-slate-700 leading-tight mt-3 text-center whitespace-nowrap">{step.label}</p>
-                  <p className="text-[10px] text-slate-400 mt-1 text-center whitespace-nowrap">{step.sub}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
+        <TimelineSteps
+          pengajuanId={pengajuan.id}
+          steps={steps}
+          basePath="/master_admin"
+        />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

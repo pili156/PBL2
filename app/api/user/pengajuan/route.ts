@@ -39,6 +39,7 @@ export async function GET() {
       id: pengajuan.id,
       jenis_studi: pengajuan.jenis_studi?.nama_jenis || null,
       jalur_pendanaan: pengajuan.jalur_pendanaan?.nama_pendanaan || null,
+      nama_beasiswa: pengajuan.nama_beasiswa || null,
       wilayah_studi: pengajuan.wilayah?.nama_wilayah || null,
       status: pengajuan.status?.nama_status || 'Unknown',
       status_id: pengajuan.status_id,

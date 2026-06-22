@@ -57,7 +57,7 @@ export default async function RiwayatLayout({ children }: { children: React.Reac
   const latestPengajuan = user.pengajuan_studi[0];
   const statusStudi = latestPengajuan?.status?.nama_status || 'Belum Mengajukan';
   const jenisStudi = latestPengajuan?.jenis_studi?.nama_jenis || null;
-  const jalurPendanaan = latestPengajuan?.jalur_pendanaan?.nama_pendanaan || null;
+  const namaBeasiswa = latestPengajuan?.nama_beasiswa || null;
   const perguruanTinggi = latestPengajuan?.perguruan_tinggi || null;
 
   // Calculate bantuan cair with effective status
@@ -118,7 +118,7 @@ export default async function RiwayatLayout({ children }: { children: React.Reac
               <p className="font-bold text-slate-800 flex items-center gap-1">
                 <GraduationCap size={12} className="text-slate-400" />
                 {jenisStudi}
-                {jalurPendanaan && <span className="text-slate-400 font-normal"> &bull; {jalurPendanaan}</span>}
+                {namaBeasiswa ? <span className="text-slate-400 font-normal"> &bull; {namaBeasiswa}</span> : <span className="text-slate-400 font-normal"> &bull; Mandiri</span>}
               </p>
             </div>
           )}

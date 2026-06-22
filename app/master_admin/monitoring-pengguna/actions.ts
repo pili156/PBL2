@@ -29,16 +29,25 @@ export async function toggleStatus(userId: number) {
 export async function createUser(formData: FormData) {
   const email = formData.get("email") as string;
   const password = formData.get("password") as string;
-  const username = formData.get("username") as string;
   const roleId = Number(formData.get("role_id"));
   const namaLengkap = formData.get("nama_lengkap") as string;
   const nip = formData.get("nip") as string;
-  const jurusan = formData.get("jurusan") as string;
+
+  if (!email || !password || !namaLengkap || !nip || !roleId) {
+    throw new Error("Semua field wajib diisi");
+  }
 
   const passwordError = validatePassword(password);
   if (passwordError) throw new Error(passwordError);
 
+  const existingUser = await prisma.user.findUnique({ where: { email } });
+  if (existingUser) throw new Error("Email sudah terdaftar");
+
+  const existingNip = await prisma.masterDosen.findUnique({ where: { nip } });
+  if (existingNip) throw new Error("NIP sudah terdaftar");
+
   const password_hash = await bcrypt.hash(password, 10);
+  const username = email.split("@")[0];
 
   await prisma.user.create({
     data: {
@@ -48,7 +57,7 @@ export async function createUser(formData: FormData) {
       role_id: roleId,
       status_akun: "aktif",
       master_dosen: {
-        create: { nip, nama_lengkap: namaLengkap, jurusan },
+        create: { nip, nama_lengkap: namaLengkap },
       },
     },
   });

@@ -25,6 +25,7 @@ export interface PengajuanDetail {
   nama_lengkap: string;
   nip: string;
   jenis_studi: string;
+  jenis_studi_id: number | null;
   jalur_pendanaan: string;
   wilayah_studi: string;
   status: string;

@@ -148,14 +148,14 @@ export default async function RiwayatStudi({ params }: Props) {
                       <td className="px-5 py-3.5 text-center">
                         {isDisabled ? (
                           <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-50 text-slate-400 text-xs font-medium rounded-lg cursor-not-allowed">
-                            <Eye size={13} /> Preview
+                            <Eye size={13} /> Review
                           </span>
                         ) : (
                           <Link
                             href={`/admin/riwayat-dosen/${idDosen}/khs/${k.id}`}
                             className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-blue-600 text-xs font-semibold rounded-lg hover:bg-blue-100 transition-colors"
                           >
-                            <Eye size={13} /> Preview
+                            <Eye size={13} /> Review
                           </Link>
                         )}
                       </td>
