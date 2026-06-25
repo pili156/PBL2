@@ -50,7 +50,7 @@ export default function AdminKHSForm({
               </select>
             </div>
             <div>
-              <label className="block text-xs font-medium text-slate-500 mb-1.5">IPK</label>
+              <label className="block text-xs font-medium text-slate-500 mb-1.5">IPS</label>
               <input type="number" name="ipk" step="0.01" min="0" max="4" placeholder="3.50"
                 className="w-full px-4 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500" />
             </div>

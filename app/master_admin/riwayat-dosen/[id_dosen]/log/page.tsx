@@ -139,7 +139,7 @@ export default async function LogAktivitasPage({ params }: Props) {
       if (khs.tanggal_unggah) activities.push({
         type: 'upload',
         title: `Upload KHS Semester ${khs.semester_ke || '-'}`,
-        description: `IPK: ${Number(khs.ipk || 0).toFixed(2)}`,
+        description: `IPS: ${Number(khs.ipk || 0).toFixed(2)}`,
         date: khs.tanggal_unggah,
         user: dosen.master_dosen?.nama_lengkap || 'Dosen',
       });

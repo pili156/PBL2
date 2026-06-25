@@ -86,7 +86,7 @@ export default function DetailKhsPage({ params }: Props) {
     { icon: Calendar, label: 'Tahun Akademik', value: khs.tahun_akademik || '-' },
     { icon: User, label: 'Dosen', value: namaDosen },
     { icon: Calendar, label: 'Tanggal Upload', value: khs.tanggal_unggah ? formatDateLong(khs.tanggal_unggah as any) : '-' },
-    { icon: Target, label: 'IPK', value: `${ipkValue} / 4.00`, highlight: true },
+    { icon: Target, label: 'IPS', value: `${ipkValue} / 4.00`, highlight: true },
     { icon: Clock, label: 'Status', value: statusLabel, statusColor },
   ];
 

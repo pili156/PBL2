@@ -53,7 +53,7 @@ export default function UploadKHSForm({ prefillSemester, existingSemesters }: {
                 required
               >
                 <option value="">Pilih Semester</option>
-                {[1, 2, 3, 4, 5, 6, 7, 8].map(num => (
+                {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14].map(num => (
                   <option key={num} value={num} disabled={existingSemesters.includes(num)}>
                     Semester {num} {existingSemesters.includes(num) ? '(Sudah diupload)' : ''}
                   </option>
@@ -65,19 +65,29 @@ export default function UploadKHSForm({ prefillSemester, existingSemesters }: {
               <label className="block text-sm font-bold text-slate-900 mb-2">
                 Tahun Akademik <span className="text-red-500">*</span>
               </label>
-              <input
-                type="text"
+              <select
                 name="tahun_akademik"
-                placeholder="Contoh: 2024/2025 Ganjil"
                 className="w-full p-3 bg-white border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none text-slate-900"
                 required
-              />
+              >
+                <option value="">Pilih Tahun Akademik</option>
+                {Array.from({ length: 4 }, (_, i) => {
+                  const currentYear = new Date().getFullYear();
+                  const startYear = currentYear - 2 + i;
+                  const endYear = startYear + 1;
+                  return (
+                    <option key={startYear} value={`${startYear}/${endYear}`}>
+                      {startYear}/{endYear}
+                    </option>
+                  );
+                })}
+              </select>
             </div>
           </div>
 
           <div>
             <label className="block text-sm font-bold text-slate-900 mb-2">
-              IPK <span className="text-red-500">*</span>
+              IPS <span className="text-red-500">*</span>
             </label>
             <input
               type="number"
@@ -89,7 +99,7 @@ export default function UploadKHSForm({ prefillSemester, existingSemesters }: {
               className="w-full md:w-1/2 p-3 bg-white border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none text-slate-900"
               required
             />
-            <p className="text-xs text-slate-900 mt-2">Masukkan IPK sesuai yang tertera di KHS (skala 0 - 4.00)</p>
+            <p className="text-xs text-slate-900 mt-2">Masukkan IPS sesuai yang tertera di KHS (skala 0 - 4.00)</p>
           </div>
 
           <div>

@@ -52,8 +52,17 @@ export default async function DetailKeuanganPage({ params }: Props) {
   const keuangan = await prisma.pengajuanReimbursement.findUnique({
     where: { id: keuanganId },
     include: {
-      pengajuan_studi: { include: { user: { include: { master_dosen: true } } } },
+      pengajuan_studi: {
+        include: {
+          user: { include: { master_dosen: true } },
+          dokumen_pengajuan: {
+            where: { master_dokumen_id: { in: [14, 18] } },
+            include: { master_dokumen: true },
+          },
+        },
+      },
       dokumen_pengajuan: {
+        where: { master_dokumen_id: { in: [21, 22] } },
         include: { master_dokumen: true },
       },
     },
@@ -61,12 +70,18 @@ export default async function DetailKeuanganPage({ params }: Props) {
 
   if (!keuangan) notFound();
 
+  const allowedDocIds = [14, 18, 21, 22];
+  const filteredDocs = [
+    ...keuangan.pengajuan_studi.dokumen_pengajuan,
+    ...keuangan.dokumen_pengajuan,
+  ].filter((d) => d.master_dokumen_id && allowedDocIds.includes(d.master_dokumen_id));
+
   const status = keuangan.status_pencairan?.toLowerCase() || 'pending';
   const isSelesai = status === 'dicairkan' || status === 'selesai';
   const isVerifikasi = status === 'dicairkan' || status === 'pending' || status === 'selesai';
   const hasBuktiTransfer = keuangan.file_bukti_bayar !== null;
-  const allDocsVerified = keuangan.dokumen_pengajuan.length > 0 &&
-    keuangan.dokumen_pengajuan.every(d => d.status_verifikasi === 'terverifikasi');
+  const allDocsVerified = filteredDocs.length > 0 &&
+    filteredDocs.every(d => d.status_verifikasi === 'terverifikasi');
   const bank = keuangan.nama_bank || '-';
   const norek = keuangan.nomor_rekening || '-';
 
@@ -195,7 +210,7 @@ export default async function DetailKeuanganPage({ params }: Props) {
           </div>
         </div>
 
-        <DocumentViewerSection documents={keuangan.dokumen_pengajuan} />
+        <DocumentViewerSection documents={filteredDocs} />
       </div>
 
       <div className="bg-blue-50 border border-blue-100 rounded-xl px-5 py-3.5 flex items-start gap-3">

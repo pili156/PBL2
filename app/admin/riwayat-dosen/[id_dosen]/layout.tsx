@@ -95,7 +95,7 @@ export default async function DetailDosenLayout({ children, params }: LayoutProp
             <div className="flex items-center gap-2.5 px-4 py-2 bg-slate-50 rounded-lg">
               <GraduationCap size={16} className="text-blue-500" />
               <div className="text-right">
-                <p className="text-[10px] text-slate-400 font-medium leading-tight">IPK Rata-rata</p>
+                <p className="text-[10px] text-slate-400 font-medium leading-tight">IPS Rata-rata</p>
                 <p className="text-sm font-bold text-slate-800">{rataIpk}</p>
               </div>
             </div>

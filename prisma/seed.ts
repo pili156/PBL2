@@ -118,7 +118,7 @@ async function main() {
   await prisma.masterDokumen.create({ data: { id: 11, nama_dokumen: 'Surat Keterangan Pimpinan', is_mandatory: true, syarat_wilayah: 'Semua' } });
   await prisma.masterDokumen.create({ data: { id: 12, nama_dokumen: 'Perjanjian Tugas Belajar', is_mandatory: true, syarat_wilayah: 'Semua' } });
   await prisma.masterDokumen.create({ data: { id: 13, nama_dokumen: 'Jaminan Pembiayaan', is_mandatory: false, syarat_wilayah: 'Semua' } });
-  await prisma.masterDokumen.create({ data: { id: 14, nama_dokumen: 'Fotokopi Surat LoA', is_mandatory: true, syarat_wilayah: 'Semua' } });
+  await prisma.masterDokumen.create({ data: { id: 14, nama_dokumen: 'Surat LoA', is_mandatory: true, syarat_wilayah: 'Semua' } });
   await prisma.masterDokumen.create({ data: { id: 15, nama_dokumen: 'Surat Pernyataan Pimpinan Unit', is_mandatory: true, syarat_wilayah: 'Semua' } });
   await prisma.masterDokumen.create({ data: { id: 16, nama_dokumen: 'Surat Pernyataan Pegawai', is_mandatory: true, syarat_wilayah: 'Semua' } });
   await prisma.masterDokumen.create({ data: { id: 17, nama_dokumen: 'Ijazah Pendidikan Terakhir', is_mandatory: true, syarat_wilayah: 'Semua' } });
@@ -127,8 +127,6 @@ async function main() {
   await prisma.masterDokumen.create({ data: { id: 20, nama_dokumen: 'SK Kesehatan Rohani', is_mandatory: true, syarat_wilayah: 'Semua' } });
   await prisma.masterDokumen.create({ data: { id: 21, nama_dokumen: 'Formulir Bantuan Studi', is_mandatory: true, syarat_wilayah: 'Semua' } });
   await prisma.masterDokumen.create({ data: { id: 22, nama_dokumen: 'Bukti Pembayaran SPP', is_mandatory: true, syarat_wilayah: 'Semua' } });
-  await prisma.masterDokumen.create({ data: { id: 23, nama_dokumen: 'Bukti Akreditasi Program Studi', is_mandatory: true, syarat_wilayah: 'Semua' } });
-  await prisma.masterDokumen.create({ data: { id: 24, nama_dokumen: 'Letter of Acceptance (LoA)', is_mandatory: true, syarat_wilayah: 'Semua' } });
   const wilayahDalamNegeri = await prisma.masterWilayah.create({ data: { id: 1, nama_wilayah: 'Dalam Negeri' } });
   const wilayahLuarNegeri = await prisma.masterWilayah.create({ data: { id: 2, nama_wilayah: 'Luar Negeri' } });
 

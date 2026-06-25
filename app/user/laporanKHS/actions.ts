@@ -29,6 +29,9 @@ export async function uploadKHS(prevState: { error?: string } | null, formData: 
     return { error: 'Semua field wajib diisi dengan benar' };
   }
 
+  const semesterNum = parseInt(semester);
+  const jenisSemester = semesterNum % 2 === 1 ? 'gasal' : 'genap';
+
   const ipkNum = parseFloat(ipk);
   const ipkResult = ipkSchema.safeParse(ipkNum);
   if (!ipkResult.success) {
@@ -86,6 +89,7 @@ export async function uploadKHS(prevState: { error?: string } | null, formData: 
         pengajuan_id: pengajuanId,
         semester_ke: parseInt(semester),
         tahun_akademik: tahunAkademik,
+        jenis_semester: jenisSemester as 'gasal' | 'genap',
         ipk: parseFloat(ipk),
         file_khs_path: fileUrl,
         catatan_evaluasi: catatan || null,
@@ -110,8 +114,11 @@ export async function updateKHS(id: number, formData: FormData) {
   const file = formData.get('file') as File;
 
   if (!semester || !tahunAkademik || !ipk) {
-    throw new Error('Field semester, tahun akademik, dan IPK wajib diisi');
+    throw new Error('Field semester, tahun akademik, dan IPS wajib diisi');
   }
+
+  const semesterNum = parseInt(semester);
+  const jenisSemester = semesterNum % 2 === 1 ? 'gasal' : 'genap';
 
   const ipkNum = parseFloat(ipk);
   const ipkResult = ipkSchema.safeParse(ipkNum);
@@ -122,6 +129,7 @@ export async function updateKHS(id: number, formData: FormData) {
   const updateData: any = {
     semester_ke: parseInt(semester),
     tahun_akademik: tahunAkademik,
+    jenis_semester: jenisSemester as 'gasal' | 'genap',
     ipk: parseFloat(ipk),
     catatan_evaluasi: catatan || null,
     tanggal_unggah: new Date(),

@@ -21,7 +21,7 @@ interface DashboardData {
   jenis_studi: string;
   skInfo: { nomor_sk: string; tanggal_terbit: string; file_sk_path: string } | null;
   timelineKHS: { semester: number; status: string; ipk: number }[];
-  grafikIPK: { semester: string; ipk: number }[];
+  grafikIPS: { semester: string; ipk: number }[];
   summaryReimbursement: { diajukan: number; dicairkan: number; pending: number };
   grafikReimbursement: { semester: string; nominal: number }[];
   checklistDokumen: { nama: string; status: string; isMandatory: boolean; catatan: string | null }[];
@@ -170,7 +170,7 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* 4. KHS TIMELINE & GRAFIK IPK */}
+        {/* 4. KHS TIMELINE & GRAFIK IPS */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         
         {/* Timeline KHS */}
@@ -195,17 +195,17 @@ export default function DashboardPage() {
           )}
         </div>
 
-        {/* Grafik IPK */}
+        {/* Grafik IPS */}
         <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-          <h3 className="text-base font-bold text-slate-800 mb-4">Grafik Perkembangan IPK</h3>
+          <h3 className="text-base font-bold text-slate-800 mb-4">Grafik Perkembangan IPS</h3>
           <div className="h-[280px] w-full">
-            {data.grafikIPK.length > 0 ? (
+            {data.grafikIPS.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={data.grafikIPK} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                <LineChart data={data.grafikIPS} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
                   <XAxis dataKey="semester" tick={{ fontSize: 11, fill: '#64748b' }} />
                   <YAxis domain={[0, 4.0]} tickCount={5} tick={{ fontSize: 11, fill: '#64748b' }} />
-                  <RechartsTooltip formatter={(value: any) => [Number(value).toFixed(2), "IPK"]} />
+                  <RechartsTooltip formatter={(value: any) => [Number(value).toFixed(2), "IPS"]} />
                   <Line type="monotone" dataKey="ipk" stroke="#10b981" strokeWidth={3} dot={{ r: 4, strokeWidth: 2, fill: '#fff' }} activeDot={{ r: 6 }} />
                 </LineChart>
               </ResponsiveContainer>

@@ -67,7 +67,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: parsed.error.issues[0].message }, { status: 400 });
     }
 
-    const { semester_ke: semesterKe, tahun_akademik: tahunAkademik, tahun_ke: tahunKe, nominal: nominalValue, catatan_keuangan: catatan, jenis_pengajuan: jenisPengajuan, nomor_rekening: nomorRekening, nama_bank: namaBank } = parsed.data;
+    const { semester_ke: semesterKe, tahun_akademik: tahunAkademik, nominal: nominalValue, catatan_keuangan: catatan, jenis_pengajuan: jenisPengajuan, nomor_rekening: nomorRekening, nama_bank: namaBank } = parsed.data;
 
     const pengajuan = await prisma.pengajuanStudi.findFirst({
       where: { user_id: userId },
@@ -88,6 +88,8 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Nominal tidak valid." }, { status: 400 });
     }
 
+    const jenisSemester = semesterNumber % 2 === 1 ? 'gasal' : 'genap';
+
     const existing = await prisma.pengajuanReimbursement.findFirst({
       where: {
         pengajuan_id: pengajuan.id,
@@ -106,7 +108,7 @@ export async function POST(request: Request) {
         jenis_pengajuan: jenisPengajuan,
         semester_ke: semesterNumber,
         tahun_akademik: tahunAkademik || null,
-        tahun_ke: tahunKe ? parseInt(tahunKe) : null,
+        jenis_semester: jenisSemester as 'gasal' | 'genap',
         nominal: nominalNumber,
         status_pencairan: "pending",
         catatan_keuangan: catatan || null,

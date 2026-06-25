@@ -13,7 +13,7 @@ export interface RiwayatStudiRow {
   No: number;
   Semester: string;
   'Tahun Akademik': string;
-  IPK: string;
+  IPS: string;
   SKS: number;
   'Tanggal Upload': string;
 }

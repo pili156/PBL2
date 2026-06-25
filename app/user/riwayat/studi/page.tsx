@@ -141,7 +141,7 @@ async function KhsTable({ pengajuan }: { pengajuan: any }) {
               <th className="py-4 px-2 w-12 text-center">No</th>
               <th className="py-4 px-4">Semester</th>
               <th className="py-4 px-4">Tahun Akademik</th>
-              <th className="py-4 px-4">IPK</th>
+              <th className="py-4 px-4">IPS</th>
               <th className="py-4 px-4">Tanggal Upload</th>
               <th className="py-4 px-4">Status</th>
               <th className="py-4 px-4 text-center">Aksi</th>

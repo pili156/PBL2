@@ -168,11 +168,11 @@ export default async function DashboardDosen({ params }: Props) {
             <div className="grid grid-cols-2 gap-3">
               <div className="text-center p-4 bg-slate-50 rounded-xl">
                 <p className="text-2xl font-bold text-blue-600">{rataIpk}</p>
-                <p className="text-[10px] text-slate-400 font-medium mt-1">IPK Rata-rata</p>
+                <p className="text-[10px] text-slate-400 font-medium mt-1">IPS Rata-rata</p>
               </div>
               <div className="text-center p-4 bg-slate-50 rounded-xl">
                 <p className="text-2xl font-bold text-slate-800">{maxIpk}</p>
-                <p className="text-[10px] text-slate-400 font-medium mt-1">IPK Tertinggi</p>
+                <p className="text-[10px] text-slate-400 font-medium mt-1">IPS Tertinggi</p>
               </div>
               <div className="text-center p-4 bg-slate-50 rounded-xl">
                 <p className="text-2xl font-bold text-slate-800">{totalSks}</p>

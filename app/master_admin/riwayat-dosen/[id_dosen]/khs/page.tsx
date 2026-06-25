@@ -57,15 +57,15 @@ export default async function RiwayatStudi({ params }: Props) {
     <div className="space-y-6">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-5">
-          <p className="text-[10px] text-slate-400 font-medium uppercase tracking-wider mb-1">IPK Rata-rata</p>
+          <p className="text-[10px] text-slate-400 font-medium uppercase tracking-wider mb-1">IPS Rata-rata</p>
           <p className="text-2xl font-bold text-blue-600">{rataIpk}</p>
         </div>
         <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-5">
-          <p className="text-[10px] text-slate-400 font-medium uppercase tracking-wider mb-1">IPK Tertinggi</p>
+          <p className="text-[10px] text-slate-400 font-medium uppercase tracking-wider mb-1">IPS Tertinggi</p>
           <p className="text-2xl font-bold text-slate-800">{ipkTertinggi}</p>
         </div>
         <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-5">
-          <p className="text-[10px] text-slate-400 font-medium uppercase tracking-wider mb-1">IPK Terendah</p>
+          <p className="text-[10px] text-slate-400 font-medium uppercase tracking-wider mb-1">IPS Terendah</p>
           <p className="text-2xl font-bold text-slate-800">{ipkTerendah}</p>
         </div>
         <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-5">
@@ -78,7 +78,7 @@ export default async function RiwayatStudi({ params }: Props) {
         <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-6">
           <h4 className="text-sm font-semibold text-slate-800 mb-5 flex items-center gap-2">
             <BarChart3 size={15} className="text-blue-500" />
-            Perkembangan IPK per Semester
+            Perkembangan IPS per Semester
           </h4>
           <div className="space-y-3">
             {khsList.map((k) => {
@@ -110,7 +110,7 @@ export default async function RiwayatStudi({ params }: Props) {
                 <th className="px-5 py-3.5 w-10">No</th>
                 <th className="px-5 py-3.5">Semester</th>
                 <th className="px-5 py-3.5">Tahun Akademik</th>
-                <th className="px-5 py-3.5">IPK</th>
+                <th className="px-5 py-3.5">IPS</th>
                 <th className="px-5 py-3.5">SKS</th>
                 <th className="px-5 py-3.5">Tanggal Upload</th>
                 <th className="px-5 py-3.5 text-center">Aksi</th>

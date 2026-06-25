@@ -84,11 +84,10 @@ export const reimbursementSchema = z.object({
   jenis_pengajuan: z.string().optional(),
   semester_ke: z.string().min(1, "Semester wajib diisi"),
   tahun_akademik: z.string().optional(),
-  tahun_ke: z.string().optional(),
   nominal: z.string().min(1, "Nominal wajib diisi"),
   catatan_keuangan: z.string().optional(),
   nomor_rekening: z.string().min(1, "Nomor rekening wajib diisi"),
   nama_bank: z.string().min(1, "Bank wajib dipilih"),
 });
 
-export const ipkSchema = z.number().min(0).max(4.00, "IPK tidak boleh lebih dari 4.00");
+export const ipkSchema = z.number().min(0).max(4.00, "IPS tidak boleh lebih dari 4.00");

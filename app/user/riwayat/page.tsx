@@ -98,7 +98,7 @@ export default async function RiwayatRootPage() {
               <TrendingUp size={20} className="text-emerald-600" />
             </div>
             <div>
-              <p className="text-[10px] text-slate-400 uppercase tracking-wider">Rata-rata IPK</p>
+              <p className="text-[10px] text-slate-400 uppercase tracking-wider">Rata-rata IPS</p>
               <p className="text-2xl font-bold text-slate-800">{rataIpk > 0 ? rataIpk.toFixed(2) : '-'}</p>
             </div>
           </div>
@@ -161,7 +161,7 @@ export default async function RiwayatRootPage() {
                     <div>
                       <p className="font-bold text-slate-800 text-sm">{p.perguruan_tinggi || 'Universitas'}</p>
                       <p className="text-xs text-slate-500">
-                        {p.jenis_studi?.nama_jenis || '-'} &bull; {p.jalur_pendanaan?.nama_pendanaan || '-'} &bull; {khsCount} KHS &bull; IPK {ipkRata > 0 ? ipkRata.toFixed(2) : '-'}
+                        {p.jenis_studi?.nama_jenis || '-'} &bull; {p.jalur_pendanaan?.nama_pendanaan || '-'} &bull; {khsCount} KHS &bull; IPS {ipkRata > 0 ? ipkRata.toFixed(2) : '-'}
                       </p>
                     </div>
                   </div>

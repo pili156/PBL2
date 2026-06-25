@@ -92,7 +92,7 @@ export default async function EditKHSPage({
 
           <div>
             <label className="block text-sm font-bold text-slate-700 mb-2">
-              IPK <span className="text-red-500">*</span>
+              IPS <span className="text-red-500">*</span>
             </label>
             <input
               type="number"
@@ -104,7 +104,7 @@ export default async function EditKHSPage({
               className="w-full md:w-1/2 p-3 bg-white border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none font-bold"
               required
             />
-            <p className="text-[11px] text-slate-500 mt-2">Masukkan IPK sesuai yang tertera di KHS (skala 0 - 4.00)</p>
+            <p className="text-[11px] text-slate-500 mt-2">Masukkan IPS sesuai yang tertera di KHS (skala 0 - 4.00)</p>
           </div>
 
           <div>

@@ -107,7 +107,7 @@ export default async function DetailKHSUserPage({
                 <span className="text-xs font-bold text-slate-800">{khs.tahun_akademik || '-'}</span>
               </div>
               <div className="grid grid-cols-2 py-1">
-                <span className="text-xs text-slate-500">IPK</span>
+                <span className="text-xs text-slate-500">IPS</span>
                 <span className="text-xs font-bold text-slate-800">
                   {khs.ipk ? Number(khs.ipk).toFixed(2) : '-'}
                 </span>

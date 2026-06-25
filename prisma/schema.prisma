@@ -7,6 +7,13 @@ datasource db {
   provider = "postgresql"
 }
 
+enum JenisSemester {
+  gasal
+  genap
+
+  @@map("jenis_semester")
+}
+
 enum StatusAkun {
   aktif
   menunggu
@@ -238,6 +245,7 @@ model MonitoringKhs {
   status_evaluasi  StatusEvaluasiKhs?  @default(pending)
   tanggal_evaluasi DateTime?       @db.Timestamptz(6)
   updated_at       DateTime?       @updatedAt @db.Timestamptz(6)
+  jenis_semester   JenisSemester?
   pengajuan_studi  PengajuanStudi? @relation(fields: [pengajuan_id], references: [id])
 
   @@map("monitoring_khs")
@@ -260,7 +268,7 @@ model PengajuanReimbursement {
   nomor_rekening    String?
   jenis_pengajuan   String?         @default("reimbursement")
   tahun_akademik    String?
-  tahun_ke          Int?
+  jenis_semester    JenisSemester?
 
   @@map("pengajuan_reimbursement")
 }

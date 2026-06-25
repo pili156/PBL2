@@ -36,7 +36,7 @@ export async function GET(
       No: i + 1,
       Semester: `Semester ${k.semester_ke || '-'}`,
       'Tahun Akademik': (k.tahun_akademik as string) || '-',
-      IPK: k.ipk ? Number(k.ipk as string).toFixed(2) : '-',
+      IPS: k.ipk ? Number(k.ipk as string).toFixed(2) : '-',
       SKS: 20,
       'Tanggal Upload': k.tanggal_unggah
         ? new Date(k.tanggal_unggah as string).toLocaleDateString('id-ID')

@@ -165,7 +165,7 @@ export default function Step1JenisStudi({ onNext, profileIncomplete = false }: P
   };
 
   const allSelectionsMade = selections.studyType && selections.fundingType && selections.studyRegion;
-  const shouldShowStudyType = fundingType === "mandiri";
+  const shouldShowStudyType = fundingType === "mandiri" || fundingType === "beasiswa";
   const shouldShowRegionAndPT = !!fundingType;
 
   let stepCounter = 2;

@@ -6,6 +6,7 @@ import StatusBadge from "@/src/components/StatusBadge";
 
 type UploadedDoc = {
   id: number;
+  master_dokumen_id: number | null;
   file_path: string | null;
   status_verifikasi: string | null;
   catatan_revisi: string | null;
@@ -227,35 +228,43 @@ export default function DocumentViewerSection({ documents }: { documents: Upload
               </div>
             )}
 
-            <div className="space-y-4">
-              <textarea
-                value={catatan}
-                onChange={(e) => setCatatan(e.target.value)}
-                placeholder="Catatan revisi (wajib jika revisi)..."
-                rows={3}
-                disabled={verifying}
-                className="w-full text-sm text-slate-900 p-3 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 min-h-[80px] transition-all resize-none"
-              />
-
-              <div className="flex gap-3 justify-end pt-4 border-t border-slate-200">
-                <button
-                  onClick={() => handleVerify(selectedDoc.id, "revisi")}
-                  disabled={verifying || !catatan.trim()}
-                  className="inline-flex items-center gap-2 px-4 py-2.5 bg-white text-red-600 border border-red-200 rounded-lg text-xs font-bold hover:bg-red-50 transition-all disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  {verifying ? <Loader2 size={15} className="animate-spin" /> : <RotateCcw size={15} />}
-                  Permintaan Revisi
-                </button>
-                <button
-                  onClick={() => handleVerify(selectedDoc.id, "terverifikasi")}
-                  disabled={verifying}
-                  className="inline-flex items-center gap-2 px-4 py-2.5 bg-emerald-500 text-white rounded-lg text-xs font-bold hover:bg-emerald-600 transition-all disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  {verifying ? <Loader2 size={15} className="animate-spin" /> : <Check size={15} />}
-                  Verifikasi Dokumen
-                </button>
+            {[14, 18].includes(selectedDoc.master_dokumen_id ?? 0) ? (
+              <div className="p-4 bg-slate-50 border border-slate-200 rounded-lg">
+                <p className="text-xs text-slate-500 font-medium">
+                  Dokumen ini diupload melalui pengajuan studi dan tidak dapat diverifikasi dari halaman ini.
+                </p>
               </div>
-            </div>
+            ) : (
+              <div className="space-y-4">
+                <textarea
+                  value={catatan}
+                  onChange={(e) => setCatatan(e.target.value)}
+                  placeholder="Catatan revisi (wajib jika revisi)..."
+                  rows={3}
+                  disabled={verifying}
+                  className="w-full text-sm text-slate-900 p-3 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 min-h-[80px] transition-all resize-none"
+                />
+
+                <div className="flex gap-3 justify-end pt-4 border-t border-slate-200">
+                  <button
+                    onClick={() => handleVerify(selectedDoc.id, "revisi")}
+                    disabled={verifying || !catatan.trim()}
+                    className="inline-flex items-center gap-2 px-4 py-2.5 bg-white text-red-600 border border-red-200 rounded-lg text-xs font-bold hover:bg-red-50 transition-all disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    {verifying ? <Loader2 size={15} className="animate-spin" /> : <RotateCcw size={15} />}
+                    Permintaan Revisi
+                  </button>
+                  <button
+                    onClick={() => handleVerify(selectedDoc.id, "terverifikasi")}
+                    disabled={verifying}
+                    className="inline-flex items-center gap-2 px-4 py-2.5 bg-emerald-500 text-white rounded-lg text-xs font-bold hover:bg-emerald-600 transition-all disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    {verifying ? <Loader2 size={15} className="animate-spin" /> : <Check size={15} />}
+                    Verifikasi Dokumen
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>

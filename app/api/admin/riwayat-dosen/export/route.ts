@@ -51,7 +51,7 @@ export async function GET(req: NextRequest) {
       No: i + 1,
       Semester: `Semester ${k.semester_ke ?? '-'}`,
       'Tahun Akademik': '-',
-      IPK: k.ipk ? Number(k.ipk).toFixed(2) : '-',
+      IPS: k.ipk ? Number(k.ipk).toFixed(2) : '-',
       SKS: 20,
       'Tanggal Upload': k.tanggal_unggah?.toLocaleDateString('id-ID') || '-',
     }));

@@ -16,17 +16,14 @@ type FileUploadState = {
 const DOKUMEN_LIST = [
   { key: "formulir", label: "Formulir Bantuan Studi", masterId: 21 },
   { key: "bukti_spp", label: "Bukti Pembayaran SPP", masterId: 22 },
-  { key: "akreditasi", label: "Bukti Akreditasi Program Studi", masterId: 23 },
-  { key: "loa", label: "Letter of Acceptance (LoA)", masterId: 24 },
 ];
 
 export default function BantuanStudiCreatePage() {
   const router = useRouter();
 
   const [formData, setFormData] = useState({
-    semester: "1",
+    semester: "",
     tahunAkademik: "",
-    tahunKe: "1",
     nominal: "",
     nomorRekening: "",
     namaBank: "",
@@ -35,8 +32,6 @@ export default function BantuanStudiCreatePage() {
   const [files, setFiles] = useState<Record<string, FileUploadState>>({
     formulir: { file: null, uploading: false, uploaded: false, error: null },
     bukti_spp: { file: null, uploading: false, uploaded: false, error: null },
-    akreditasi: { file: null, uploading: false, uploaded: false, error: null },
-    loa: { file: null, uploading: false, uploaded: false, error: null },
   });
   const [pengajuanId, setPengajuanId] = useState<number | null>(null);
   const [pengajuanStudiId, setPengajuanStudiId] = useState<number | null>(null);
@@ -166,7 +161,6 @@ export default function BantuanStudiCreatePage() {
       body.append("jenis_pengajuan", "bantuan_studi");
       body.append("semester_ke", formData.semester);
       body.append("tahun_akademik", formData.tahunAkademik);
-      body.append("tahun_ke", formData.tahunKe);
       body.append("nominal", formData.nominal);
       body.append("nomor_rekening", formData.nomorRekening);
       body.append("nama_bank", formData.namaBank);
@@ -230,37 +224,36 @@ export default function BantuanStudiCreatePage() {
               value={formData.semester}
               onChange={(e) => handleInputChange("semester", e.target.value)}
               className="w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+              required
             >
-              {Array.from({ length: 8 }, (_, i) => (
-                <option key={i + 1} value={i + 1}>Semester {i + 1}</option>
+              <option value="">Pilih Semester</option>
+              {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14].map((num) => (
+                <option key={num} value={num}>Semester {num}</option>
               ))}
             </select>
           </div>
 
           <div className="space-y-2">
-            <label htmlFor="tahunKe" className="text-sm font-medium text-slate-700">Tahun Ke- *</label>
-            <select
-              id="tahunKe"
-              value={formData.tahunKe}
-              onChange={(e) => handleInputChange("tahunKe", e.target.value)}
-              className="w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-            >
-              {Array.from({ length: 8 }, (_, i) => (
-                <option key={i + 1} value={i + 1}>Tahun ke-{i + 1}</option>
-              ))}
-            </select>
-          </div>
-
-          <div className="space-y-2 sm:col-span-2">
             <label htmlFor="tahunAkademik" className="text-sm font-medium text-slate-700">Tahun Akademik *</label>
-            <input
+            <select
               id="tahunAkademik"
-              type="text"
               value={formData.tahunAkademik}
               onChange={(e) => handleInputChange("tahunAkademik", e.target.value)}
-              placeholder="Contoh: 2025/2026"
               className="w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-            />
+              required
+            >
+              <option value="">Pilih Tahun Akademik</option>
+              {Array.from({ length: 4 }, (_, i) => {
+                const currentYear = new Date().getFullYear();
+                const startYear = currentYear - 2 + i;
+                const endYear = startYear + 1;
+                return (
+                  <option key={startYear} value={`${startYear}/${endYear}`}>
+                    {startYear}/{endYear}
+                  </option>
+                );
+              })}
+            </select>
           </div>
 
           <div className="space-y-2 sm:col-span-2">

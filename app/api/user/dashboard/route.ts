@@ -50,7 +50,7 @@ export async function GET() {
       ipk: khs.ipk ? Number(khs.ipk) : 0,
       tanggal: khs.tanggal_unggah,
     }));
-    const grafikIPK = khsList
+      const grafikIPS = khsList
       .filter(khs => khs.ipk)
       .map(khs => ({
         semester: `Sem ${khs.semester_ke}`,
@@ -107,7 +107,7 @@ export async function GET() {
       status_studi: pengajuan?.sk_kementerian[0]?.status_studi || "Belum ada SK",
       pendanaan: pengajuan?.jalur_pendanaan?.nama_pendanaan || "Belum ditentukan",
       timelineKHS,
-      grafikIPK,
+      grafikIPS,
       skInfo,
       summaryReimbursement,
       grafikReimbursement,
