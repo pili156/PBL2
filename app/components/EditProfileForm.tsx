@@ -29,6 +29,12 @@ type ProfileData = {
   } | null;
 };
 
+type JurusanData = {
+  id: number;
+  nama_jurusan: string;
+  program_studi: { id: number; nama_prodi: string }[];
+};
+
 type EditProfileFormProps = {
   backUrl: string;
   apiUrl?: string;
@@ -45,7 +51,7 @@ export default function EditProfileForm({ backUrl, apiUrl = "/api/user/profile" 
   const [masterData, setMasterData] = useState<{ masterJabatan: { id: number; nama: string; singkatan: string; urutan: number }[]; masterPangkat: { id: number; pangkat: string; golongan: string }[] } | null>(null);
   const [selectedPangkat, setSelectedPangkat] = useState("");
   const [selectedJabatan, setSelectedJabatan] = useState("");
-  const [dataJurusan, setDataJurusan] = useState<any[]>([]);
+  const [dataJurusan, setDataJurusan] = useState<JurusanData[]>([]);
   const [isLoadingJurusan, setIsLoadingJurusan] = useState(true);
   const [dataProvinsi, setDataProvinsi] = useState<{ id: number; nama: string }[]>([]);
   const [dataKota, setDataKota] = useState<{ id: number; nama: string }[]>([]);
