@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { ROLE_DISPLAY } from "@/src/lib/constants/roles";
 // PERBAIKAN: Menambahkan icon Phone untuk Nomor HP
 import { User, Mail, Shield, Briefcase, BadgeCheck, Save, ArrowLeft, Loader2, Hash, Phone } from "lucide-react";
-import { getJurusanData } from "@/app/register/actions";
+import { getJurusanData, getProvinsiData, getKotaData } from "@/app/register/actions";
 
 type ProfileData = {
   email: string;
@@ -15,17 +15,17 @@ type ProfileData = {
     nip?: string;
     nidn?: string;
     nama_lengkap?: string;
-    tempat_lahir?: string;
     tanggal_lahir?: string;
     jenis_kelamin?: string;
     email_pribadi?: string;
     alamat?: string;
     pangkat_golongan?: string;
     jabatan?: string;
-    unit_kerja?: string;
     jurusan?: string;
     program_studi?: string;
     no_telp?: string;
+    provinsi_lahir?: string;
+    kota_lahir?: string;
   } | null;
 };
 
@@ -47,22 +47,25 @@ export default function EditProfileForm({ backUrl, apiUrl = "/api/user/profile" 
   const [selectedJabatan, setSelectedJabatan] = useState("");
   const [dataJurusan, setDataJurusan] = useState<any[]>([]);
   const [isLoadingJurusan, setIsLoadingJurusan] = useState(true);
+  const [dataProvinsi, setDataProvinsi] = useState<{ id: number; nama: string }[]>([]);
+  const [dataKota, setDataKota] = useState<{ id: number; nama: string }[]>([]);
+  const [isLoadingKota, setIsLoadingKota] = useState(false);
 
   const [formData, setFormData] = useState({
     nip: "",
     nidn: "",
     nama_lengkap: "",
-    tempat_lahir: "",
     tanggal_lahir: "",
     jenis_kelamin: "",
     email_pribadi: "",
     alamat: "",
     pangkat_golongan: "",
     jabatan: "",
-    unit_kerja: "",
     jurusan: "",
     program_studi: "",
     no_telp: "",
+    provinsi_lahir: "",
+    kota_lahir: "",
   });
 
   useEffect(() => {
@@ -71,10 +74,11 @@ export default function EditProfileForm({ backUrl, apiUrl = "/api/user/profile" 
 
   const fetchProfile = async () => {
     try {
-      const [profileRes, masterRes, jurusanData] = await Promise.all([
+      const [profileRes, masterRes, jurusanData, provinsiData] = await Promise.all([
         fetch(apiUrl),
         fetch("/api/master-data"),
         getJurusanData(),
+        getProvinsiData(),
       ]);
 
       const profileJson = await profileRes.json();
@@ -95,25 +99,44 @@ export default function EditProfileForm({ backUrl, apiUrl = "/api/user/profile" 
         setDataJurusan(jurusanData);
       }
 
+      if (provinsiData) {
+        setDataProvinsi(provinsiData);
+      }
+
       setProfileData(profileJson);
       setFormData({
         nip: profileJson.master_dosen?.nip || "",
         nidn: profileJson.master_dosen?.nidn || "",
         nama_lengkap: profileJson.master_dosen?.nama_lengkap || "",
-        tempat_lahir: profileJson.master_dosen?.tempat_lahir || "",
         tanggal_lahir: profileJson.master_dosen?.tanggal_lahir ? profileJson.master_dosen.tanggal_lahir.split("T")[0] : "",
         jenis_kelamin: profileJson.master_dosen?.jenis_kelamin || "",
         email_pribadi: profileJson.master_dosen?.email_pribadi || "",
         alamat: profileJson.master_dosen?.alamat || "",
         pangkat_golongan: profileJson.master_dosen?.pangkat_golongan || "",
         jabatan: profileJson.master_dosen?.jabatan || "",
-        unit_kerja: profileJson.master_dosen?.unit_kerja || "",
         jurusan: profileJson.master_dosen?.jurusan || "",
         program_studi: profileJson.master_dosen?.program_studi || "",
         no_telp: profileJson.master_dosen?.no_telp || "",
+        provinsi_lahir: profileJson.master_dosen?.provinsi_lahir || "",
+        kota_lahir: profileJson.master_dosen?.kota_lahir || "",
       });
       setSelectedPangkat(profileJson.master_dosen?.pangkat_golongan || "");
       setSelectedJabatan(profileJson.master_dosen?.jabatan || "");
+
+      if (profileJson.master_dosen?.provinsi_lahir) {
+        const provinsi = dataProvinsi.find((p) => p.nama === profileJson.master_dosen.provinsi_lahir);
+        if (provinsi) {
+          setIsLoadingKota(true);
+          try {
+            const kotaRes = await getKotaData(provinsi.id);
+            if (kotaRes) setDataKota(kotaRes);
+          } catch (error) {
+            console.error("Gagal memuat data kota:", error);
+          } finally {
+            setIsLoadingKota(false);
+          }
+        }
+      }
     } catch (error) {
       setErrorMsg("Gagal terhubung ke server");
     } finally {
@@ -141,6 +164,31 @@ export default function EditProfileForm({ backUrl, apiUrl = "/api/user/profile" 
       jurusan: e.target.value,
       program_studi: "",
     }));
+  };
+
+  const handleProvinsiChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const selectedNama = e.target.value;
+    const provinsi = dataProvinsi.find((p) => p.nama === selectedNama);
+    const provinsiId = provinsi?.id ?? 0;
+    setFormData((prev) => ({
+      ...prev,
+      provinsi_lahir: selectedNama,
+      kota_lahir: "",
+    }));
+
+    if (provinsiId) {
+      setIsLoadingKota(true);
+      try {
+        const kotaRes = await getKotaData(provinsiId);
+        if (kotaRes) setDataKota(kotaRes);
+      } catch (error) {
+        console.error("Gagal memuat data kota:", error);
+      } finally {
+        setIsLoadingKota(false);
+      }
+    } else {
+      setDataKota([]);
+    }
   };
 
   const selectedJurusanObj = dataJurusan.find((j) => j.nama_jurusan === formData.jurusan);
@@ -171,7 +219,6 @@ export default function EditProfileForm({ backUrl, apiUrl = "/api/user/profile" 
               nama_lengkap: formData.nama_lengkap || profileData.master_dosen.nama_lengkap,
               pangkat_golongan: formData.pangkat_golongan || profileData.master_dosen.pangkat_golongan,
               jabatan: formData.jabatan || profileData.master_dosen.jabatan,
-              unit_kerja: formData.unit_kerja || profileData.master_dosen.unit_kerja,
               jurusan: formData.jurusan || profileData.master_dosen.jurusan,
               program_studi: formData.program_studi || profileData.master_dosen.program_studi,
               no_telp: formData.no_telp || profileData.master_dosen.no_telp,
@@ -307,18 +354,51 @@ export default function EditProfileForm({ backUrl, apiUrl = "/api/user/profile" 
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-xs text-slate-500 mb-1.5">
-                  Tempat Lahir
+                  Provinsi Kelahiran
                 </label>
-                <input
-                  type="text"
-                  name="tempat_lahir"
-                  value={formData.tempat_lahir}
-                  onChange={handleChange}
-                  required
-                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-slate-900"
-                  placeholder="Masukkan tempat lahir"
-                />
+                <div className="relative">
+                  <select
+                    name="provinsi_lahir"
+                    value={formData.provinsi_lahir}
+                    onChange={handleProvinsiChange}
+                    disabled={dataProvinsi.length === 0}
+                    className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-slate-900 appearance-none"
+                  >
+                    <option value="" disabled>{dataProvinsi.length === 0 ? "Memuat..." : "Pilih Provinsi"}</option>
+                    {dataProvinsi.map((p) => (
+                      <option key={p.id} value={p.nama}>{p.nama}</option>
+                    ))}
+                  </select>
+                  <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none text-gray-400">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+                  </div>
+                </div>
               </div>
+              <div>
+                <label className="block text-xs text-slate-500 mb-1.5">
+                  Kota/Kabupaten Kelahiran
+                </label>
+                <div className="relative">
+                  <select
+                    name="kota_lahir"
+                    value={formData.kota_lahir}
+                    onChange={handleChange}
+                    disabled={!formData.provinsi_lahir || isLoadingKota || dataKota.length === 0}
+                    className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-slate-900 appearance-none"
+                  >
+                    <option value="" disabled>{!formData.provinsi_lahir ? "Pilih Provinsi Dahulu" : isLoadingKota ? "Memuat..." : "Pilih Kota/Kabupaten"}</option>
+                    {dataKota.map((k) => (
+                      <option key={k.id} value={k.nama}>{k.nama}</option>
+                    ))}
+                  </select>
+                  <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none text-gray-400">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-xs text-slate-500 mb-1.5">
                   Tanggal Lahir
@@ -332,10 +412,6 @@ export default function EditProfileForm({ backUrl, apiUrl = "/api/user/profile" 
                   className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-slate-900"
                 />
               </div>
-            </div>
-
-            {/* PERBAIKAN: Menambahkan Nomor HP sejajar dengan Jenis Kelamin */}
-            <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-xs text-slate-500 mb-1.5">
                   Jenis Kelamin
@@ -352,22 +428,23 @@ export default function EditProfileForm({ backUrl, apiUrl = "/api/user/profile" 
                   <option value="Perempuan">Perempuan</option>
                 </select>
               </div>
-              <div>
-                <label className="block text-xs text-slate-500 mb-1.5">
-                  <div className="flex items-center gap-1.5">
-                    <Phone size={12} />
-                    <span>Nomor HP</span>
-                  </div>
-                </label>
-                <input
-                  type="tel"
-                  name="no_telp"
-                  value={formData.no_telp}
-                  onChange={handleChange}
-                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-slate-900"
-                  placeholder="08xxxxxxxxxx"
-                />
-              </div>
+            </div>
+
+            <div>
+              <label className="block text-xs text-slate-500 mb-1.5">
+                <div className="flex items-center gap-1.5">
+                  <Phone size={12} />
+                  <span>Nomor HP</span>
+                </div>
+              </label>
+              <input
+                type="tel"
+                name="no_telp"
+                value={formData.no_telp}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-slate-900"
+                placeholder="08xxxxxxxxxx"
+              />
             </div>
 
             <div>
@@ -462,20 +539,6 @@ export default function EditProfileForm({ backUrl, apiUrl = "/api/user/profile" 
               </div>
             </div>
 
-            <div>
-              <label className="block text-xs text-slate-500 mb-1.5">
-                Unit Kerja
-              </label>
-              <input
-                type="text"
-                name="unit_kerja"
-                value={formData.unit_kerja}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-slate-900"
-                placeholder="Masukkan unit kerja"
-              />
-            </div>
-
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-xs text-slate-500 mb-1.5">
@@ -521,20 +584,6 @@ export default function EditProfileForm({ backUrl, apiUrl = "/api/user/profile" 
                   </div>
                 </div>
               </div>
-            </div>
-
-            <div>
-              <label className="block text-xs text-slate-500 mb-1.5">
-                No. Telepon
-              </label>
-              <input
-                type="tel"
-                name="no_telp"
-                value={formData.no_telp}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-slate-900"
-                placeholder="Masukkan nomor telepon"
-              />
             </div>
 
             <div className="pt-4">

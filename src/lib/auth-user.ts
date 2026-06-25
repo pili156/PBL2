@@ -16,7 +16,6 @@ export interface UserLayoutData {
   nip?: string;
   role: string;
   roleDisplay: string;
-  unitKerja?: string;
   jabatan?: string;
   no_telp?: string;
 }
@@ -41,7 +40,6 @@ async function getUserFromTokenImpl(role: string, fallbackRoles?: string[]): Pro
           select: {
             nama_lengkap: true,
             nip: true,
-            unit_kerja: true,
             jabatan: true,
             no_telp: true,
           },
@@ -57,7 +55,6 @@ async function getUserFromTokenImpl(role: string, fallbackRoles?: string[]): Pro
       nip: user.master_dosen?.nip || undefined,
       role: payload.role,
       roleDisplay: ROLE_DISPLAY[payload.role] || payload.role,
-      unitKerja: user.master_dosen?.unit_kerja || undefined,
       jabatan: user.master_dosen?.jabatan || undefined,
       no_telp: user.master_dosen?.no_telp || undefined,
     };

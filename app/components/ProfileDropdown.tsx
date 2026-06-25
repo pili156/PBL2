@@ -22,7 +22,6 @@ type UserData = {
   nip?: string;
   role: string;
   roleDisplay: string;
-  unitKerja?: string;
   jabatan?: string;
   no_telp?: string;
 };
@@ -127,13 +126,6 @@ export default function ProfileDropdown({ user }: { user: UserData }) {
                   <Phone size={14} className="text-slate-400 flex-shrink-0" />
                   <span className="text-slate-500 w-24 text-xs">No. HP</span>
                   <span className="text-slate-700 text-xs font-medium">{user.no_telp || "-"}</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <Briefcase size={14} className="text-slate-400 flex-shrink-0" />
-                  <span className="text-slate-500 w-24 text-xs">Unit Kerja</span>
-                  <span className="text-slate-700 text-xs font-medium truncate">
-                    {user.unitKerja || "-"}
-                  </span>
                 </div>
                 <div className="flex items-center gap-3">
                   <BadgeCheck size={14} className="text-slate-400 flex-shrink-0" />

@@ -383,7 +383,6 @@ async function main() {
       nama_lengkap: 'Budi Doremi, S.Kom., M.T.',
       pangkat_golongan: 'Penata Muda Tk I (III/b)',
       jabatan: 'Asisten Ahli', // Diperbaiki: Typo dari 'jabatu' menjadi 'jabatan'
-      unit_kerja: 'Politeknik Negeri Semarang',
       jurusan: 'Teknik Elektro',
       program_studi: 'Teknik Informatika',
       created_at: new Date(),

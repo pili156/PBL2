@@ -62,7 +62,7 @@ export default async function AdminDashboardPage({
     Promise.all(
       ["Elektro", "Sipil", "Mesin", "AB", "Akuntansi"].map(async (jurusan) => {
         const total = await prisma.pengajuanStudi.count({
-          where: { user: { master_dosen: { unit_kerja: jurusan } } },
+          where: { user: { master_dosen: { jurusan: jurusan } } },
         });
         return { jurusan, total };
       })

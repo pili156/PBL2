@@ -58,7 +58,6 @@ export default function Register() {
     nidn: "",
     pangkat_golongan: "",
     jabatan: "",
-    unit_kerja: "",
     jurusan: "",
     program_studi: "",
   });
@@ -386,11 +385,6 @@ export default function Register() {
                       </div>
                     </div>
                   </div>
-                </div>
-
-                <div>
-                  <label className={labelClass}>Unit Kerja <span className="text-red-500">*</span></label>
-                  <input type="text" required placeholder="Contoh: Jurusan Teknik Elektro" value={formData.unit_kerja} onChange={(e) => setFormData({...formData, unit_kerja: e.target.value})} className={inputClass} />
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mt-2">

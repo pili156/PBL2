@@ -12,7 +12,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: parsed.error.issues[0].message }, { status: 400 });
     }
 
-    const { nip, nama_lengkap, email, pangkat_golongan, jabatan, unit_kerja, jurusan, program_studi, no_telp } = parsed.data;
+    const { nip, nama_lengkap, email, pangkat_golongan, jabatan, jurusan, program_studi, no_telp } = parsed.data;
 
     const existingUser = await prisma.user.findFirst({
       where: {
@@ -46,7 +46,6 @@ export async function POST(request: Request) {
             nama_lengkap: nama_lengkap,
             pangkat_golongan: pangkat_golongan || null,
             jabatan: jabatan || null,
-            unit_kerja: unit_kerja || null,
             jurusan: jurusan || null,
             program_studi: program_studi || null,
             no_telp: no_telp || null,

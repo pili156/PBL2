@@ -12,7 +12,6 @@ type UserData = {
   nip?: string;
   role: string;
   roleDisplay: string;
-  unitKerja?: string;
   jabatan?: string;
   no_telp?: string;
 };

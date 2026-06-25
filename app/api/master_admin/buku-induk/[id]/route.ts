@@ -8,7 +8,6 @@ interface BukuIndukInput {
   email?: string;
   pangkat_golongan?: string;
   jabatan?: string;
-  unit_kerja?: string;
   jurusan?: string;
   program_studi?: string;
   no_telp?: string;
@@ -53,7 +52,7 @@ export async function PUT(
 
   try {
     const body = await request.json();
-    const { nip, nama_lengkap, email, pangkat_golongan, jabatan, unit_kerja, jurusan, program_studi, no_telp, ...otherFields } = body as BukuIndukInput;
+    const { nip, nama_lengkap, email, pangkat_golongan, jabatan, jurusan, program_studi, no_telp, ...otherFields } = body as BukuIndukInput;
 
     // Update master_dosen
     const updateData: any = {};
@@ -61,7 +60,6 @@ export async function PUT(
     if (nama_lengkap !== undefined) updateData.nama_lengkap = nama_lengkap;
     if (pangkat_golongan !== undefined) updateData.pangkat_golongan = pangkat_golongan;
     if (jabatan !== undefined) updateData.jabatan = jabatan;
-    if (unit_kerja !== undefined) updateData.unit_kerja = unit_kerja;
     if (jurusan !== undefined) updateData.jurusan = jurusan;
     if (program_studi !== undefined) updateData.program_studi = program_studi;
     if (no_telp !== undefined) updateData.no_telp = no_telp;

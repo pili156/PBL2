@@ -75,7 +75,7 @@ export default function PengajuanPage() {
           setProfileIncomplete(true);
           return;
         }
-        const requiredFields = ['nidn', 'tempat_lahir', 'tanggal_lahir', 'jenis_kelamin', 'email_pribadi', 'alamat'];
+        const requiredFields = ['nidn', 'tanggal_lahir', 'jenis_kelamin', 'email_pribadi', 'alamat'];
         const missing = requiredFields.some((field) => !dosen[field] || String(dosen[field]).trim() === '');
         setProfileIncomplete(missing);
       } catch (error) {

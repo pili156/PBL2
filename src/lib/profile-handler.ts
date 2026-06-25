@@ -29,17 +29,17 @@ export async function getProfile() {
       nip: user.master_dosen.nip,
       nidn: user.master_dosen.nidn,
       nama_lengkap: user.master_dosen.nama_lengkap,
-      tempat_lahir: user.master_dosen.tempat_lahir,
       tanggal_lahir: user.master_dosen.tanggal_lahir,
       jenis_kelamin: user.master_dosen.jenis_kelamin,
       email_pribadi: user.master_dosen.email_pribadi,
       alamat: user.master_dosen.alamat,
       pangkat_golongan: user.master_dosen.pangkat_golongan,
       jabatan: user.master_dosen.jabatan,
-      unit_kerja: user.master_dosen.unit_kerja,
       jurusan: user.master_dosen.jurusan,
       program_studi: user.master_dosen.program_studi,
       no_telp: user.master_dosen.no_telp,
+      provinsi_lahir: user.master_dosen.provinsi_lahir,
+      kota_lahir: user.master_dosen.kota_lahir,
     } : null,
   });
 }
@@ -59,7 +59,7 @@ export async function updateProfile(request: Request) {
     return NextResponse.json({ error: parsed.error.issues[0].message }, { status: 400 });
   }
 
-  const { username, nip, nidn, nama_lengkap, tempat_lahir, tanggal_lahir, jenis_kelamin, email_pribadi, alamat, pangkat_golongan, jabatan, unit_kerja, jurusan, program_studi, no_telp } = parsed.data;
+  const { username, nip, nidn, nama_lengkap, tanggal_lahir, jenis_kelamin, email_pribadi, alamat, pangkat_golongan, jabatan, jurusan, program_studi, no_telp, provinsi_lahir, kota_lahir } = parsed.data;
 
   const user = await prisma.user.findUnique({
     where: { email: userEmail },
@@ -86,17 +86,17 @@ export async function updateProfile(request: Request) {
         nip: nip || user.master_dosen.nip,
         nidn: nidn !== undefined ? nidn : user.master_dosen.nidn,
         nama_lengkap: nama_lengkap || user.master_dosen.nama_lengkap,
-        tempat_lahir: tempat_lahir !== undefined ? tempat_lahir : user.master_dosen.tempat_lahir,
         tanggal_lahir: tanggal_lahir ? new Date(tanggal_lahir) : user.master_dosen.tanggal_lahir,
         jenis_kelamin: jenis_kelamin !== undefined ? jenis_kelamin : user.master_dosen.jenis_kelamin,
         email_pribadi: email_pribadi !== undefined ? email_pribadi : user.master_dosen.email_pribadi,
         alamat: alamat !== undefined ? alamat : user.master_dosen.alamat,
         pangkat_golongan: pangkat_golongan || user.master_dosen.pangkat_golongan,
         jabatan: jabatan || user.master_dosen.jabatan,
-        unit_kerja: unit_kerja || user.master_dosen.unit_kerja,
         jurusan: jurusan || user.master_dosen.jurusan,
         program_studi: program_studi || user.master_dosen.program_studi,
         no_telp: no_telp || user.master_dosen.no_telp,
+        provinsi_lahir: provinsi_lahir !== undefined ? provinsi_lahir : user.master_dosen.provinsi_lahir,
+        kota_lahir: kota_lahir !== undefined ? kota_lahir : user.master_dosen.kota_lahir,
       }
     });
   }

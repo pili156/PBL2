@@ -150,19 +150,11 @@ export default async function EditUserPage({ params }: Props) {
             {/* Kelahiran & Identitas */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wider">Tempat Lahir</label>
-                <input type="text" name="tempat_lahir" defaultValue={user.master_dosen?.tempat_lahir || ''}
-                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-slate-900" />
-              </div>
-              <div>
                 <label className="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wider">Tanggal Lahir</label>
                 <input type="date" name="tanggal_lahir"
                   defaultValue={user.master_dosen?.tanggal_lahir ? user.master_dosen.tanggal_lahir.toISOString().split('T')[0] : ''}
                   className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-slate-900" />
               </div>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wider">Jenis Kelamin</label>
                 <select name="jenis_kelamin" defaultValue={user.master_dosen?.jenis_kelamin || ''}
@@ -172,6 +164,9 @@ export default async function EditUserPage({ params }: Props) {
                   <option value="Perempuan">Perempuan</option>
                 </select>
               </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wider">Alamat</label>
                 <textarea name="alamat" defaultValue={user.master_dosen?.alamat || ''} rows={2}
@@ -193,17 +188,10 @@ export default async function EditUserPage({ params }: Props) {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wider">Unit Kerja</label>
-                <input type="text" name="unit_kerja" defaultValue={user.master_dosen?.unit_kerja || ''}
-                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-slate-900" />
-              </div>
-              <div>
-                <label className="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wider">Jurusan</label>
-                <input type="text" name="jurusan" defaultValue={user.master_dosen?.jurusan || ''}
-                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-slate-900" />
-              </div>
+            <div>
+              <label className="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wider">Jurusan</label>
+              <input type="text" name="jurusan" defaultValue={user.master_dosen?.jurusan || ''}
+                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-slate-900" />
             </div>
 
             <div>
