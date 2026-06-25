@@ -13,7 +13,6 @@ import {
   Shield,
   ClipboardList,
   FileText,
-  HandCoins,
   type LucideIcon,
 } from "lucide-react";
 import type { MenuItem } from "@/src/types";
@@ -30,14 +29,12 @@ const iconMap: Record<string, LucideIcon> = {
   Shield,
   ClipboardList,
   FileText,
-  HandCoins,
 };
 
 const defaultUserItems: MenuItem[] = [
   { href: "/user/dashboard", label: "Dashboard", icon: "LayoutDashboard", allowedRoles: ["dosen"] },
   { href: "/user/pengajuan", label: "Pengajuan Studi", icon: "FileText", allowedRoles: ["dosen"] },
   { href: "/user/riwayat", label: "Riwayat & Monitoring", icon: "ClipboardList", allowedRoles: ["dosen"] },
-  { href: "/user/user-reimbursement", label: "Pengajuan Beasiswa", icon: "HandCoins", allowedRoles: ["dosen"] },
 ];
 
 export default function Sidebar({

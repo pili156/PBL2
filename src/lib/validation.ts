@@ -51,6 +51,8 @@ export const profileSchema = z.object({
   jurusan: z.string().optional(),
   program_studi: z.string().optional(),
   no_telp: z.string().optional(),
+  gelar: z.string().optional(),
+  pendidikan_terakhir: z.string().optional(),
   provinsi_lahir: z.string().optional(),
   kota_lahir: z.string().optional(),
 });

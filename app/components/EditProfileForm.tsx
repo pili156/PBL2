@@ -24,6 +24,8 @@ type ProfileData = {
     jurusan?: string;
     program_studi?: string;
     no_telp?: string;
+    gelar?: string;
+    pendidikan_terakhir?: string;
     provinsi_lahir?: string;
     kota_lahir?: string;
   } | null;
@@ -70,6 +72,8 @@ export default function EditProfileForm({ backUrl, apiUrl = "/api/user/profile" 
     jurusan: "",
     program_studi: "",
     no_telp: "",
+    gelar: "",
+    pendidikan_terakhir: "",
     provinsi_lahir: "",
     kota_lahir: "",
   });
@@ -123,14 +127,16 @@ export default function EditProfileForm({ backUrl, apiUrl = "/api/user/profile" 
         jurusan: profileJson.master_dosen?.jurusan || "",
         program_studi: profileJson.master_dosen?.program_studi || "",
         no_telp: profileJson.master_dosen?.no_telp || "",
+        gelar: profileJson.master_dosen?.gelar || "",
+        pendidikan_terakhir: profileJson.master_dosen?.pendidikan_terakhir || "",
         provinsi_lahir: profileJson.master_dosen?.provinsi_lahir || "",
         kota_lahir: profileJson.master_dosen?.kota_lahir || "",
       });
       setSelectedPangkat(profileJson.master_dosen?.pangkat_golongan || "");
       setSelectedJabatan(profileJson.master_dosen?.jabatan || "");
 
-      if (profileJson.master_dosen?.provinsi_lahir) {
-        const provinsi = dataProvinsi.find((p) => p.nama === profileJson.master_dosen.provinsi_lahir);
+      if (profileJson.master_dosen?.provinsi_lahir && provinsiData) {
+        const provinsi = provinsiData.find((p) => p.nama === profileJson.master_dosen.provinsi_lahir);
         if (provinsi) {
           setIsLoadingKota(true);
           try {
@@ -228,6 +234,8 @@ export default function EditProfileForm({ backUrl, apiUrl = "/api/user/profile" 
               jurusan: formData.jurusan || profileData.master_dosen.jurusan,
               program_studi: formData.program_studi || profileData.master_dosen.program_studi,
               no_telp: formData.no_telp || profileData.master_dosen.no_telp,
+              gelar: formData.gelar || profileData.master_dosen.gelar,
+              pendidikan_terakhir: formData.pendidikan_terakhir || profileData.master_dosen.pendidikan_terakhir,
             } : null,
           });
         }
@@ -355,6 +363,37 @@ export default function EditProfileForm({ backUrl, apiUrl = "/api/user/profile" 
                   placeholder="Masukkan NIDN"
                 />
               </div>
+            </div>
+
+            <div>
+              <label className="block text-xs text-slate-500 mb-1.5">
+                Gelar
+              </label>
+              <input
+                type="text"
+                name="gelar"
+                value={formData.gelar}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-slate-900"
+                placeholder="Masukkan Gelar (contoh: S.Pd, M.Pd)"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs text-slate-500 mb-1.5">
+                Pendidikan Terakhir
+              </label>
+              <select
+                name="pendidikan_terakhir"
+                value={formData.pendidikan_terakhir}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-slate-900"
+              >
+                <option value="">-- Pilih Pendidikan --</option>
+                <option value="S1">S1</option>
+                <option value="S2">S2</option>
+                <option value="S3">S3</option>
+              </select>
             </div>
 
             <div className="grid grid-cols-2 gap-4">

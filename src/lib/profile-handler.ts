@@ -38,6 +38,8 @@ export async function getProfile() {
       jurusan: user.master_dosen.jurusan,
       program_studi: user.master_dosen.program_studi,
       no_telp: user.master_dosen.no_telp,
+      gelar: user.master_dosen.gelar,
+      pendidikan_terakhir: user.master_dosen.pendidikan_terakhir,
       provinsi_lahir: user.master_dosen.provinsi_lahir,
       kota_lahir: user.master_dosen.kota_lahir,
     } : null,
@@ -59,7 +61,7 @@ export async function updateProfile(request: Request) {
     return NextResponse.json({ error: parsed.error.issues[0].message }, { status: 400 });
   }
 
-  const { username, nip, nidn, nama_lengkap, tanggal_lahir, jenis_kelamin, email_pribadi, alamat, pangkat_golongan, jabatan, jurusan, program_studi, no_telp, provinsi_lahir, kota_lahir } = parsed.data;
+  const { username, nip, nidn, nama_lengkap, tanggal_lahir, jenis_kelamin, email_pribadi, alamat, pangkat_golongan, jabatan, jurusan, program_studi, no_telp, gelar, pendidikan_terakhir, provinsi_lahir, kota_lahir } = parsed.data;
 
   const user = await prisma.user.findUnique({
     where: { email: userEmail },
@@ -95,6 +97,8 @@ export async function updateProfile(request: Request) {
         jurusan: jurusan || user.master_dosen.jurusan,
         program_studi: program_studi || user.master_dosen.program_studi,
         no_telp: no_telp || user.master_dosen.no_telp,
+        gelar: gelar !== undefined ? gelar : user.master_dosen.gelar,
+        pendidikan_terakhir: pendidikan_terakhir !== undefined ? pendidikan_terakhir : user.master_dosen.pendidikan_terakhir,
         provinsi_lahir: provinsi_lahir !== undefined ? provinsi_lahir : user.master_dosen.provinsi_lahir,
         kota_lahir: kota_lahir !== undefined ? kota_lahir : user.master_dosen.kota_lahir,
       }

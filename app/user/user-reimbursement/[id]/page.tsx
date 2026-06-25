@@ -86,7 +86,7 @@ export default function BantuanStudiDetailPage() {
       <div className="rounded-3xl border border-slate-200 bg-white p-10 text-center shadow-sm">
         <h1 className="text-2xl font-semibold text-slate-900">Pengajuan tidak ditemukan</h1>
         <p className="mt-3 text-slate-600">{error || "Data tidak tersedia."}</p>
-        <BackLink href="/user/user-reimbursement" />
+        <BackLink href="/user/riwayat/keuangan" />
       </div>
     );
   }
@@ -194,7 +194,7 @@ export default function BantuanStudiDetailPage() {
     <div className="space-y-8 animate-in fade-in duration-500">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="space-y-3">
-          <BackLink href="/user/user-reimbursement" />
+        <BackLink href="/user/riwayat/keuangan" />
           <div>
             <h1 className="text-3xl font-bold text-slate-900">Detail Bantuan Studi</h1>
             <p className="text-sm text-slate-500">Lihat detail dan progres pengajuan bantuan studi Anda.</p>

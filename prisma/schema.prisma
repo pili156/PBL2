@@ -103,6 +103,8 @@ model MasterDosen {
   jurusan          String?
   program_studi    String?
   no_telp          String?
+  gelar            String?
+  pendidikan_terakhir String?
   provinsi_lahir   String?
   kota_lahir       String?
   

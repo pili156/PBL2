@@ -22,6 +22,8 @@ export async function POST(req: Request) {
       jabatan,
       provinsi_lahir,
       kota_lahir,
+      gelar,
+      pendidikan_terakhir,
       password 
     } = body;
 
@@ -85,6 +87,8 @@ export async function POST(req: Request) {
               no_telp: no_telp || null,
               pangkat_golongan: pangkat_golongan || null,
               jabatan: jabatan || null,
+              gelar: gelar || null,
+              pendidikan_terakhir: pendidikan_terakhir || null,
               provinsi_lahir: provinsi_lahir || null,
               kota_lahir: kota_lahir || null,
             }

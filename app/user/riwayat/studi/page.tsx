@@ -148,7 +148,7 @@ async function KhsTable({ pengajuan }: { pengajuan: any }) {
             </tr>
           </thead>
           <tbody>
-            {tabelKHS.map((item, index) => {
+            {tabelKHS.map((item: { semester_ke: number; data: any }, index: number) => {
               const isUploaded = !!item.data;
               const rawStatus = item.data!.status_evaluasi?.toLowerCase().trim() || 'pending';
               
@@ -213,12 +213,12 @@ async function KhsTable({ pengajuan }: { pengajuan: any }) {
                       )}
                       {statusKHS === 'revisi' && item.data && (
                         <Link href={`/user/laporanKHS/${item.data.id}`} className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-blue-600 text-blue-600 rounded-lg text-xs font-bold hover:bg-blue-50 w-[110px] justify-center transition-all">
-                          <Pencil size={14} /> Edit
+                          <Pencil size={14} /> Lihat Detail
                         </Link>
                       )}
                       {statusKHS === 'pending' && item.data && (
                         <Link href={`/user/laporanKHS/${item.data.id}`} className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-blue-600 text-blue-600 rounded-lg text-xs font-bold hover:bg-blue-50 w-[110px] justify-center transition-all">
-                          <Pencil size={14} /> Edit
+                          <Pencil size={14} /> Lihat Detail
                         </Link>
                       )}
                     </div>

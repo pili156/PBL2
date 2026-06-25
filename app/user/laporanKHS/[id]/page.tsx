@@ -45,7 +45,7 @@ export default async function DetailKHSUserPage({
       
       <div className="flex items-center gap-4 border-b border-slate-200 pb-4">
         <Link 
-          href="/user/laporanKHS" 
+          href="/user/riwayat/studi"
           className="p-2 hover:bg-slate-100 rounded-full transition-colors text-slate-600"
           aria-label="Kembali"
         >

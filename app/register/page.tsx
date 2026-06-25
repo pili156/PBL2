@@ -56,6 +56,8 @@ export default function Register() {
     alamat: "",
     nip: "",
     nidn: "",
+    gelar: "",
+    pendidikan_terakhir: "",
     pangkat_golongan: "",
     jabatan: "",
     jurusan: "",
@@ -268,8 +270,8 @@ export default function Register() {
               <h3 className="text-lg font-bold text-[#005B9F] mb-4 border-b border-gray-100 pb-2">2. Data Pribadi</h3>
               <div className="grid grid-cols-1 gap-5">
                 <div>
-                  <label className={labelClass}>Nama Lengkap (beserta gelar) <span className="text-red-500">*</span></label>
-                  <input type="text" required placeholder="Contoh: Dr. Budi Santoso, S.T., M.T." value={formData.nama_lengkap} onChange={(e) => setFormData({...formData, nama_lengkap: e.target.value})} className={inputClass} />
+                  <label className={labelClass}>Nama Lengkap<span className="text-red-500">*</span></label>
+                  <input type="text" required placeholder="Contoh: Budi Santoso" value={formData.nama_lengkap} onChange={(e) => setFormData({...formData, nama_lengkap: e.target.value})} className={inputClass} />
                 </div>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -353,6 +355,26 @@ export default function Register() {
                   <div>
                     <label className={labelClass}>NIDN <span className="text-red-500">*</span></label>
                     <input type="text" required placeholder="Nomor Induk Dosen Nasional" value={formData.nidn} onChange={(e) => setFormData({...formData, nidn: e.target.value})} className={inputClass} />
+                  </div>
+                </div>
+
+                <div>
+                  <label className={labelClass}>Gelar</label>
+                  <input type="text" placeholder="Contoh: S.Pd, M.T." value={formData.gelar} onChange={(e) => setFormData({...formData, gelar: e.target.value})} className={inputClass} />
+                </div>
+
+                <div>
+                  <label className={labelClass}>Pendidikan Terakhir</label>
+                  <div className="relative">
+                    <select value={formData.pendidikan_terakhir} onChange={(e) => setFormData({...formData, pendidikan_terakhir: e.target.value})} className={`${inputClass} appearance-none`}>
+                      <option value="">-- Pilih Pendidikan --</option>
+                      <option value="S1">S1</option>
+                      <option value="S2">S2</option>
+                      <option value="S3">S3</option>
+                    </select>
+                    <div className="absolute inset-y-0 right-4 flex items-center pointer-events-none text-gray-500">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </div>
                   </div>
                 </div>
 

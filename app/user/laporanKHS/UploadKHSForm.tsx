@@ -1,6 +1,7 @@
 'use client';
 
-import { useActionState } from 'react';
+import { useActionState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { ArrowLeft, UploadCloud, Info, AlertCircle } from 'lucide-react';
 import Link from 'next/link';
 import { uploadKHS } from './actions';
@@ -11,6 +12,13 @@ export default function UploadKHSForm({ prefillSemester, existingSemesters }: {
   existingSemesters: number[];
 }) {
   const [state, formAction, pending] = useActionState(uploadKHS, null);
+  const router = useRouter();
+
+  useEffect(() => {
+    if (state?.id) {
+      router.push(`/user/laporanKHS/${state.id}`);
+    }
+  }, [state, router]);
 
   return (
     <div className="w-full space-y-6 animate-in fade-in duration-500">

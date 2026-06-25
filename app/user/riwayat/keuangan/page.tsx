@@ -1,7 +1,7 @@
 import { headers } from "next/headers";
 import Link from "next/link";
 import { prisma } from "@/src/lib/prisma";
-import { Plus, Download, Wallet, Coins, CheckCircle2 } from "lucide-react";
+import { Plus, Download, Wallet, Coins, CheckCircle2, Eye } from "lucide-react";
 import { formatRupiah, formatDateLong } from "@/src/lib/formatters";
 import StatusBadge from "@/src/components/StatusBadge";
 
@@ -129,12 +129,13 @@ export default async function RiwayatKeuanganPage() {
               <th className="py-4 px-4">Tanggal Cair</th>
               <th className="py-4 px-4">Status</th>
               <th className="py-4 px-4 text-center">Bukti Transfer</th>
+              <th className="py-4 px-4 text-center">Detail</th>
             </tr>
           </thead>
           <tbody>
-            {riwayatEnriched.length === 0 ? (
+                    {riwayatEnriched.length === 0 ? (
               <tr>
-                <td colSpan={9} className="text-center py-10 text-slate-500">
+                <td colSpan={10} className="text-center py-10 text-slate-500">
                   Belum ada riwayat pencairan bantuan studi.
                 </td>
               </tr>
@@ -167,6 +168,14 @@ export default async function RiwayatKeuanganPage() {
                     ) : (
                       <span className="text-[10px] text-slate-400">-</span>
                     )}
+                  </td>
+                  <td className="py-4 px-4 text-center">
+                    <Link
+                      href={`/user/user-reimbursement/${item.id}`}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-slate-300 text-slate-700 rounded-lg text-xs font-bold hover:bg-slate-100 transition-all"
+                    >
+                      <Eye size={14} /> Lihat
+                    </Link>
                   </td>
                 </tr>
               ))

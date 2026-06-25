@@ -18,7 +18,7 @@ function validateFile(file: File) {
   return null;
 }
 
-export async function uploadKHS(prevState: { error?: string } | null, formData: FormData): Promise<{ error?: string } | null> {
+export async function uploadKHS(prevState: { error?: string; id?: number } | null, formData: FormData): Promise<{ error?: string; id?: number } | null> {
   const semester = formData.get('semester') as string;
   const tahunAkademik = formData.get('tahun_akademik') as string;
   const ipk = formData.get('ipk') as string;
@@ -84,7 +84,7 @@ export async function uploadKHS(prevState: { error?: string } | null, formData: 
     await writeFile(filePath, buffer);
     const fileUrl = `/uploads/khs/${fileName}`;
 
-    await prisma.monitoringKhs.create({
+    const newKhs = await prisma.monitoringKhs.create({
       data: {
         pengajuan_id: pengajuanId,
         semester_ke: parseInt(semester),
@@ -97,13 +97,13 @@ export async function uploadKHS(prevState: { error?: string } | null, formData: 
         status_evaluasi: 'pending',
       },
     });
+
+    revalidatePath('/user/laporanKHS');
+    return { id: newKhs.id };
   } catch (error) {
     console.error('[uploadKHS] Unexpected error:', error);
     return { error: 'Terjadi kesalahan saat mengupload KHS. Silakan coba lagi.' };
   }
-
-  revalidatePath('/user/laporanKHS');
-  redirect('/user/laporanKHS');
 }
 
 export async function updateKHS(id: number, formData: FormData) {
