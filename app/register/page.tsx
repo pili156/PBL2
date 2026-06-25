@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { getJurusanData, getPangkatData, getJabatanData } from "./actions"; 
+import { getJurusanData, getPangkatData, getJabatanData, getProvinsiData, getKotaData } from "./actions"; 
 
 interface ProgramStudi {
   id: number;
@@ -18,6 +18,16 @@ interface Jurusan {
   program_studi: ProgramStudi[];
 }
 
+interface Provinsi {
+  id: number;
+  nama: string;
+}
+
+interface KotaKabupaten {
+  id: number;
+  nama: string;
+}
+
 export default function Register() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
@@ -27,14 +37,18 @@ export default function Register() {
   const [dataJurusan, setDataJurusan] = useState<Jurusan[]>([]);
   const [dataPangkat, setDataPangkat] = useState<any[]>([]);
   const [dataJabatan, setDataJabatan] = useState<any[]>([]);
+  const [dataProvinsi, setDataProvinsi] = useState<Provinsi[]>([]);
+  const [dataKota, setDataKota] = useState<KotaKabupaten[]>([]);
   const [isLoadingMaster, setIsLoadingMaster] = useState(true);
+  const [isLoadingKota, setIsLoadingKota] = useState(false);
 
   const [formData, setFormData] = useState({
     email: "",
     password: "",
     konfirmasi_password: "",
     nama_lengkap: "",
-    tempat_lahir: "",
+    provinsi_lahir: "",
+    kota_lahir: "",
     tanggal_lahir: "",
     jenis_kelamin: "",
     no_telp: "",
@@ -52,15 +66,17 @@ export default function Register() {
   useEffect(() => {
     const fetchMasterData = async () => {
       try {
-        const [jurusanRes, pangkatRes, jabatanRes] = await Promise.all([
+        const [jurusanRes, pangkatRes, jabatanRes, provinsiRes] = await Promise.all([
           getJurusanData(),
           getPangkatData(),
-          getJabatanData()
+          getJabatanData(),
+          getProvinsiData()
         ]);
         
         if (jurusanRes) setDataJurusan(jurusanRes);
         if (pangkatRes) setDataPangkat(pangkatRes);
         if (jabatanRes) setDataJabatan(jabatanRes);
+        if (provinsiRes) setDataProvinsi(provinsiRes);
       } catch (error) {
         console.error("Gagal memuat data master:", error);
       } finally {
@@ -77,6 +93,29 @@ export default function Register() {
       jurusan: e.target.value,
       program_studi: "", 
     });
+  };
+
+  const handleProvinsiChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const provinsiId = Number(e.target.value);
+    setFormData({
+      ...formData,
+      provinsi_lahir: e.target.value,
+      kota_lahir: "",
+    });
+    
+    if (provinsiId) {
+      setIsLoadingKota(true);
+      try {
+        const kotaRes = await getKotaData(provinsiId);
+        if (kotaRes) setDataKota(kotaRes);
+      } catch (error) {
+        console.error("Gagal memuat data kota:", error);
+      } finally {
+        setIsLoadingKota(false);
+      }
+    } else {
+      setDataKota([]);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -236,13 +275,38 @@ export default function Register() {
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                   <div>
-                    <label className={labelClass}>Tempat Lahir <span className="text-red-500">*</span></label>
-                    <input type="text" required placeholder="Kota kelahiran" value={formData.tempat_lahir} onChange={(e) => setFormData({...formData, tempat_lahir: e.target.value})} className={inputClass} />
+                    <label className={labelClass}>Provinsi Kelahiran <span className="text-red-500">*</span></label>
+                    <div className="relative">
+                      <select required value={formData.provinsi_lahir} onChange={handleProvinsiChange} disabled={isLoadingMaster || dataProvinsi.length === 0} className={`${inputClass} appearance-none`}>
+                        <option value="" disabled>{isLoadingMaster ? "Memuat..." : "Pilih Provinsi"}</option>
+                        {dataProvinsi.map((p) => (
+                          <option key={p.id} value={p.id}>{p.nama}</option>
+                        ))}
+                      </select>
+                      <div className="absolute inset-y-0 right-4 flex items-center pointer-events-none text-gray-500">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+                      </div>
+                    </div>
                   </div>
                   <div>
-                    <label className={labelClass}>Tanggal Lahir <span className="text-red-500">*</span></label>
-                    <input type="date" required value={formData.tanggal_lahir} onChange={(e) => setFormData({...formData, tanggal_lahir: e.target.value})} className={inputClass} />
+                    <label className={labelClass}>Kota/Kabupaten Kelahiran <span className="text-red-500">*</span></label>
+                    <div className="relative">
+                      <select required disabled={!formData.provinsi_lahir || isLoadingKota || dataKota.length === 0} value={formData.kota_lahir} onChange={(e) => setFormData({...formData, kota_lahir: e.target.value})} className={`${inputClass} appearance-none`}>
+                        <option value="" disabled>{!formData.provinsi_lahir ? "Pilih Provinsi Dahulu" : isLoadingKota ? "Memuat..." : "Pilih Kota/Kabupaten"}</option>
+                        {dataKota.map((k) => (
+                          <option key={k.id} value={k.nama}>{k.nama}</option>
+                        ))}
+                      </select>
+                      <div className="absolute inset-y-0 right-4 flex items-center pointer-events-none text-gray-500">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+                      </div>
+                    </div>
                   </div>
+                </div>
+
+                <div>
+                  <label className={labelClass}>Tanggal Lahir <span className="text-red-500">*</span></label>
+                  <input type="date" required value={formData.tanggal_lahir} onChange={(e) => setFormData({...formData, tanggal_lahir: e.target.value})} className={inputClass} />
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">

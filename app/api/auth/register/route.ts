@@ -22,6 +22,8 @@ export async function POST(req: Request) {
       pangkat_golongan,
       jabatan,
       unit_kerja,
+      provinsi_lahir,
+      kota_lahir,
       password 
     } = body;
 
@@ -76,7 +78,7 @@ export async function POST(req: Request) {
               nip: nip,
               nama_lengkap: nama_lengkap,
               nidn: nidn || null,
-              tempat_lahir: tempat_lahir || null,
+              tempat_lahir: kota_lahir || tempat_lahir || null,
               tanggal_lahir: tanggal_lahir ? new Date(tanggal_lahir) : null,
               jenis_kelamin: jenis_kelamin || null,
               email_pribadi: email_pribadi || null,
@@ -87,6 +89,8 @@ export async function POST(req: Request) {
               pangkat_golongan: pangkat_golongan || null,
               jabatan: jabatan || null,
               unit_kerja: unit_kerja || null,
+              provinsi_lahir: provinsi_lahir || null,
+              kota_lahir: kota_lahir || null,
             }
           }
         },

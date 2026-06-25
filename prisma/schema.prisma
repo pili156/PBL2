@@ -98,6 +98,8 @@ model MasterDosen {
   jurusan          String?
   program_studi    String?
   no_telp          String?
+  provinsi_lahir   String?
+  kota_lahir       String?
   
   user             User?     @relation(fields: [user_id], references: [id])
 
@@ -334,4 +336,28 @@ model MasterBeasiswa {
   updated_at    DateTime @updatedAt
 
   @@map("master_beasiswa")
+}
+
+model MasterProvinsi {
+  id              Int                  @id @default(autoincrement())
+  nama            String               @unique
+  kode_wilayah    String               @unique
+  kabupaten_kota  MasterKabupatenKota[]
+  createdAt       DateTime             @default(now())
+  updatedAt       DateTime             @updatedAt
+
+  @@map("master_provinsi")
+}
+
+model MasterKabupatenKota {
+  id              Int              @id @default(autoincrement())
+  nama            String
+  kode_wilayah    String           @unique
+  tipe            String
+  provinsi_id     Int
+  provinsi        MasterProvinsi   @relation(fields: [provinsi_id], references: [id])
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  @@map("master_kabupaten_kota")
 }

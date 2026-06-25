@@ -1,6 +1,8 @@
 // D:\polines\semester 4\PBL 2\PBL2\prisma\seed.ts
 import { prisma } from '../src/lib/prisma'; // Sesuaikan path ini dengan project kamu
 import bcrypt from 'bcryptjs';
+import fs from 'fs';
+import path from 'path';
 
 // --- DATA JURUSAN DAN PROGRAM STUDI ---
 const dataPolines = {
@@ -52,6 +54,8 @@ async function main() {
   // --- 1b. Bersihkan data lama (urutan berdasarkan dependensi) ---
   console.log('Membersihkan data lama...');
   const cleanUp = async (fn: () => Promise<any>) => { try { await fn(); } catch {} };
+  await cleanUp(() => prisma.masterKabupatenKota.deleteMany());
+  await cleanUp(() => prisma.masterProvinsi.deleteMany());
   await cleanUp(() => prisma.masterBeasiswa.deleteMany()); // TAMBAHAN CLEANUP BEASISWA
   await cleanUp(() => prisma.activityLog.deleteMany());
   await cleanUp(() => prisma.pesanKomunikasi.deleteMany());
@@ -264,6 +268,72 @@ async function main() {
       await prisma.masterBeasiswa.create({ data: { nama_beasiswa: nama } });
     }
   }
+
+  // --- 2.10 Master Provinsi & Kabupaten/Kota dari CSV ---
+  console.log('Seeding Master Provinsi dan Kabupaten/Kota dari CSV...');
+  const csvPath = path.resolve(process.cwd(), 'Data-daftar_provinsi_kabupaten_dan_kota_pilkada_serentak_2024-2026-06-25-1782352821535.csv');
+  const csvContent = fs.readFileSync(csvPath, 'utf-8');
+  const csvLines = csvContent.split('\n').filter((line) => line.trim() !== '');
+
+  // Parse CSV: skip header
+  const rows: { id: number; nama: string; kode_wilayah: string }[] = [];
+  for (let i = 1; i < csvLines.length; i++) {
+    const parts = csvLines[i].split(',');
+    if (parts.length >= 3) {
+      const nama = parts[1].trim();
+      const kode_wilayah = parts[2].trim();
+      rows.push({ id: Number(parts[0].trim()), nama, kode_wilayah });
+    }
+  }
+
+  // Pisahkan provinsi dan kabupaten/kota
+  // Provinsi: kode_wilayah tidak memiliki titik (integer)
+  // Kabupaten/Kota: kode_wilayah memiliki titik (desimal)
+  const provinsiRows = rows.filter((r) => !r.kode_wilayah.includes('.'));
+  const kabKotaRows = rows.filter((r) => r.kode_wilayah.includes('.'));
+
+  // Insert provinsi dan buat mapping kode_wilayah -> id
+  const provinsiMap = new Map<string, number>();
+  for (const row of provinsiRows) {
+    const created = await prisma.masterProvinsi.create({
+      data: {
+        nama: row.nama,
+        kode_wilayah: row.kode_wilayah,
+      },
+    });
+    provinsiMap.set(row.kode_wilayah, created.id);
+  }
+  console.log(`  ${provinsiRows.length} provinsi berhasil di-seed.`);
+
+  // Insert kabupaten/kota
+  let kabCount = 0;
+  let kotaCount = 0;
+  for (const row of kabKotaRows) {
+    // Ambil kode provinsi induk (bagian sebelum titik)
+    const kodeProvinsiInduk = row.kode_wilayah.split('.')[0];
+    const provinsiId = provinsiMap.get(kodeProvinsiInduk);
+
+    if (!provinsiId) {
+      console.log(`  Peringatan: Provinsi induk dengan kode ${kodeProvinsiInduk} tidak ditemukan untuk ${row.nama}`);
+      continue;
+    }
+
+    // Tentukan tipe berdasarkan nama
+    const tipe = row.nama.startsWith('KOTA') ? 'kota' : 'kabupaten';
+
+    await prisma.masterKabupatenKota.create({
+      data: {
+        nama: row.nama,
+        kode_wilayah: row.kode_wilayah,
+        tipe,
+        provinsi_id: provinsiId,
+      },
+    });
+
+    if (tipe === 'kota') kotaCount++;
+    else kabCount++;
+  }
+  console.log(`  ${kabCount} kabupaten dan ${kotaCount} kota berhasil di-seed.`);
 
   // ===============================================================
   // === 3. SEED USERS & DOSEN PROFILE (Budi Doremi) ===
@@ -487,6 +557,8 @@ async function main() {
     await prisma.$executeRawUnsafe(`SELECT setval(pg_get_serial_sequence('"monitoring_khs"', 'id'), coalesce(max(id), 1), max(id) IS NOT null) FROM "monitoring_khs";`);
     await prisma.$executeRawUnsafe(`SELECT setval(pg_get_serial_sequence('"pengajuan_reimbursement"', 'id'), coalesce(max(id), 1), max(id) IS NOT null) FROM "pengajuan_reimbursement";`);
     await prisma.$executeRawUnsafe(`SELECT setval(pg_get_serial_sequence('"pesan_komunikasi"', 'id'), coalesce(max(id), 1), max(id) IS NOT null) FROM "pesan_komunikasi";`);
+    await prisma.$executeRawUnsafe(`SELECT setval(pg_get_serial_sequence('"master_provinsi"', 'id'), coalesce(max(id), 1), max(id) IS NOT null) FROM "master_provinsi";`);
+    await prisma.$executeRawUnsafe(`SELECT setval(pg_get_serial_sequence('"master_kabupaten_kota"', 'id'), coalesce(max(id), 1), max(id) IS NOT null) FROM "master_kabupaten_kota";`);
     console.log('Sequence ID database berhasil disinkronisasi.');
   } catch (error) {
     console.log('Catatan: Reset sequence gagal, abaikan jika kamu tidak menggunakan PostgreSQL.');

@@ -40,3 +40,29 @@ export async function getJabatanData() {
     return [];
   }
 }
+
+export async function getProvinsiData() {
+  try {
+    const data = await prisma.masterProvinsi.findMany({
+      orderBy: { nama: "asc" },
+    });
+    return data;
+  } catch (error) {
+    console.error("Gagal mengambil data provinsi:", error);
+    return [];
+  }
+}
+
+export async function getKotaData(provinsiId?: number) {
+  try {
+    if (!provinsiId) return [];
+    const data = await prisma.masterKabupatenKota.findMany({
+      where: { provinsi_id: provinsiId },
+      orderBy: { nama: "asc" },
+    });
+    return data;
+  } catch (error) {
+    console.error("Gagal mengambil data kota/kabupaten:", error);
+    return [];
+  }
+}
