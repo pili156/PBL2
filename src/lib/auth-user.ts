@@ -14,6 +14,7 @@ export interface UserLayoutData {
   email: string;
   name: string;
   nip?: string;
+  gelar?: string;
   role: string;
   roleDisplay: string;
   jabatan?: string;
@@ -42,17 +43,42 @@ async function getUserFromTokenImpl(role: string, fallbackRoles?: string[]): Pro
             nip: true,
             jabatan: true,
             no_telp: true,
+            gelar: true,
+            pendidikan_terakhir: true,
+            tanggal_lulus: true,
           },
+        },
+        pengajuan_studi: {
+          include: {
+            status: true,
+            jenis_studi: true,
+          },
+          orderBy: { created_at: 'desc' },
+          take: 1,
         },
       },
     });
 
     if (!user) continue;
 
+    const namaLengkap = user.master_dosen?.nama_lengkap || user.username || payload.nama;
+    const gelar = user.master_dosen?.gelar || undefined;
+
+    const isDoktorLulus = 
+      user.master_dosen?.pendidikan_terakhir === 'S3' && user.master_dosen?.tanggal_lulus ||
+      user.pengajuan_studi[0]?.status?.nama_status === 'lulus' && 
+        (user.pengajuan_studi[0]?.jenis_studi?.nama_jenis?.toLowerCase().includes('s3') || 
+         user.pengajuan_studi[0]?.jenis_studi?.nama_jenis?.toLowerCase().includes('doktor'));
+
+    const displayName = isDoktorLulus && !namaLengkap.startsWith('Dr.') 
+      ? `Dr. ${namaLengkap}` 
+      : namaLengkap;
+
     return {
       email: user.email || payload.email,
-      name: user.master_dosen?.nama_lengkap || user.username || payload.nama,
+      name: displayName,
       nip: user.master_dosen?.nip || undefined,
+      gelar: gelar,
       role: payload.role,
       roleDisplay: ROLE_DISPLAY[payload.role] || payload.role,
       jabatan: user.master_dosen?.jabatan || undefined,

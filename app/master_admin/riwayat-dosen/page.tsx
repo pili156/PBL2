@@ -13,7 +13,18 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { formatDate } from "@/src/lib/formatters";
-import StatusBadge from "@/src/components/StatusBadge";
+import type { StatusDosen } from "@/src/types/buku-induk";
+import StatusBadge from "@/components/buku-induk/StatusBadge";
+
+function normalizeStatus(val: string | null): string | null {
+  if (!val) return null;
+  const v = val.toLowerCase();
+  if (v === "selesai") return "Selesai";
+  if (v === "lulus") return "Lulus";
+  if (v === "do") return "DO";
+  if (v === "aktif" || v === "diterima" || v === "terverifikasi" || v === "pending" || v === "menunggu_verifikasi") return "Aktif";
+  return val;
+}
 
 export const dynamic = 'force-dynamic';
 
@@ -110,22 +121,59 @@ export default async function RiwayatDosenPage({ searchParams }: PageProps) {
 
   const filteredDosen = await prisma.user.findMany({
     where: whereClause,
-    include: { master_dosen: true },
+    include: { 
+      master_dosen: {
+        include: {
+          data_tubel: true,
+          data_doktor: true,
+          data_izin_belajar: true,
+        },
+      },
+      pengajuan_studi: {
+        include: {
+          status: true,
+          jenis_studi: true,
+        },
+        orderBy: { created_at: 'desc' },
+        take: 1,
+      },
+    },
     orderBy: [{ status_akun: 'asc' }, { username: 'asc' }],
     skip: (currentPage - 1) * itemsPerPage,
     take: itemsPerPage,
   });
 
-  const dataDosen = filteredDosen.map((user) => ({
-    id: user.id,
-    nama: user.master_dosen?.nama_lengkap || user.username || 'Dosen Tanpa Nama',
-    jurusan: user.master_dosen?.jurusan || '-',
-    nip: user.master_dosen?.nip || 'NIP Belum Diatur',
-    status: user.status_akun === 'aktif' ? 'Aktif' : user.status_akun === 'pending' ? 'Pending' : 'Nonaktif',
-    statusAkun: user.status_akun,
-    inisial: (user.master_dosen?.nama_lengkap || user.username || 'D').charAt(0).toUpperCase(),
-    terakhirUpdate: formatDate(user.updated_at),
-  }));
+  const dataDosen = filteredDosen.map((user) => {
+    const namaLengkap = user.master_dosen?.nama_lengkap || user.username || 'Dosen Tanpa Nama';
+    const gelar = user.master_dosen?.gelar || '';
+    
+    const isDoktorLulus = 
+      (user.master_dosen?.pendidikan_terakhir === 'S3' && user.master_dosen?.tanggal_lulus) ||
+      (user.pengajuan_studi[0]?.status?.nama_status === 'lulus' && 
+       (user.pengajuan_studi[0]?.jenis_studi?.nama_jenis?.toLowerCase().includes('s3') || 
+        user.pengajuan_studi[0]?.jenis_studi?.nama_jenis?.toLowerCase().includes('doktor')));
+    
+    const namaDisplay = isDoktorLulus && !namaLengkap.startsWith('Dr.') 
+      ? `Dr. ${namaLengkap}` 
+      : namaLengkap;
+    const gelarDisplay = gelar;
+
+    const statusPengajuan = user.pengajuan_studi[0]?.status?.nama_status ?? null;
+    const statusKuliah = normalizeStatus(
+      statusPengajuan || user.master_dosen?.data_tubel?.status_kuliah ||
+      user.master_dosen?.data_doktor?.status || user.master_dosen?.data_izin_belajar?.lulus_belum || null
+    ) ?? 'Aktif';
+
+    return {
+      id: user.id,
+      nama: namaDisplay + (gelarDisplay ? `.${gelarDisplay}` : ''),
+      jurusan: user.master_dosen?.jurusan || '-',
+      nip: user.master_dosen?.nip || 'NIP Belum Diatur',
+      statusKuliah: statusKuliah as StatusDosen,
+      inisial: (user.master_dosen?.nama_lengkap || user.username || 'D').charAt(0).toUpperCase(),
+      terakhirUpdate: formatDate(user.updated_at),
+    };
+  });
 
   const startIdx = totalFiltered === 0 ? 0 : (currentPage - 1) * itemsPerPage + 1;
   const endIdx = Math.min(currentPage * itemsPerPage, totalFiltered);
@@ -270,7 +318,7 @@ export default async function RiwayatDosenPage({ searchParams }: PageProps) {
                     <td className="px-6 py-4 text-sm text-slate-500 font-mono">{dosen.nip}</td>
                     <td className="px-6 py-4 text-sm text-slate-600">{dosen.jurusan}</td>
                     <td className="px-6 py-4">
-                      <StatusBadge status={dosen.statusAkun} domain="akun" size="sm" dot />
+                      <StatusBadge status={dosen.statusKuliah} />
                     </td>
                     <td className="px-6 py-4 text-sm text-slate-400">{dosen.terakhirUpdate}</td>
                     <td className="px-6 py-4 text-center">

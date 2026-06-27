@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
 import { prisma } from "@/src/lib/prisma";
 
 function normalizeStatus(val: string | null): string | null {
@@ -12,7 +11,7 @@ function normalizeStatus(val: string | null): string | null {
   return val;
 }
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     let dataDosen: any[] = [];
 
@@ -157,7 +156,7 @@ export async function GET(request: NextRequest) {
     }, { status: 200 });
 
   } catch (error) {
-    console.error("Error global pada API Buku Induk:", error);
+    console.error("Error pada API Dashboard Summary Buku Induk:", error);
     return NextResponse.json(
       { error: "Internal Server Error" },
       { status: 500 }

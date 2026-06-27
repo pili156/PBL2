@@ -6,8 +6,13 @@ import StatusBadge from "@/src/components/StatusBadge";
 export default async function MonitoringPengajuanPage() {
   const pengajuan = await prisma.pengajuanStudi.findMany({
     include: {
-      user: { include: { master_dosen: true } },
+      user: { 
+        include: { 
+          master_dosen: true,
+        },
+      },
       status: true,
+      jenis_studi: true,
     },
     orderBy: { created_at: 'desc' }
   });
@@ -59,7 +64,17 @@ export default async function MonitoringPengajuanPage() {
             {pengajuan.map((item, index) => (
               <tr key={item.id} className="hover:bg-slate-50/30 transition-colors">
                 <td className="p-6 text-sm font-bold text-slate-400 text-center w-20">{index + 1}.</td>
-                <td className="p-6 text-sm font-bold text-slate-700">{item.user?.master_dosen?.nama_lengkap || "-"}</td>
+                <td className="p-6 text-sm font-bold text-slate-700">
+                  {(() => {
+                    const namaLengkap = item.user?.master_dosen?.nama_lengkap || "-";
+                    const isDoktorLulus = 
+                      (item.user?.master_dosen?.pendidikan_terakhir === 'S3' && item.user?.master_dosen?.tanggal_lulus) ||
+                      (item.status?.nama_status === 'lulus' && 
+                       (item.jenis_studi?.nama_jenis?.toLowerCase().includes('s3') || 
+                        item.jenis_studi?.nama_jenis?.toLowerCase().includes('doktor')));
+                    return isDoktorLulus && !namaLengkap.startsWith('Dr.') ? `Dr. ${namaLengkap}` : namaLengkap;
+                  })()}
+                </td>
                 <td className="p-6 text-sm font-medium text-slate-400">{item.user?.master_dosen?.nip || "-"}</td>
                 <td className="p-6 text-center">
                   <StatusBadge status={item.status?.nama_status} domain="pengajuan" size="sm" />

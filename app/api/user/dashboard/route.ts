@@ -43,6 +43,20 @@ export async function GET() {
 
     const pengajuan = user.pengajuan_studi[0];
 
+    const isDoktorLulus = 
+      (user.master_dosen?.pendidikan_terakhir === 'S3' && user.master_dosen?.tanggal_lulus) ||
+      (pengajuan?.status?.nama_status === 'lulus' && 
+       (pengajuan?.jenis_studi?.nama_jenis?.toLowerCase().includes('s3') || 
+        pengajuan?.jenis_studi?.nama_jenis?.toLowerCase().includes('doktor')));
+
+    const namaLengkap = user.master_dosen?.nama_lengkap || user.username || "User";
+    const gelar = user.master_dosen?.gelar || '';
+    
+    const namaDisplay = isDoktorLulus && !namaLengkap.startsWith('Dr.') 
+      ? `Dr. ${namaLengkap}` 
+      : namaLengkap;
+    const gelarDisplay = gelar;
+
     const khsList = pengajuan?.monitoring_khs || [];
     const timelineKHS = khsList.map(khs => ({
       semester: khs.semester_ke,
@@ -84,8 +98,7 @@ export async function GET() {
       file_path: doc.file_path,
       status_verifikasi: doc.status_verifikasi || 'pending'
     })) || [];
-    const calculatedStatus = getOverallPengajuanStatus(dokumenData);
-    // Use calculated status if available (has submitted documents), otherwise use database status
+    const calculatedStatus = getOverallPengajuanStatus(dokumenData, pengajuan?.status?.nama_status);
     const overallStatusPengajuan = calculatedStatus !== null ? calculatedStatus : (pengajuan?.status?.nama_status || "Belum ada pengajuan");
 
     let currentSemester = 0;
@@ -98,7 +111,7 @@ export async function GET() {
     }
 
     const dashboardData = {
-      nama_dosen: user.master_dosen?.nama_lengkap || user.username || "User",
+      nama_dosen: namaDisplay + (gelarDisplay ? `.${gelarDisplay}` : ''),
       status_pengajuan: overallStatusPengajuan,
       semester: currentSemester,
       progress_studi: progressPersen,

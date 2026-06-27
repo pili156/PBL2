@@ -34,6 +34,8 @@ export default async function AdminBantuanStudiPage() {
           user: {
             include: { master_dosen: true },
           },
+          status: true,
+          jenis_studi: true,
           dokumen_pengajuan: {
             where: { master_dokumen_id: { in: [21, 22, 23, 24] } },
             include: { master_dokumen: true },
@@ -129,7 +131,15 @@ export default async function AdminBantuanStudiPage() {
                     <tr key={item.id} className="bg-slate-50/80 border border-slate-100">
                       <td className="px-4 py-4 text-sm font-medium text-slate-700">{index + 1}.</td>
                       <td className="px-4 py-4 text-sm text-slate-700">
-                        {item.pengajuan_studi?.user?.master_dosen?.nama_lengkap || item.pengajuan_studi?.user?.username || "-"}
+                        {(() => {
+                          const namaLengkap = item.pengajuan_studi?.user?.master_dosen?.nama_lengkap || item.pengajuan_studi?.user?.username || "-";
+                          const isDoktorLulus = 
+                            (item.pengajuan_studi?.user?.master_dosen?.pendidikan_terakhir === 'S3' && item.pengajuan_studi?.user?.master_dosen?.tanggal_lulus) ||
+                            (item.pengajuan_studi?.status?.nama_status === 'lulus' && 
+                             (item.pengajuan_studi?.jenis_studi?.nama_jenis?.toLowerCase().includes('s3') || 
+                              item.pengajuan_studi?.jenis_studi?.nama_jenis?.toLowerCase().includes('doktor')));
+                          return isDoktorLulus && !namaLengkap.startsWith('Dr.') ? `Dr. ${namaLengkap}` : namaLengkap;
+                        })()}
                       </td>
                       <td className="px-4 py-4 text-sm text-slate-700">Semester {item.semester_ke}</td>
                       <td className="px-4 py-4 text-sm text-slate-700">{formatRupiah(item.nominal)}</td>

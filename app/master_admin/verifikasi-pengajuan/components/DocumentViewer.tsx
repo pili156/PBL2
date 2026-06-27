@@ -2,7 +2,7 @@
 
 import { DokumenDetail } from "../types";
 import { Download, ZoomIn, ZoomOut, Maximize } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import StatusBadge from "@/src/components/StatusBadge";
 
 interface DocumentViewerProps {
@@ -11,6 +11,57 @@ interface DocumentViewerProps {
 
 export default function DocumentViewer({ document }: DocumentViewerProps) {
   const [zoom, setZoom] = useState(100);
+  const [blobUrl, setBlobUrl] = useState<string>("");
+  const [loadingPdf, setLoadingPdf] = useState(false);
+  const [errorPdf, setErrorPdf] = useState(false);
+  const prevDocIdRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    if (!document?.file_path) {
+      setBlobUrl("");
+      return;
+    }
+
+    if (prevDocIdRef.current === document.id) return;
+    prevDocIdRef.current = document.id;
+
+    let cancelled = false;
+    const controller = new AbortController();
+
+    const loadPdf = async () => {
+      setLoadingPdf(true);
+      setErrorPdf(false);
+      try {
+        const res = await fetch(document.file_path, { signal: controller.signal });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const blob = await res.blob();
+        if (!cancelled) {
+          const url = URL.createObjectURL(blob);
+          setBlobUrl((prev) => {
+            if (prev) URL.revokeObjectURL(prev);
+            return url;
+          });
+        }
+      } catch {
+        if (!cancelled) setErrorPdf(true);
+      } finally {
+        if (!cancelled) setLoadingPdf(false);
+      }
+    };
+
+    loadPdf();
+
+    return () => {
+      cancelled = true;
+      controller.abort();
+    };
+  }, [document?.id, document?.file_path]);
+
+  useEffect(() => {
+    return () => {
+      if (blobUrl) URL.revokeObjectURL(blobUrl);
+    };
+  }, []);
 
   if (!document) {
     return (
@@ -25,6 +76,8 @@ export default function DocumentViewer({ document }: DocumentViewerProps) {
     if (document.file_path.startsWith("http")) return document.file_path;
     return document.file_path;
   };
+
+  const iframeSrc = blobUrl ? `${blobUrl}#zoom=${zoom}` : "";
 
   return (
     <div className="bg-white rounded-lg border border-slate-200 overflow-hidden">
@@ -76,14 +129,18 @@ export default function DocumentViewer({ document }: DocumentViewerProps) {
 
       {/* Viewer Area */}
       <div className="bg-slate-100 h-96 overflow-auto flex items-center justify-center">
-        {getPdfUrl() ? (
+        {!getPdfUrl() ? (
+          <p className="text-slate-400">File tidak tersedia</p>
+        ) : loadingPdf ? (
+          <p className="text-slate-400">Memuat dokumen...</p>
+        ) : errorPdf ? (
+          <p className="text-red-400">Gagal memuat dokumen</p>
+        ) : (
           <iframe
-            src={`${getPdfUrl()}#zoom=${zoom}`}
+            src={iframeSrc}
             className="w-full h-full"
             title="Document Viewer"
           />
-        ) : (
-          <p className="text-slate-400">File tidak tersedia</p>
         )}
       </div>
 

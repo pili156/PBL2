@@ -125,7 +125,7 @@ export default function ManajemenStatusPage({ params }: Props) {
           </div>
           <h2 className="text-xl font-bold text-slate-800 mb-2">Data Tidak Ditemukan</h2>
           <p className="text-sm text-slate-500 mb-6">Pengajuan yang Anda cari tidak ada atau telah dihapus.</p>
-          <BackLink href="/admin/status" />
+          <BackLink href="/admin/verifikasi-pengajuan" />
         </div>
       </div>
     );
@@ -137,7 +137,7 @@ export default function ManajemenStatusPage({ params }: Props) {
       <div className="mb-8">
         <div className="flex items-center gap-4 mb-2">
           <Link 
-            href="/admin/status" 
+            href="/admin/verifikasi-pengajuan" 
             className="p-2 hover:bg-slate-200 bg-white shadow-sm border border-slate-200 rounded-full transition-all text-slate-600 hover:text-slate-900" 
             aria-label="Kembali"
           >

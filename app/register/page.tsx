@@ -97,17 +97,18 @@ export default function Register() {
   };
 
   const handleProvinsiChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const provinsiId = Number(e.target.value);
+    const selectedName = e.target.value;
+    const selected = dataProvinsi.find((p) => p.nama === selectedName);
     setFormData({
       ...formData,
-      provinsi_lahir: e.target.value,
+      provinsi_lahir: selectedName,
       kota_lahir: "",
     });
     
-    if (provinsiId) {
+    if (selected) {
       setIsLoadingKota(true);
       try {
-        const kotaRes = await getKotaData(provinsiId);
+        const kotaRes = await getKotaData(selected.id);
         if (kotaRes) setDataKota(kotaRes);
       } catch (error) {
         console.error("Gagal memuat data kota:", error);
@@ -281,7 +282,7 @@ export default function Register() {
                       <select required value={formData.provinsi_lahir} onChange={handleProvinsiChange} disabled={isLoadingMaster || dataProvinsi.length === 0} className={`${inputClass} appearance-none`}>
                         <option value="" disabled>{isLoadingMaster ? "Memuat..." : "Pilih Provinsi"}</option>
                         {dataProvinsi.map((p) => (
-                          <option key={p.id} value={p.id}>{p.nama}</option>
+                          <option key={p.id} value={p.nama}>{p.nama}</option>
                         ))}
                       </select>
                       <div className="absolute inset-y-0 right-4 flex items-center pointer-events-none text-gray-500">

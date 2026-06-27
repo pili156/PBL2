@@ -54,10 +54,41 @@ export default async function EditUserPage({ params }: Props) {
       master_dosen: true,
       role: true,
       activity_logs: { orderBy: { created_at: 'desc' }, take: 20 },
+      pengajuan_studi: {
+        include: {
+          status: true,
+          jenis_studi: true,
+        },
+        orderBy: { created_at: 'desc' },
+        take: 1,
+      },
     },
   });
 
   if (!user) notFound();
+
+  const [dataPangkat, dataJabatan, dataJurusan] = await Promise.all([
+    prisma.masterPangkat.findMany({ orderBy: { golongan: 'asc' } }),
+    prisma.masterJabatan.findMany({ orderBy: { urutan: 'asc' } }),
+    prisma.masterJurusan.findMany({
+      include: { program_studi: true },
+      orderBy: { nama_jurusan: 'asc' },
+    }),
+  ]);
+
+  const isDoktorLulus = 
+    (user.master_dosen?.pendidikan_terakhir === 'S3' && user.master_dosen?.tanggal_lulus) ||
+    (user.pengajuan_studi[0]?.status?.nama_status === 'lulus' && 
+     (user.pengajuan_studi[0]?.jenis_studi?.nama_jenis?.toLowerCase().includes('s3') || 
+      user.pengajuan_studi[0]?.jenis_studi?.nama_jenis?.toLowerCase().includes('doktor')));
+
+  const namaLengkap = user.master_dosen?.nama_lengkap || user.username || 'User';
+  const gelar = user.master_dosen?.gelar || '';
+  
+  const namaDisplay = isDoktorLulus && !namaLengkap.startsWith('Dr.') 
+    ? `Dr. ${namaLengkap}` 
+    : namaLengkap;
+  const gelarDisplay = gelar;
 
   const roleName = (roleId: number | null) => {
     const map: Record<number, string> = { 1: 'Master Admin', 2: 'Admin', 3: 'Dosen', 4: 'Keuangan' };
@@ -87,7 +118,7 @@ export default async function EditUserPage({ params }: Props) {
           <div className="h-5 w-px bg-slate-200" />
           <div>
             <h2 className="text-2xl font-bold text-slate-900 tracking-tight">
-              {user.master_dosen?.nama_lengkap || user.username}
+              {namaDisplay}{gelarDisplay ? `.${gelarDisplay}` : ''}
             </h2>
             <p className="text-sm text-slate-500 mt-0.5">{user.email} — {roleName(user.role_id)}</p>
           </div>
@@ -178,26 +209,48 @@ export default async function EditUserPage({ params }: Props) {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wider">Pangkat / Golongan</label>
-                <input type="text" name="pangkat_golongan" defaultValue={user.master_dosen?.pangkat_golongan || ''}
-                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-slate-900" />
+                <select name="pangkat_golongan" defaultValue={user.master_dosen?.pangkat_golongan || ''}
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white text-slate-900">
+                  <option value="">-- Pilih --</option>
+                  {dataPangkat.map((p) => (
+                    <option key={p.id} value={`${p.pangkat} (${p.golongan})`}>{p.pangkat} ({p.golongan})</option>
+                  ))}
+                </select>
               </div>
               <div>
                 <label className="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wider">Jabatan</label>
-                <input type="text" name="jabatan" defaultValue={user.master_dosen?.jabatan || ''}
-                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-slate-900" />
+                <select name="jabatan" defaultValue={user.master_dosen?.jabatan || ''}
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white text-slate-900">
+                  <option value="">-- Pilih --</option>
+                  {dataJabatan.map((j) => (
+                    <option key={j.id} value={j.nama}>{j.nama}</option>
+                  ))}
+                </select>
               </div>
             </div>
 
             <div>
               <label className="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wider">Jurusan</label>
-              <input type="text" name="jurusan" defaultValue={user.master_dosen?.jurusan || ''}
-                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-slate-900" />
+              <select name="jurusan" defaultValue={user.master_dosen?.jurusan || ''}
+                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white text-slate-900">
+                <option value="">-- Pilih --</option>
+                {dataJurusan.map((jrs) => (
+                  <option key={jrs.id} value={jrs.nama_jurusan}>{jrs.nama_jurusan}</option>
+                ))}
+              </select>
             </div>
 
             <div>
               <label className="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wider">Program Studi</label>
-              <input type="text" name="program_studi" defaultValue={user.master_dosen?.program_studi || ''}
-                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-slate-900" />
+              <select name="program_studi" defaultValue={user.master_dosen?.program_studi || ''}
+                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white text-slate-900">
+                <option value="">-- Pilih --</option>
+                {dataJurusan.flatMap((jrs) =>
+                  jrs.program_studi.map((prodi) => (
+                    <option key={prodi.id} value={prodi.nama_prodi}>{prodi.nama_prodi}</option>
+                  ))
+                )}
+              </select>
             </div>
 
             <button type="submit" className="flex items-center gap-2 bg-blue-600 text-white text-sm font-medium px-5 py-2.5 rounded-lg hover:bg-blue-700 transition-colors">

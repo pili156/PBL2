@@ -20,6 +20,7 @@ interface DosenItem {
 
 interface TabSemuaDosenProps {
   data: DosenItem[];
+  onViewDetail?: (id: number) => void;
 }
 
 const PER_PAGE = 8;
@@ -39,7 +40,7 @@ function normalizeStudyStatus(jenisPengajuanStudi: string | null): string {
   return "Dosen Aktif";
 }
 
-export default function TabSemuaDosen({ data }: TabSemuaDosenProps) {
+export default function TabSemuaDosen({ data, onViewDetail }: TabSemuaDosenProps) {
   const [search, setSearch] = useState("");
   const [jurusan, setJurusan] = useState("Semua Jurusan");
   const [status, setStatus] = useState("Semua Status");
@@ -107,7 +108,7 @@ export default function TabSemuaDosen({ data }: TabSemuaDosenProps) {
               paged.map((d, i) => (
                 <tr key={d.id} className="border-b border-gray-50 hover:bg-gray-50/60 transition-colors">
                   <td className="px-4 py-3.5 text-sm text-gray-500">{(page - 1) * PER_PAGE + i + 1}</td>
-                  <td className="px-4 py-3.5 text-sm text-blue-500 font-medium cursor-pointer hover:underline">{d.nama_lengkap}</td>
+                  <td className="px-4 py-3.5 text-sm text-blue-500 font-medium cursor-pointer hover:underline" onClick={() => onViewDetail?.(d.id)}>{d.nama_lengkap}</td>
                   <td className="px-4 py-3.5 text-sm text-gray-600">{d.nip || "-"}</td>
                   <td className="px-4 py-3.5 text-sm text-gray-600">{d.jurusan || "-"}</td>
                   <td className="px-4 py-3.5 text-sm text-gray-600">{d.perguruan_tinggi || "-"}</td>
@@ -115,11 +116,12 @@ export default function TabSemuaDosen({ data }: TabSemuaDosenProps) {
                   <td className="px-4 py-3.5"><StatusBadge status={mapStatus(d.status_kuliah)} /></td>
                   <td className="px-4 py-3.5">
                     <div className="flex items-center gap-1.5">
-                      <button className="w-7 h-7 flex items-center justify-center rounded-md border border-gray-200 text-gray-500 hover:border-blue-400 hover:text-blue-500 transition-colors">
+                      <button
+                        onClick={() => onViewDetail?.(d.id)}
+                        className="w-7 h-7 flex items-center justify-center rounded-md border border-gray-200 text-gray-500 hover:border-blue-400 hover:text-blue-500 transition-colors"
+                        title="Lihat Detail"
+                      >
                         <Eye size={13} />
-                      </button>
-                      <button className="w-6 h-6 flex items-center justify-center text-gray-400 hover:text-gray-600">
-                        <MoreVertical size={14} />
                       </button>
                     </div>
                   </td>

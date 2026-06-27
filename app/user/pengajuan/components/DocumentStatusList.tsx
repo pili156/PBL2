@@ -33,7 +33,11 @@ type PengajuanData = {
   sk: SK | null;
 };
 
-export default function DocumentStatusList() {
+type Props = {
+  onSkStatusChange?: (hasSk: boolean) => void;
+};
+
+export default function DocumentStatusList({ onSkStatusChange }: Props) {
   const [data, setData] = useState<PengajuanData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -48,6 +52,7 @@ export default function DocumentStatusList() {
         }
         const result = await response.json();
         setData(result);
+        onSkStatusChange?.(!!(result.sk && result.sk.file_sk_path));
       } catch (err) {
         setError('Gagal memuat data pengajuan');
         console.error(err);

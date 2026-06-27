@@ -24,7 +24,7 @@ export default function UploadKHSForm({ prefillSemester, existingSemesters }: {
     <div className="w-full space-y-6 animate-in fade-in duration-500">
       <div className="flex items-center gap-4 border-b border-slate-200 pb-4">
         <Link
-          href="/user/laporanKHS"
+          href="/user/riwayat/studi"
           className="p-2 hover:bg-slate-100 rounded-full transition-colors text-slate-600"
           aria-label="Kembali"
         >
@@ -131,7 +131,7 @@ export default function UploadKHSForm({ prefillSemester, existingSemesters }: {
 
           <div className="flex justify-end gap-3 pt-4 border-t border-slate-100">
             <Link
-              href="/user/laporanKHS"
+              href="/user/riwayat/studi"
               className="px-6 py-2.5 border border-slate-200 text-slate-900 text-sm font-bold rounded-lg hover:bg-slate-50 transition-colors"
             >
               Batal

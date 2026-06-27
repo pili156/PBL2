@@ -1,51 +1,76 @@
 // app/admin/dashboard/DashboardClient.tsx
 "use client";
 
-import { useState } from "react"; // Import useState
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import * as XLSX from "xlsx";
+import dynamic from "next/dynamic";
 import { 
   Clock, FileCheck, AlertCircle, ArrowRight, GraduationCap, Download, AlertTriangle, FilePlus
 } from "lucide-react";
 import { formatDateTime } from "@/src/lib/formatters";
 import StatusBadge from "@/src/components/StatusBadge";
-import DateFilter from "./DateFilter"; 
-import { 
-  BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, Legend
-} from "recharts";
+import DateFilter from "./DateFilter";
 
-// Jurus Bypass TS untuk Recharts
-const SafeTooltip = RechartsTooltip as any;
-const SafeXAxis = XAxis as any;
-const SafeYAxis = YAxis as any;
-const SafeBar = Bar as any;
-const SafePie = Pie as any;
-const SafeLegend = Legend as any;
+const RechartsBar = dynamic(() => import("recharts").then(mod => {
+  const { ResponsiveContainer, BarChart, Bar, CartesianGrid, Tooltip, XAxis, YAxis, Legend } = mod;
+  return function ChartBar({ data, ...props }: any) {
+    return (
+      <ResponsiveContainer width="100%" height="100%">
+        <BarChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+          <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
+          <XAxis dataKey="jurusan" tick={{ fontSize: 11, fill: '#64748b' }} />
+          <YAxis allowDecimals={false} tick={{ fontSize: 11, fill: '#64748b' }} />
+          <Tooltip cursor={{fill: '#f8fafc'}} formatter={(val: any) => [val, "Total Pengajuan"]} />
+          <Bar dataKey="total" fill="#3b82f6" radius={[4, 4, 0, 0]} maxBarSize={50} />
+        </BarChart>
+      </ResponsiveContainer>
+    );
+  };
+}), { ssr: false, loading: () => <div className="h-[280px] w-full bg-slate-100 animate-pulse rounded-lg" /> });
 
-const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4'];
+const RechartsPie = dynamic(() => import("recharts").then(mod => {
+  const { ResponsiveContainer, PieChart, Pie, Cell, Tooltip, Legend } = mod;
+  const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4'];
+  return function ChartPie({ data }: { data: any[] }) {
+    return (
+      <ResponsiveContainer width="100%" height="100%">
+        <PieChart>
+          <Pie data={data} cx="50%" cy="50%" innerRadius={70} outerRadius={100} paddingAngle={3} dataKey="value" stroke="none">
+            {data.map((entry: any, index: number) => (
+              <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+            ))}
+          </Pie>
+          <Tooltip formatter={(val: any) => [val, "Jumlah"]} />
+          <Legend verticalAlign="bottom" height={36} iconType="circle" wrapperStyle={{ fontSize: '12px' }}/>
+        </PieChart>
+      </ResponsiveContainer>
+    );
+  };
+}), { ssr: false, loading: () => <div className="h-[280px] w-full bg-slate-100 animate-pulse rounded-lg" /> });
 
 export default function DashboardClient({ data }: { data: any }) {
   const router = useRouter();
   const [showAlert, setShowAlert] = useState(false); // State untuk alert custom
 
   // Fungsi Export Excel
-  const handleExport = () => {
+  const handleExport = async () => {
     if (!data.exportData || data.exportData.length === 0) {
-      setShowAlert(true); // Tampilkan alert
-      setTimeout(() => setShowAlert(false), 4000); // Sembunyikan otomatis setelah 4 detik
+      setShowAlert(true);
+      setTimeout(() => setShowAlert(false), 4000);
       return;
     }
 
-    const wb = XLSX.utils.book_new();
-    const ws = XLSX.utils.json_to_sheet(data.exportData);
+    const XLSXModule = await import("xlsx");
+    const wb = XLSXModule.utils.book_new();
+    const ws = XLSXModule.utils.json_to_sheet(data.exportData);
     
     const colWidths = Object.keys(data.exportData[0] || {}).map((key) => ({
       wch: Math.max(key.length * 1.5, 20),
     }));
     ws['!cols'] = colWidths;
 
-    XLSX.utils.book_append_sheet(wb, ws, "Ringkasan_Dashboard");
+    XLSXModule.utils.book_append_sheet(wb, ws, "Ringkasan_Dashboard");
     
     let fileName = "Ringkasan_Admin_Semua_Waktu.xlsx";
     if (data.dari && data.sampai) {
@@ -56,7 +81,7 @@ export default function DashboardClient({ data }: { data: any }) {
       fileName = `Ringkasan_Admin_Hingga_${data.sampai}.xlsx`;
     }
 
-    XLSX.writeFile(wb, fileName);
+    XLSXModule.writeFile(wb, fileName);
   };
 
   return (
@@ -110,15 +135,7 @@ export default function DashboardClient({ data }: { data: any }) {
         <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
           <h3 className="text-base font-bold text-slate-800 mb-4">Distribusi Pengajuan per Jurusan</h3>
           <div className="h-[280px] w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={data.monitoringData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
-                <SafeXAxis dataKey="jurusan" tick={{ fontSize: 11, fill: '#64748b' }} />
-                <SafeYAxis allowDecimals={false} tick={{ fontSize: 11, fill: '#64748b' }} />
-                <SafeTooltip cursor={{fill: '#f8fafc'}} formatter={(val: any) => [val, "Total Pengajuan"]} />
-                <SafeBar dataKey="total" fill="#3b82f6" radius={[4, 4, 0, 0]} maxBarSize={50} />
-              </BarChart>
-            </ResponsiveContainer>
+            <RechartsBar data={data.monitoringData} />
           </div>
         </div>
 
@@ -127,17 +144,7 @@ export default function DashboardClient({ data }: { data: any }) {
           <h3 className="text-base font-bold text-slate-800 mb-4">Rasio Status Pengajuan</h3>
           <div className="h-[280px] w-full flex-grow">
             {data.grafikStatus.length > 0 ? (
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <SafePie data={data.grafikStatus} cx="50%" cy="50%" innerRadius={70} outerRadius={100} paddingAngle={3} dataKey="value" stroke="none">
-                    {data.grafikStatus.map((entry: any, index: number) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                    ))}
-                  </SafePie>
-                  <SafeTooltip formatter={(val: any) => [val, "Jumlah"]} />
-                  <SafeLegend verticalAlign="bottom" height={36} iconType="circle" wrapperStyle={{ fontSize: '12px' }}/>
-                </PieChart>
-              </ResponsiveContainer>
+              <RechartsPie data={data.grafikStatus} />
             ) : (
               <div className="flex h-full items-center justify-center"><p className="text-xs text-slate-400 italic">Data tidak tersedia untuk filter ini.</p></div>
             )}

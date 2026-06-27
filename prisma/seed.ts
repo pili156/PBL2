@@ -87,7 +87,7 @@ async function main() {
 
   // --- 2.2 Master Jenis Studi ---
   const jenisTugasBelajar = await prisma.masterJenisStudi.create({ data: { id: 1, nama_jenis: 'Tugas Belajar (Dibebas Tugaskan)' } });
-  await prisma.masterJenisStudi.create({ data: { id: 2, nama_jenis: 'Izin Belajar (Tetap Menjalankan Kewajiban)' } });
+  await prisma.masterJenisStudi.create({ data: { id: 2, nama_jenis: 'Tugas Belajar (Tetap Menjalankan Kewajiban)' } });
 
   // --- 2.3 Master Jalur Pendanaan ---
   const jalurMandiri = await prisma.masterJalurPendanaan.create({ data: { id: 1, nama_pendanaan: 'Mandiri' } });
@@ -99,7 +99,7 @@ async function main() {
   const statusRevisi = await prisma.masterStatusPengajuan.create({ data: { id: 3, nama_status: 'perlu_revisi' } });
   await prisma.masterStatusPengajuan.create({ data: { id: 4, nama_status: 'pending' } });
   await prisma.masterStatusPengajuan.create({ data: { id: 5, nama_status: 'diterima' } });
-  const statusLulus = await prisma.masterStatusPengajuan.create({ data: { id: 6, nama_status: 'studi_selesai' } });
+  const statusLulus = await prisma.masterStatusPengajuan.create({ data: { id: 6, nama_status: 'lulus' } });
   await prisma.masterStatusPengajuan.create({ data: { id: 7, nama_status: 'terverifikasi' } });
   await prisma.masterStatusPengajuan.create({ data: { id: 8, nama_status: 'revisi' } });
   await prisma.masterStatusPengajuan.create({ data: { id: 9, nama_status: 'ditolak' } });

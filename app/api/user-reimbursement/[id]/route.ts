@@ -26,6 +26,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
             jalur_pendanaan: true,
             jenis_studi: true,
             wilayah: true,
+            status: true,
             dokumen_pengajuan: {
               where: {
                 pengajuan_reimbursement_id: reimbursementId,
@@ -37,11 +38,22 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
       },
     });
 
+    const dosen = await prisma.masterDosen.findUnique({
+      where: { user_id: reimbursement?.pengajuan_studi?.user_id || 0 },
+      select: { pendidikan_terakhir: true, tanggal_lulus: true, gelar: true },
+    });
+
     if (!reimbursement || reimbursement.pengajuan_studi?.user?.email !== userEmail) {
       return NextResponse.json({ error: "Pengajuan tidak ditemukan." }, { status: 404 });
     }
 
-    return NextResponse.json(reimbursement);
+    const isDoktorLulus = 
+      (dosen?.pendidikan_terakhir === 'S3' && dosen?.tanggal_lulus) ||
+      (reimbursement.pengajuan_studi?.status?.nama_status === 'lulus' && 
+       (reimbursement.pengajuan_studi?.jenis_studi?.nama_jenis?.toLowerCase().includes('s3') || 
+        reimbursement.pengajuan_studi?.jenis_studi?.nama_jenis?.toLowerCase().includes('doktor')));
+
+    return NextResponse.json({ ...reimbursement, isDoktorLulus });
   } catch (error) {
     console.error("Error fetching bantuan studi detail", error);
     return NextResponse.json({ error: "Gagal memuat detail." }, { status: 500 });

@@ -55,6 +55,7 @@ export default function PengajuanPage() {
   const [hasCompletedPengajuan, setHasCompletedPengajuan] = useState(false);
   const [profileIncomplete, setProfileIncomplete] = useState(false);
   const [rejectedPengajuan, setRejectedPengajuan] = useState(false);
+  const [hasSk, setHasSk] = useState(false);
 
   useEffect(() => {
     async function fetchProfile() {
@@ -137,14 +138,20 @@ export default function PengajuanPage() {
             //
             setHasCompletedPengajuan(true);
             setFlowStep("completed");
+            if (data.sk && data.sk.file_sk_path) {
+              setHasSk(true);
+            }
           } else {
             const hasDocuments = data.dokumen && data.dokumen.length > 0;
-            const hasSk = data.sk && data.sk.file_sk_path;
+            const hasSkFile = data.sk && data.sk.file_sk_path;
             
-            if (hasDocuments || hasSk) {
+            if (hasDocuments || hasSkFile) {
               //
               setHasCompletedPengajuan(true);
               setFlowStep("completed");
+              if (hasSkFile) {
+                setHasSk(true);
+              }
             } else {
               //
               await fetch('/api/user/pengajuan', { method: 'DELETE' });
@@ -403,16 +410,18 @@ export default function PengajuanPage() {
                 </div>
               ) : (
                 <>
-                  <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4 flex items-center gap-3">
-                    <div className="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center">
-                      <CheckCircle size={20} className="text-emerald-600" />
+                  {!hasSk && (
+                    <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4 flex items-center gap-3">
+                      <div className="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center">
+                        <CheckCircle size={20} className="text-emerald-600" />
+                      </div>
+                      <div>
+                        <h3 className="font-semibold text-emerald-900">Pengajuan Berhasil Dikirim</h3>
+                        <p className="text-sm text-emerald-700">Pengajuan Anda akan diproses dalam 2-5 hari kerja.</p>
+                      </div>
                     </div>
-                    <div>
-                      <h3 className="font-semibold text-emerald-900">Pengajuan Berhasil Dikirim</h3>
-                      <p className="text-sm text-emerald-700">Pengajuan Anda akan diproses dalam 2-5 hari kerja.</p>
-                    </div>
-                  </div>
-                  <DocumentStatusList />
+                  )}
+                  <DocumentStatusList onSkStatusChange={setHasSk} />
                   <div className="flex gap-4 justify-center pt-4">
                     <button
                       onClick={() => {

@@ -5,6 +5,8 @@ import { getStatusLabel } from '@/src/lib/status-utils';
 import Link from 'next/link';
 import StatusBadge from "@/src/components/StatusBadge";
 import ReuploadButton from '../ReuploadButton';
+import EditIPSForm from './EditIPSForm';
+import RevisiKHSButton from './RevisiKHSButton';
 import { notFound } from 'next/navigation';
 
 export const dynamic = 'force-dynamic';
@@ -108,9 +110,12 @@ export default async function DetailKHSUserPage({
               </div>
               <div className="grid grid-cols-2 py-1">
                 <span className="text-xs text-slate-500">IPS</span>
-                <span className="text-xs font-bold text-slate-800">
-                  {khs.ipk ? Number(khs.ipk).toFixed(2) : '-'}
-                </span>
+                <EditIPSForm
+                  khsId={khsId}
+                  currentValue={khs.ips ? Number(khs.ips) : null}
+                  isRevisi={isRevisi}
+                  hideEdit={isRevisi}
+                />
               </div>
               <div className="grid grid-cols-2 py-1">
                 <span className="text-xs text-slate-500">Tanggal Upload</span>
@@ -181,7 +186,10 @@ export default async function DetailKHSUserPage({
 
             <div className="flex gap-3">
               {isRevisi && (
-                <ReuploadButton khsId={khsId} />
+                <RevisiKHSButton
+                  khsId={khsId}
+                  currentIps={khs.ips ? Number(khs.ips) : null}
+                />
               )}
             </div>
 

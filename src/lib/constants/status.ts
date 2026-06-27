@@ -4,7 +4,7 @@ export const STATUS_DISPLAY: Record<string, string> = {
   perlu_revisi: 'Perlu Revisi',
   pending: 'Pending',
   diterima: 'Diterima',
-  studi_selesai: 'Studi Selesai',
+  lulus: 'Lulus',
   terverifikasi: 'Terverifikasi',
   revisi: 'Revisi',
   dicairkan: 'Dicairkan',

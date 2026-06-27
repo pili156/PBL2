@@ -35,7 +35,7 @@ const STATUS_LABELS: Record<string, Record<string, string>> = {
     pending: 'Pending',
     diterima: 'Diterima',
     ditolak: 'Ditolak',
-    studi_selesai: 'Studi Selesai',
+    lulus: 'Lulus',
     terverifikasi: 'Terverifikasi',
     revisi: 'Revisi',
   },
@@ -80,7 +80,7 @@ const STATUS_COLORS: Record<string, Record<string, string>> = {
     pending: 'text-amber-700 bg-amber-50 border border-amber-200',
     diterima: 'text-emerald-700 bg-emerald-50 border border-emerald-200',
     ditolak: 'text-rose-700 bg-rose-50 border border-rose-200',
-    studi_selesai: 'text-sky-700 bg-sky-50 border border-sky-200',
+    lulus: 'text-sky-700 bg-sky-50 border border-sky-200',
     terverifikasi: 'text-emerald-700 bg-emerald-50 border border-emerald-200',
     revisi: 'text-orange-700 bg-orange-50 border border-orange-200',
   },
@@ -98,7 +98,7 @@ const STATUS_TOOLTIPS: Record<string, Record<string, string>> = {
     pending: 'Pengajuan dalam antrean verifikasi',
     diterima: 'Pengajuan telah diterima dan disetujui',
     ditolak: 'Pengajuan ditolak oleh admin',
-    studi_selesai: 'Program studi telah selesai dilaksanakan',
+    lulus: 'Program studi telah selesai dilaksanakan',
     terverifikasi: 'Semua dokumen telah diverifikasi',
     revisi: 'Ada dokumen yang perlu diperbaiki',
   },
@@ -149,7 +149,7 @@ function detectDomain(status?: string | null): StatusDomain {
   if (['terverifikasi'].includes(s)) return 'verifikasi';
   if (['valid', 'diterima', 'ditolak'].includes(s)) return 'evaluasi';
   if (['dicairkan', 'disetujui', 'selesai', 'draft', 'dibatalkan'].includes(s)) return 'pencairan';
-  if (['draft', 'menunggu_verifikasi', 'perlu_revisi', 'studi_selesai'].includes(s)) return 'pengajuan';
+  if (['draft', 'menunggu_verifikasi', 'perlu_revisi', 'lulus'].includes(s)) return 'pengajuan';
   return 'pencairan';
 }
 
@@ -178,7 +178,7 @@ export function isStatusDone(status?: string | null, domain?: StatusDomain): boo
     verifikasi: ['terverifikasi'],
     evaluasi: ['valid', 'diterima'],
     pencairan: ['dicairkan', 'selesai'],
-    pengajuan: ['diterima', 'studi_selesai', 'terverifikasi'],
+    pengajuan: ['diterima', 'lulus', 'terverifikasi'],
     akun: ['aktif'],
     studi: ['aktif'],
   };
@@ -199,9 +199,18 @@ export function statusBadgeClass(status: string): string {
 /**
  * Calculate overall pengajuan status based on submitted documents
  * @param dokumen - Array of documents with file_path and status_verifikasi
- * @returns 'terverifikasi', 'revisi', 'pending', or null if no documents submitted
+ * @param dbStatus - The status from database (e.g. 'ditolak', 'menunggu_verifikasi')
+ * @returns 'terverifikasi', 'revisi', 'pending', 'ditolak', or null if no documents submitted
  */
-export function getOverallPengajuanStatus(dokumen: Array<{ file_path: string | null; status_verifikasi: string }>): string | null {
+export function getOverallPengajuanStatus(
+  dokumen: Array<{ file_path: string | null; status_verifikasi: string }>,
+  dbStatus?: string | null
+): string | null {
+  const normalizedDb = dbStatus?.toLowerCase().trim();
+
+  if (normalizedDb === 'ditolak') return 'ditolak';
+  if (normalizedDb === 'lulus') return 'lulus';
+
   if (!dokumen || dokumen.length === 0) return null;
   
   const submittedDokumen = dokumen.filter((d) => d.file_path);

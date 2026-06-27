@@ -72,7 +72,7 @@ export default async function DetailKeuanganPage({ params }: Props) {
 
   const allowedDocIds = [14, 18, 21, 22];
   const filteredDocs = [
-    ...keuangan.pengajuan_studi.dokumen_pengajuan,
+    ...(keuangan.pengajuan_studi?.dokumen_pengajuan ?? []),
     ...keuangan.dokumen_pengajuan,
   ].filter((d) => d.master_dokumen_id && allowedDocIds.includes(d.master_dokumen_id));
 

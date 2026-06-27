@@ -10,6 +10,7 @@ type UserData = {
   email: string;
   name: string;
   nip?: string;
+  gelar?: string;
   role: string;
   roleDisplay: string;
   jabatan?: string;

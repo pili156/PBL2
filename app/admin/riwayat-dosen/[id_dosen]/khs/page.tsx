@@ -3,6 +3,7 @@ import { Eye, BarChart3, Plus, FileText } from 'lucide-react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { formatDateLong } from '@/src/lib/formatters';
+import StatusBadge from '@/src/components/StatusBadge';
 
 export const dynamic = 'force-dynamic';
 
@@ -51,11 +52,10 @@ export default async function RiwayatStudi({ params }: Props) {
   const rataIpk = ipkValues.length > 0 ? (ipkValues.reduce((a, b) => a + b, 0) / ipkValues.length).toFixed(2) : '0.00';
   const ipkTertinggi = ipkValues.length > 0 ? Math.max(...ipkValues).toFixed(2) : '0.00';
   const ipkTerendah = ipkValues.length > 0 ? Math.min(...ipkValues).toFixed(2) : '0.00';
-  const totalSks = khsList.length * 20;
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-5">
           <p className="text-[10px] text-slate-400 font-medium uppercase tracking-wider mb-1">IPS Rata-rata</p>
           <p className="text-2xl font-bold text-blue-600">{rataIpk}</p>
@@ -67,10 +67,6 @@ export default async function RiwayatStudi({ params }: Props) {
         <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-5">
           <p className="text-[10px] text-slate-400 font-medium uppercase tracking-wider mb-1">IPS Terendah</p>
           <p className="text-2xl font-bold text-slate-800">{ipkTerendah}</p>
-        </div>
-        <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-5">
-          <p className="text-[10px] text-slate-400 font-medium uppercase tracking-wider mb-1">Total SKS</p>
-          <p className="text-2xl font-bold text-slate-800">{totalSks}</p>
         </div>
       </div>
 
@@ -111,7 +107,7 @@ export default async function RiwayatStudi({ params }: Props) {
                 <th className="px-5 py-3.5">Semester</th>
                 <th className="px-5 py-3.5">Tahun Akademik</th>
                 <th className="px-5 py-3.5">IPS</th>
-                <th className="px-5 py-3.5">SKS</th>
+                <th className="px-5 py-3.5">Status</th>
                 <th className="px-5 py-3.5">Tanggal Upload</th>
                 <th className="px-5 py-3.5 text-center">Aksi</th>
               </tr>
@@ -119,7 +115,7 @@ export default async function RiwayatStudi({ params }: Props) {
             <tbody>
               {khsList.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="px-5 py-12 text-center">
+                  <td colSpan={6} className="px-5 py-12 text-center">
                     <div className="flex flex-col items-center gap-2">
                       <FileText size={32} className="text-slate-300" strokeWidth={1.5} />
                       <p className="text-sm text-slate-400">Belum ada data KHS.</p>
@@ -143,7 +139,9 @@ export default async function RiwayatStudi({ params }: Props) {
                           {ipk > 0 ? ipk.toFixed(2) : '-'}
                         </span>
                       </td>
-                      <td className="px-5 py-3.5 text-sm text-slate-600">{k.semester_ke ? 20 : '-'}</td>
+                      <td className="px-5 py-3.5">
+                        <StatusBadge status={k.status_evaluasi} domain="evaluasi" size="sm" />
+                      </td>
                       <td className="px-5 py-3.5 text-sm text-slate-500">{formatDateLong(k.tanggal_unggah)}</td>
                       <td className="px-5 py-3.5 text-center">
                         {isDisabled ? (

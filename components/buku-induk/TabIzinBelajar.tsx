@@ -15,10 +15,13 @@ interface DosenItem {
   perguruan_tinggi: string | null;
   jenis_pengajuan_studi: string | null;
   status_kuliah: string | null;
+  pendidikan_terakhir: string | null;
+  data_doktor?: unknown;
 }
 
 interface TabIzinBelajarProps {
   data: DosenItem[];
+  onViewDetail?: (id: number) => void;
 }
 
 const PER_PAGE = 8;
@@ -31,7 +34,7 @@ function mapStatus(statusKuliah: string | null): StatusDosen {
   return "Aktif";
 }
 
-export default function TabIzinBelajar({ data }: TabIzinBelajarProps) {
+export default function TabIzinBelajar({ data, onViewDetail }: TabIzinBelajarProps) {
   const [search, setSearch] = useState("");
   const [jurusan, setJurusan] = useState("Semua Jurusan");
   const [status, setStatus] = useState("Semua Status");
@@ -40,6 +43,9 @@ export default function TabIzinBelajar({ data }: TabIzinBelajarProps) {
   const filtered = data.filter((d) => {
     const jenisStudi = (d.jenis_pengajuan_studi || "").toLowerCase();
     if (!jenisStudi.includes("izin belajar")) return false;
+
+    const isDoktor = (d.pendidikan_terakhir || "").toUpperCase() === "S3" || d.data_doktor != null;
+    if (isDoktor) return false;
 
     const nama = (d.nama_lengkap || "").toLowerCase();
     const nip = (d.nip || "").toString();
@@ -94,18 +100,22 @@ export default function TabIzinBelajar({ data }: TabIzinBelajarProps) {
           <tbody>
             {paged.length === 0 ? (
               <tr>
-                <td colSpan={6} className="px-4 py-8 text-center text-sm text-gray-400 italic">Tidak ada data izin belajar.</td>
+                <td colSpan={6} className="px-4 py-8 text-center text-sm text-gray-400 italic">Tidak ada data tugas belajar (tetap menjalankan kewajiban).</td>
               </tr>
             ) : (
               paged.map((d, i) => (
                 <tr key={d.id} className="border-b border-gray-50 hover:bg-gray-50/60 transition-colors">
                   <td className="px-4 py-3.5 text-sm text-gray-500">{(page - 1) * PER_PAGE + i + 1}</td>
-                  <td className="px-4 py-3.5 text-sm text-blue-500 font-medium cursor-pointer hover:underline">{d.nama_lengkap}</td>
+                  <td className="px-4 py-3.5 text-sm text-blue-500 font-medium cursor-pointer hover:underline" onClick={() => onViewDetail?.(d.id)}>{d.nama_lengkap}</td>
                   <td className="px-4 py-3.5 text-sm text-gray-600">{d.nip || "-"}</td>
                   <td className="px-4 py-3.5 text-sm text-gray-600">{d.perguruan_tinggi || "-"}</td>
                   <td className="px-4 py-3.5"><StatusBadge status={mapStatus(d.status_kuliah)} /></td>
                   <td className="px-4 py-3.5">
-                    <button className="w-7 h-7 flex items-center justify-center rounded-md border border-gray-200 text-gray-500 hover:border-blue-400 hover:text-blue-500 transition-colors">
+                    <button
+                      onClick={() => onViewDetail?.(d.id)}
+                      className="w-7 h-7 flex items-center justify-center rounded-md border border-gray-200 text-gray-500 hover:border-blue-400 hover:text-blue-500 transition-colors"
+                      title="Lihat Detail"
+                    >
                       <Eye size={13} />
                     </button>
                   </td>

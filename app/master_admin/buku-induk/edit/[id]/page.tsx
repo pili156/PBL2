@@ -30,10 +30,7 @@ export default function EditBukuIndukExcelPage() {
     periode_studi: "",
     tmt_tubel: "",
     selesai_tubel: "",
-    sumber_biaya: "",
-    tempat_studi: "",
     jurusan_studi: "",
-    jenjang: "",
     tahun_anggaran: "",
     no_sk_tubel: "",
     tanggal_sk_tubel: "",
@@ -49,6 +46,7 @@ export default function EditBukuIndukExcelPage() {
     pemberhentian_tunjangan: "",
     ijazah_transkrip: "",
     dokumen_pengaktifan_kembali: "",
+    pendidikan_terakhir: "",
     catatan: "",
   });
 
@@ -234,20 +232,12 @@ export default function EditBukuIndukExcelPage() {
               <input type="date" name="selesai_tubel" value={formData.selesai_tubel} onChange={handleChange} className="p-3 border border-gray-200 rounded-xl text-sm bg-[#F8FAFC]" />
             </div>
             <div className="flex flex-col gap-2">
-              <label className="text-xs font-bold text-[#0A192F] uppercase tracking-wider">15. SUMBER BIAYA / BEASISWA</label>
-              <input type="text" name="sumber_biaya" value={formData.sumber_biaya} onChange={handleChange} placeholder="Contoh: LPDP / BPI / Sendiri" className="p-3 border border-gray-200 rounded-xl text-sm bg-[#F8FAFC]" />
-            </div>
-            <div className="flex flex-col gap-2">
-              <label className="text-xs font-bold text-[#0A192F] uppercase tracking-wider">16. TEMPAT STUDI (UNIVERSITAS)</label>
-              <input type="text" name="tempat_studi" value={formData.tempat_studi} onChange={handleChange} placeholder="Contoh: Universitas Diponegoro" className="p-3 border border-gray-200 rounded-xl text-sm bg-[#F8FAFC]" />
-            </div>
-            <div className="flex flex-col gap-2">
-              <label className="text-xs font-bold text-[#0A192F] uppercase tracking-wider">17. JURUSAN STUDI</label>
+              <label className="text-xs font-bold text-[#0A192F] uppercase tracking-wider">15. JURUSAN STUDI</label>
               <input type="text" name="jurusan_studi" value={formData.jurusan_studi} onChange={handleChange} placeholder="Contoh: Ilmu Komputer" className="p-3 border border-gray-200 rounded-xl text-sm bg-[#F8FAFC]" />
             </div>
             <div className="flex flex-col gap-2">
               <label className="text-xs font-bold text-[#0A192F] uppercase tracking-wider">18. JENJANG PENDIDIKAN</label>
-              <select name="jenjang" value={formData.jenjang} onChange={handleChange} className="p-3 border border-gray-200 rounded-xl text-sm bg-[#F8FAFC]">
+              <select name="pendidikan_terakhir" value={formData.pendidikan_terakhir} onChange={handleChange} className="p-3 border border-gray-200 rounded-xl text-sm bg-[#F8FAFC]">
                 <option value="">-- Pilih Jenjang --</option>
                 <option value="S1">S1</option>
                 <option value="S2">S2</option>

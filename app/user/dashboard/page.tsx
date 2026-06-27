@@ -2,14 +2,49 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Upload, Wallet, ClipboardCheck, FileEdit, Check, AlertCircle, Clock } from "lucide-react";
+import dynamic from "next/dynamic";
+import { Upload, Wallet, ClipboardCheck, FileEdit, Check, AlertCircle, Clock, XCircle } from "lucide-react";
 import { getStatusBadgeClass } from "@/src/lib/status-utils";
-import { 
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer,
-  LineChart, Line
-} from "recharts";
 import { formatRupiah } from "@/src/lib/formatters";
 import StatusBadge from "@/src/components/StatusBadge";
+
+const LineChartLazy = dynamic(() => import("recharts").then(mod => {
+  const { ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip } = mod;
+  return function LineChartWrapper({ data }: { data: any[] }) {
+    return (
+      <ResponsiveContainer width="100%" height="100%">
+        <LineChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+          <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
+          <XAxis dataKey="semester" tick={{ fontSize: 11, fill: '#64748b' }} />
+          <YAxis domain={[0, 4.0]} tickCount={5} tick={{ fontSize: 11, fill: '#64748b' }} />
+          <Tooltip formatter={(value: any) => [Number(value).toFixed(2), "IPS"]} />
+          <Line type="monotone" dataKey="ipk" stroke="#10b981" strokeWidth={3} dot={{ r: 4, strokeWidth: 2, fill: '#fff' }} activeDot={{ r: 6 }} />
+        </LineChart>
+      </ResponsiveContainer>
+    );
+  };
+}), { ssr: false, loading: () => <div className="h-[280px] w-full bg-slate-100 animate-pulse rounded-lg" /> });
+
+const BarChartLazy = dynamic(() => import("recharts").then(mod => {
+  const { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip } = mod;
+  return function BarChartWrapper({ data }: { data: any[] }) {
+    return (
+      <ResponsiveContainer width="100%" height="100%">
+        <BarChart data={data} margin={{ top: 10, right: 10, left: -15, bottom: 0 }}>
+          <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
+          <XAxis dataKey="semester" tick={{ fontSize: 11, fill: '#64748b' }} />
+          <YAxis 
+            tickFormatter={(val: any) => `Rp${(Number(val)/1000000).toFixed(0)}Jt`} 
+            width={55} 
+            tick={{ fontSize: 11, fill: '#64748b' }} 
+          />
+          <Tooltip formatter={(value: any) => [formatRupiah(Number(value)), "Nominal"]} />
+          <Bar dataKey="nominal" fill="#3b82f6" radius={[4, 4, 0, 0]} maxBarSize={40} />
+        </BarChart>
+      </ResponsiveContainer>
+    );
+  };
+}), { ssr: false, loading: () => <div className="h-[200px] w-full bg-slate-100 animate-pulse rounded-lg" /> });
 
 // --- Interfaces Data ---
 interface DashboardData {
@@ -131,11 +166,15 @@ export default function DashboardPage() {
                   icon = <AlertCircle size={16} />;
                   label = "REVISI";
                   break;
+                case "ditolak":
+                  icon = <XCircle size={16} />;
+                  label = "DITOLAK";
+                  break;
                 default:
                   icon = <Clock size={16} />;
                   label = "PENDING";
               }
-              const badgeClass = getStatusBadgeClass(data.status_pengajuan, 'verifikasi');
+              const badgeClass = getStatusBadgeClass(data.status_pengajuan, 'pengajuan');
               return (
                 <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold uppercase ${badgeClass}`}>
                   {icon}
@@ -200,15 +239,7 @@ export default function DashboardPage() {
           <h3 className="text-base font-bold text-slate-800 mb-4">Grafik Perkembangan IPS</h3>
           <div className="h-[280px] w-full">
             {data.grafikIPS.length > 0 ? (
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={data.grafikIPS} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
-                  <XAxis dataKey="semester" tick={{ fontSize: 11, fill: '#64748b' }} />
-                  <YAxis domain={[0, 4.0]} tickCount={5} tick={{ fontSize: 11, fill: '#64748b' }} />
-                  <RechartsTooltip formatter={(value: any) => [Number(value).toFixed(2), "IPS"]} />
-                  <Line type="monotone" dataKey="ipk" stroke="#10b981" strokeWidth={3} dot={{ r: 4, strokeWidth: 2, fill: '#fff' }} activeDot={{ r: 6 }} />
-                </LineChart>
-              </ResponsiveContainer>
+              <LineChartLazy data={data.grafikIPS} />
             ) : (
               <div className="flex h-full items-center justify-center">
                 <p className="text-xs text-slate-400 italic">Data transkrip tidak cukup untuk menampilkan grafik.</p>
@@ -269,19 +300,7 @@ export default function DashboardPage() {
 
           <div className="h-[200px] w-full flex-grow">
             {data.grafikReimbursement.length > 0 ? (
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={data.grafikReimbursement} margin={{ top: 10, right: 10, left: -15, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
-                  <XAxis dataKey="semester" tick={{ fontSize: 11, fill: '#64748b' }} />
-                  <YAxis 
-                    tickFormatter={(val: any) => `Rp${(Number(val)/1000000).toFixed(0)}Jt`} 
-                    width={55} 
-                    tick={{ fontSize: 11, fill: '#64748b' }} 
-                  />
-                  <RechartsTooltip formatter={(value: any) => [formatRupiah(Number(value)), "Nominal"]} />
-                  <Bar dataKey="nominal" fill="#3b82f6" radius={[4, 4, 0, 0]} maxBarSize={40} />
-                </BarChart>
-              </ResponsiveContainer>
+              <BarChartLazy data={data.grafikReimbursement} />
             ) : (
               <div className="flex h-full items-center justify-center">
                 <p className="text-xs text-slate-400 italic">Belum ada riwayat data pendanaan finansial.</p>

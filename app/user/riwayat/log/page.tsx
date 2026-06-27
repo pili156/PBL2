@@ -64,14 +64,33 @@ export default async function LogAktivitasPage() {
 
   const user = await prisma.user.findUnique({
     where: { email: userEmail },
-    include: { master_dosen: true },
+    include: { 
+      master_dosen: true,
+      pengajuan_studi: {
+        include: {
+          status: true,
+          jenis_studi: true,
+        },
+        orderBy: { created_at: 'desc' },
+        take: 1,
+      },
+    },
   });
 
   if (!user) {
     return <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-10 text-center text-slate-500">User tidak ditemukan</div>;
   }
 
-  const namaLengkap = user.master_dosen?.nama_lengkap || user.username || 'Dosen';
+  const isDoktorLulus = 
+    (user.master_dosen?.pendidikan_terakhir === 'S3' && user.master_dosen?.tanggal_lulus) ||
+    (user.pengajuan_studi[0]?.status?.nama_status === 'lulus' && 
+     (user.pengajuan_studi[0]?.jenis_studi?.nama_jenis?.toLowerCase().includes('s3') || 
+      user.pengajuan_studi[0]?.jenis_studi?.nama_jenis?.toLowerCase().includes('doktor')));
+
+  const namaLengkapBase = user.master_dosen?.nama_lengkap || user.username || 'Dosen';
+  const namaLengkap = isDoktorLulus && !namaLengkapBase.startsWith('Dr.') 
+    ? `Dr. ${namaLengkapBase}` 
+    : namaLengkapBase;
 
   const allPengajuan = await prisma.pengajuanStudi.findMany({
     where: { user_id: user.id },

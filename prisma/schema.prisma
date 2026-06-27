@@ -107,8 +107,15 @@ model MasterDosen {
   pendidikan_terakhir String?
   provinsi_lahir   String?
   kota_lahir       String?
+  bidang_keahlian  String?
+  status_dosen     String?
+  tanggal_lulus    DateTime? @db.Date
   
-  user             User?     @relation(fields: [user_id], references: [id])
+  user             User?             @relation(fields: [user_id], references: [id])
+  data_tubel       DataTubel?
+  data_doktor      DataDoktor?
+  data_profesor    DataProfesor?
+  data_izin_belajar DataIzinBelajar?
 
   @@map("master_dosen")
 }
@@ -243,7 +250,7 @@ model MonitoringKhs {
   tanggal_unggah   DateTime?       @db.Date
   created_at       DateTime?       @default(now()) @db.Timestamptz(6)
   tahun_akademik   String?
-  ipk              Decimal?        @db.Decimal(3, 2)
+  ips              Decimal?        @db.Decimal(3, 2)
   status_evaluasi  StatusEvaluasiKhs?  @default(pending)
   tanggal_evaluasi DateTime?       @db.Timestamptz(6)
   updated_at       DateTime?       @updatedAt @db.Timestamptz(6)
@@ -368,4 +375,112 @@ model MasterKabupatenKota {
   updatedAt       DateTime         @updatedAt
 
   @@map("master_kabupaten_kota")
+}
+
+model DataTubel {
+  id                              Int       @id @default(autoincrement())
+  dosen_id                        Int       @unique
+  dosen_tendik                    String?
+  jurusan_bagian_upa              String?
+  nama_pegawai                    String?
+  nip_baru                        String?
+  jabatan_fungsional              String?
+  status_kuliah                   String?
+  tanggal_lulus                   DateTime? @db.Date
+  jenis_pengajuan_studi           String?
+  jenis_tugas_belajar             String?
+  tingkat_prioritas_pembinaan     String?
+  monitoring                      String?
+  periode_studi                   String?
+  tmt_tubel                       DateTime? @db.Date
+  selesai_tubel                   DateTime? @db.Date
+  sumber_biaya                    String?
+  tempat_studi                    String?
+  jurusan_studi                   String?
+  jenjang                         String?
+  tahun_anggaran                  String?
+  no_sk_tubel                     String?
+  tanggal_sk_tubel                DateTime? @db.Date
+  tanggal_upload_aplikasi         DateTime? @db.Date
+  link_sk_tubel                   String?
+  link_pengajuan_ibel_tb          String?
+  periode_perpanjangan_tubel      String?
+  no_sk_perpanjangan_tubel        String?
+  link_sk_perpanjangan_tubel      String?
+  no_persetujuan_perjadin_setneg  String?
+  link_persetujuan_setneg         String?
+  masa_pemberhentian_tunjangan    String?
+  pemberhentian_tunjangan         String?
+  ijazah_transkrip                String?
+  dokumen_pengaktifan_kembali     String?
+  catatan                         String?
+  created_at                      DateTime? @default(now()) @db.Timestamptz(6)
+  updated_at                      DateTime? @updatedAt @db.Timestamptz(6)
+
+  dosen                           MasterDosen @relation(fields: [dosen_id], references: [id])
+
+  @@map("data_tubel")
+}
+
+model DataDoktor {
+  id               Int       @id @default(autoincrement())
+  dosen_id         Int?      @unique
+  nip              String?
+  nama_dosen       String?
+  jurusan          String?
+  program_studi    String?
+  gelar_akademik   String?
+  bidang_keahlian  String?
+  perguruan_tinggi String?
+  tahun            Int?
+  ijazah           String?
+  status           String?
+  tanggal_lulus    DateTime? @db.Date
+  created_at       DateTime? @default(now()) @db.Timestamptz(6)
+  updated_at       DateTime? @updatedAt @db.Timestamptz(6)
+
+  dosen MasterDosen? @relation(fields: [dosen_id], references: [id])
+
+  @@map("data_doktor")
+}
+
+model DataProfesor {
+  id               Int       @id @default(autoincrement())
+  dosen_id         Int?      @unique
+  nip              String?
+  nama_dosen       String?
+  jurusan          String?
+  bidang_keahlian  String?
+  perguruan_tinggi String?
+  tahun            Int?
+  ijazah           String?
+  status           String?
+  created_at       DateTime? @default(now()) @db.Timestamptz(6)
+  updated_at       DateTime? @updatedAt @db.Timestamptz(6)
+
+  dosen MasterDosen? @relation(fields: [dosen_id], references: [id])
+
+  @@map("data_profesor")
+}
+
+model DataIzinBelajar {
+  id                   Int       @id @default(autoincrement())
+  dosen_id             Int?      @unique
+  nip                  String?
+  nama_dosen           String?
+  jurusan              String?
+  tahun_akademik       String?
+  jenis_status_belajar String?
+  sumber_biaya         String?
+  tempat_studi         String?
+  no_sk                String?
+  tanggal_sk           DateTime? @db.Date
+  lulus_belum          String?
+  masa_kuliah_aktif    String?
+  created_at           DateTime? @default(now()) @db.Timestamptz(6)
+  updated_at           DateTime? @updatedAt @db.Timestamptz(6)
+
+  dosen MasterDosen? @relation(fields: [dosen_id], references: [id])
+
+  @@map("data_izin_belajar")
 }

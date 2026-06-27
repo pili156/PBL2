@@ -18,6 +18,7 @@ type DetailData = {
   status_pencairan: string | null;
   catatan_keuangan: string | null;
   created_at: string | null;
+  isDoktorLulus: boolean | null;
   pengajuan_studi: {
     id: number;
     user: {
@@ -169,7 +170,10 @@ export default function AdminBantuanStudiDetailPage() {
               Semester {data.semester_ke} {data.tahun_akademik ? `- TA ${data.tahun_akademik}` : ""}
             </p>
             <h2 className="text-2xl font-semibold text-slate-900">
-              {data.pengajuan_studi?.user?.master_dosen?.nama_lengkap || data.pengajuan_studi?.user?.username || "Dosen"}
+              {(() => {
+                const namaLengkap = data.pengajuan_studi?.user?.master_dosen?.nama_lengkap || data.pengajuan_studi?.user?.username || "Dosen";
+                return data.isDoktorLulus && !namaLengkap.startsWith('Dr.') ? `Dr. ${namaLengkap}` : namaLengkap;
+              })()}
             </h2>
             <p className="text-sm text-slate-500">
               NIP: {data.pengajuan_studi?.user?.master_dosen?.nip || "-"} • Diajukan {formatDateLong(data.created_at)}
@@ -228,7 +232,10 @@ export default function AdminBantuanStudiDetailPage() {
             <div className="mt-4 grid gap-4 text-sm text-slate-700 sm:grid-cols-2">
               <div>
                 <p className="text-xs text-slate-500">Nama</p>
-                <p className="font-semibold">{data.pengajuan_studi?.user?.master_dosen?.nama_lengkap || data.pengajuan_studi?.user?.username || "-"}</p>
+                <p className="font-semibold">{(() => {
+                  const namaLengkap = data.pengajuan_studi?.user?.master_dosen?.nama_lengkap || data.pengajuan_studi?.user?.username || "-";
+                  return data.isDoktorLulus && !namaLengkap.startsWith('Dr.') ? `Dr. ${namaLengkap}` : namaLengkap;
+                })()}</p>
               </div>
               <div>
                 <p className="text-xs text-slate-500">NIP</p>

@@ -166,6 +166,73 @@ export async function updateKHS(id: number, formData: FormData) {
   redirect('/user/laporanKHS');
 }
 
+export async function updateIPS(id: number, ipk: number) {
+  const ipkResult = ipkSchema.safeParse(ipk);
+  if (!ipkResult.success) {
+    return { error: ipkResult.error.issues[0].message };
+  }
+
+  await prisma.monitoringKhs.update({
+    where: { id },
+    data: {
+      ipk,
+      status_evaluasi: 'pending',
+    },
+  });
+
+  revalidatePath(`/user/laporanKHS/${id}`);
+  return { success: true };
+}
+
+export async function submitRevisi(id: number, formData: FormData) {
+  const ipk = formData.get('ipk') as string;
+  const file = formData.get('file') as File;
+
+  if (!ipk) {
+    return { error: 'IPS wajib diisi' };
+  }
+
+  const ipkNum = parseFloat(ipk);
+  const ipkResult = ipkSchema.safeParse(ipkNum);
+  if (!ipkResult.success) {
+    return { error: ipkResult.error.issues[0].message };
+  }
+
+  const updateData: any = {
+    ipk: ipkNum,
+    status_evaluasi: 'pending',
+  };
+
+  if (file && file.size > 0) {
+    const fileError = validateFile(file);
+    if (fileError) return { error: fileError };
+
+    const existing = await prisma.monitoringKhs.findUnique({ where: { id } });
+    if (existing?.file_khs_path) {
+      const oldPath = join(process.cwd(), 'public', existing.file_khs_path);
+      try { await unlink(oldPath); } catch {}
+    }
+
+    const bytes = await file.arrayBuffer();
+    const buffer = Buffer.from(bytes);
+    const fileExt = file.name.split('.').pop();
+    const fileName = `khs-${id}-revisi-${uuidv4()}.${fileExt}`;
+    const filePath = join(process.cwd(), 'public', 'uploads', 'khs', fileName);
+
+    await writeFile(filePath, buffer);
+    updateData.file_khs_path = `/uploads/khs/${fileName}`;
+  }
+
+  await prisma.monitoringKhs.update({
+    where: { id },
+    data: updateData,
+  });
+
+  revalidatePath('/user/laporanKHS');
+  revalidatePath(`/user/laporanKHS/${id}`);
+  return { success: true };
+}
+
 export async function getKHSById(id: number) {
   return await prisma.monitoringKhs.findUnique({
     where: { id },

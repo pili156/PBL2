@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import dynamic from "next/dynamic";
 import {
   Users,
   UserCheck,
@@ -10,10 +11,16 @@ import {
   Filter,
 } from "lucide-react";
 import { prisma } from "@/src/lib/prisma";
-import BarChartRegistrasi from "./BarChartRegistrasi";
-import PieChartRole from "./PieChartRole";
 import DateFilter from "./DateFilter";
 import { formatDateTime } from "@/src/lib/formatters";
+
+const BarChartRegistrasi = dynamic(() => import("./BarChartRegistrasi"), {
+  loading: () => <div className="h-72 w-full mt-6 bg-slate-100 animate-pulse rounded-lg" />,
+});
+
+const PieChartRole = dynamic(() => import("./PieChartRole"), {
+  loading: () => <div className="h-72 w-full mt-6 bg-slate-100 animate-pulse rounded-lg" />,
+});
 
 export default async function MasterAdminDashboard({
   dari,

@@ -66,6 +66,14 @@ export default async function MonitoringPenggunaPage({ searchParams }: PageProps
       role: true,
       master_dosen: true,
       _count: { select: { pengajuan_studi: true } },
+      pengajuan_studi: {
+        include: {
+          status: true,
+          jenis_studi: true,
+        },
+        orderBy: { created_at: 'desc' },
+        take: 1,
+      },
     },
     orderBy: { created_at: 'desc' },
   });
@@ -97,20 +105,33 @@ export default async function MonitoringPenggunaPage({ searchParams }: PageProps
   const totalPages = Math.ceil(totalFiltered / itemsPerPage);
   const paged = filtered.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
-  const data = paged.map((u) => ({
-    id: u.id,
-    nama: u.master_dosen?.nama_lengkap || u.username || 'Tanpa Nama',
-    email: u.email || '-',
-    nip: u.master_dosen?.nip || '-',
-    roleId: u.role_id || 0,
-    roleName: ROLE_ID_MAP[u.role_id || 0] || 'unknown',
-    roleDisplay: ROLE_DISPLAY[ROLE_ID_MAP[u.role_id || 0]] || 'Tidak Diketahui',
-    status: statusLabel(u.status_akun),
-    statusRaw: u.status_akun || 'pending',
-    inisial: (u.master_dosen?.nama_lengkap || u.username || '?').charAt(0).toUpperCase(),
-    studiCount: u._count.pengajuan_studi,
-    terakhirUpdate: formatDate(u.updated_at),
-  }));
+  const data = paged.map((u) => {
+    const isDoktorLulus = 
+      (u.master_dosen?.pendidikan_terakhir === 'S3' && u.master_dosen?.tanggal_lulus) ||
+      (u.pengajuan_studi[0]?.status?.nama_status === 'lulus' && 
+       (u.pengajuan_studi[0]?.jenis_studi?.nama_jenis?.toLowerCase().includes('s3') || 
+        u.pengajuan_studi[0]?.jenis_studi?.nama_jenis?.toLowerCase().includes('doktor')));
+
+    const namaLengkap = u.master_dosen?.nama_lengkap || u.username || 'Tanpa Nama';
+    const namaDisplay = isDoktorLulus && !namaLengkap.startsWith('Dr.') 
+      ? `Dr. ${namaLengkap}` 
+      : namaLengkap;
+
+    return {
+      id: u.id,
+      nama: namaDisplay,
+      email: u.email || '-',
+      nip: u.master_dosen?.nip || '-',
+      roleId: u.role_id || 0,
+      roleName: ROLE_ID_MAP[u.role_id || 0] || 'unknown',
+      roleDisplay: ROLE_DISPLAY[ROLE_ID_MAP[u.role_id || 0]] || 'Tidak Diketahui',
+      status: statusLabel(u.status_akun),
+      statusRaw: u.status_akun || 'pending',
+      inisial: (u.master_dosen?.nama_lengkap || u.username || '?').charAt(0).toUpperCase(),
+      studiCount: u._count.pengajuan_studi,
+      terakhirUpdate: formatDate(u.updated_at),
+    };
+  });
 
   const startIdx = totalFiltered === 0 ? 0 : (currentPage - 1) * itemsPerPage + 1;
   const endIdx = Math.min(currentPage * itemsPerPage, totalFiltered);

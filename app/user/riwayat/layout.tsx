@@ -49,7 +49,21 @@ export default async function RiwayatLayout({ children }: { children: React.Reac
     return item.status_pencairan?.toLowerCase() ?? "pending";
   };
 
+  const isDoktorLulus = 
+    (user.master_dosen?.pendidikan_terakhir === 'S3' && user.master_dosen?.tanggal_lulus) ||
+    (user.pengajuan_studi[0]?.status?.nama_status === 'lulus' && 
+     (user.pengajuan_studi[0]?.jenis_studi?.nama_jenis?.toLowerCase().includes('s3') || 
+      user.pengajuan_studi[0]?.jenis_studi?.nama_jenis?.toLowerCase().includes('doktor')));
+
   const namaLengkap = user.master_dosen?.nama_lengkap || user.username || 'Dosen';
+  const gelar = user.master_dosen?.gelar || '';
+  
+  const namaDisplay = isDoktorLulus && !namaLengkap.startsWith('Dr.') 
+    ? `Dr. ${namaLengkap}` 
+    : namaLengkap;
+  const gelarDisplay = gelar;
+
+  const namaLengkapWithGelar = namaDisplay + (gelarDisplay ? `.${gelarDisplay}` : '');
   const inisial = namaLengkap.charAt(0).toUpperCase();
   const nip = user.master_dosen?.nip || '-';
   const jurusan = user.master_dosen?.jurusan || '-';
@@ -87,7 +101,7 @@ export default async function RiwayatLayout({ children }: { children: React.Reac
         <div className="flex flex-wrap items-center gap-x-8 gap-y-1 text-sm">
           <div>
             <p className="text-[10px] text-slate-400 uppercase tracking-wider">Nama</p>
-            <p className="font-bold text-slate-800">{namaLengkap}</p>
+            <p className="font-bold text-slate-800">{namaLengkapWithGelar}</p>
           </div>
           <div>
             <p className="text-[10px] text-slate-400 uppercase tracking-wider">NIP</p>

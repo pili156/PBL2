@@ -7,7 +7,7 @@ export interface DosenSemua {
   nama: string;
   nip: string;
   jurusan: string;
-  jenjang: string;
+  pendidikan_terakhir: string;
   statusStudi: string;
   status: StatusDosen;
 }
@@ -16,7 +16,7 @@ export interface DosenTugasBelajar {
   no: number;
   nama: string;
   nip: string;
-  jenjang: string;
+  pendidikan_terakhir: string;
   kampusTujuan: string;
   tahunMulai: number;
   semester: number;
@@ -27,7 +27,7 @@ export interface DosenIzinBelajar {
   no: number;
   nama: string;
   nip: string;
-  jenjang: string;
+  pendidikan_terakhir: string;
   kampusTujuan: string;
   tahunMulai: number;
   status: StatusDosen;

@@ -1,7 +1,8 @@
 import { headers } from 'next/headers';
 import { prisma } from '@/src/lib/prisma';
-import { Plus, Eye, Upload, Info, Building2, GraduationCap, Pencil } from 'lucide-react';
+import { Plus, Eye, Upload, Info, Building2, GraduationCap } from 'lucide-react';
 import Link from 'next/link';
+import StatusBadge from '@/src/components/StatusBadge';
 
 export const dynamic = 'force-dynamic';
 
@@ -150,17 +151,6 @@ async function KhsTable({ pengajuan }: { pengajuan: any }) {
           <tbody>
             {tabelKHS.map((item: { semester_ke: number; data: any }, index: number) => {
               const isUploaded = !!item.data;
-              const rawStatus = item.data!.status_evaluasi?.toLowerCase().trim() || 'pending';
-              
-              // Mapping status dari database ke kategori UI
-              let statusKHS = 'pending';
-              if (['valid', 'diterima', 'terverifikasi', 'selesai', 'disetujui'].includes(rawStatus)) {
-                statusKHS = 'valid';
-              } else if (['revisi', 'perlu_revisi', 'ditolak'].includes(rawStatus)) {
-                statusKHS = 'revisi';
-              } else if (['pending', 'menunggu_verifikasi', 'draft'].includes(rawStatus)) {
-                statusKHS = 'pending';
-              }
 
               return (
                 <tr key={index} className="border-b border-slate-50 hover:bg-slate-50 transition-colors">
@@ -178,47 +168,13 @@ async function KhsTable({ pengajuan }: { pengajuan: any }) {
                       : '-'}
                   </td>
                   <td className="py-4 px-4">
-                    {statusKHS === 'valid' && (
-                      <span className="inline-flex items-center gap-1.5 text-[10px] font-bold text-green-700 bg-green-100 px-2.5 py-1 rounded-md">
-                        <span className="w-1.5 h-1.5 rounded-full bg-green-600"></span> VALID
-                      </span>
-                    )}
-                    {statusKHS === 'pending' && (
-                      <span className="inline-flex items-center gap-1.5 text-[10px] font-bold text-indigo-700 bg-indigo-100 px-2.5 py-1 rounded-md">
-                        <span className="w-1.5 h-1.5 rounded-full bg-indigo-600"></span> PENDING
-                      </span>
-                    )}
-                    {statusKHS === 'revisi' && (
-                      <span className="inline-flex items-center gap-1.5 text-[10px] font-bold text-red-700 bg-red-100 px-2.5 py-1 rounded-md">
-                        <span className="w-1.5 h-1.5 rounded-full bg-red-600"></span> REVISI
-                      </span>
-                    )}
-                    {statusKHS === 'belum upload' && (
-                      <span className="inline-flex items-center gap-1.5 text-[10px] font-bold text-gray-600 bg-gray-100 px-2.5 py-1 rounded-md">
-                        <span className="w-1.5 h-1.5 rounded-full bg-gray-500"></span> BELUM UPLOAD
-                      </span>
-                    )}
-                    {!['valid', 'pending', 'revisi', 'belum upload'].includes(statusKHS) && (
-                      <span className="inline-flex items-center gap-1.5 text-[10px] font-bold text-gray-600 bg-gray-100 px-2.5 py-1 rounded-md">
-                        <span className="w-1.5 h-1.5 rounded-full bg-gray-500"></span> {statusKHS.toUpperCase()}
-                      </span>
-                    )}
+                    <StatusBadge status={item.data!.status_evaluasi} domain="evaluasi" size="sm" />
                   </td>
                   <td className="py-4 px-4">
                     <div className="flex justify-center">
-                      {statusKHS === 'valid' && item.data && (
+                      {item.data && (
                         <Link href={`/user/laporanKHS/${item.data.id}`} className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-blue-600 text-blue-600 rounded-lg text-xs font-bold hover:bg-blue-50 w-[110px] justify-center transition-all">
                           <Eye size={14} /> Lihat Detail
-                        </Link>
-                      )}
-                      {statusKHS === 'revisi' && item.data && (
-                        <Link href={`/user/laporanKHS/${item.data.id}`} className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-blue-600 text-blue-600 rounded-lg text-xs font-bold hover:bg-blue-50 w-[110px] justify-center transition-all">
-                          <Pencil size={14} /> Lihat Detail
-                        </Link>
-                      )}
-                      {statusKHS === 'pending' && item.data && (
-                        <Link href={`/user/laporanKHS/${item.data.id}`} className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-blue-600 text-blue-600 rounded-lg text-xs font-bold hover:bg-blue-50 w-[110px] justify-center transition-all">
-                          <Pencil size={14} /> Lihat Detail
                         </Link>
                       )}
                     </div>
@@ -236,10 +192,9 @@ async function KhsTable({ pengajuan }: { pengajuan: any }) {
           <Info size={16} /> Keterangan Status:
         </div>
         <div className="flex flex-wrap gap-x-6 gap-y-2 text-slate-600">
-          <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-emerald-500"></span> <strong>VALID:</strong> KHS telah diverifikasi dan disetujui admin</span>
-          <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-blue-500"></span> <strong>PENDING:</strong> KHS sedang dalam antrean verifikasi</span>
-          <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-amber-500"></span> <strong>REVISI:</strong> Perbaiki sesuai catatan dari admin</span>
-          <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-slate-400"></span> <strong>BELUM UPLOAD:</strong> KHS untuk semester ini belum diupload</span>
+          <span className="flex items-center gap-1.5"><StatusBadge status="valid" domain="evaluasi" size="sm" /> KHS telah diverifikasi dan disetujui admin</span>
+          <span className="flex items-center gap-1.5"><StatusBadge status="pending" domain="evaluasi" size="sm" /> KHS sedang dalam antrean verifikasi</span>
+          <span className="flex items-center gap-1.5"><StatusBadge status="revisi" domain="evaluasi" size="sm" /> Perbaiki sesuai catatan dari admin</span>
         </div>
       </div>
     </>

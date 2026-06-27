@@ -49,7 +49,16 @@ export default async function DashboardDosen({ params }: Props) {
 
   if (!dosen) notFound();
 
-  const namaDosen = dosen.master_dosen?.nama_lengkap || dosen.username || 'Dosen';
+  const isDoktorLulus = 
+    (dosen.master_dosen?.pendidikan_terakhir === 'S3' && dosen.master_dosen?.tanggal_lulus) ||
+    (dosen.pengajuan_studi[0]?.status?.nama_status === 'lulus' && 
+     (dosen.pengajuan_studi[0]?.jenis_studi?.nama_jenis?.toLowerCase().includes('s3') || 
+      dosen.pengajuan_studi[0]?.jenis_studi?.nama_jenis?.toLowerCase().includes('doktor')));
+
+  const namaLengkap = dosen.master_dosen?.nama_lengkap || dosen.username || 'Dosen';
+  const namaDosen = isDoktorLulus && !namaLengkap.startsWith('Dr.') 
+    ? `Dr. ${namaLengkap}` 
+    : namaLengkap;
   const nip = dosen.master_dosen?.nip || '-';
   const jurusan = dosen.master_dosen?.jurusan || '-';
 
@@ -67,7 +76,7 @@ export default async function DashboardDosen({ params }: Props) {
   const skKementerian = pengajuan.sk_kementerian?.[0] ?? null;
   const khsList = pengajuan.monitoring_khs;
   const semesterAktif = khsList.length;
-  const isSelesai = ['studi_selesai', 'selesai'].includes(pengajuan.status?.nama_status?.toLowerCase() ?? '');
+  const isSelesai = ['lulus', 'selesai'].includes(pengajuan.status?.nama_status?.toLowerCase() ?? '');
   const lastKhs = semesterAktif > 0 ? khsList[khsList.length - 1] : null;
   const isDisetujui = ['disetujui', 'diterima', 'aktif', 'sedang berjalan'].includes(pengajuan.status?.nama_status?.toLowerCase() ?? '') || !!skKementerian;
 

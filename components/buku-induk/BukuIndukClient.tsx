@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import {
   Users, ClipboardCheck, FileText, GraduationCap,
@@ -13,6 +13,9 @@ import TabTugasBelajar from "./TabTugasBelajar";
 import TabIzinBelajar from "./TabIzinBelajar";
 import TabDoktor from "./TabDoktor";
 import TabProfesor from "./TabProfesor";
+import DetailDosenModal from "./DetailDosenModal";
+import EditProfesorModal from "./EditProfesorModal";
+import ImportExcelButton from "./ImportExcelButton";
 
 interface DosenItem {
   id: number;
@@ -20,10 +23,12 @@ interface DosenItem {
   nip: string | null;
   jurusan: string | null;
   perguruan_tinggi: string | null;
-  jenjang: string | null;
+  pendidikan_terakhir: string | null;
   jenis_pengajuan_studi: string | null;
   status_kuliah: string | null;
   jabatan: string | null;
+  data_doktor?: unknown;
+  data_profesor?: unknown;
 }
 
 interface Stats {
@@ -40,8 +45,8 @@ interface BukuIndukClientProps {
 
 const TABS: { key: TabKey; label: string; icon: React.ReactNode }[] = [
   { key: "semua", label: "Semua Dosen", icon: <Users size={14} /> },
-  { key: "tugas", label: "Tugas Belajar", icon: <ClipboardCheck size={14} /> },
-  { key: "izin", label: "Izin Belajar", icon: <FileText size={14} /> },
+  { key: "tugas", label: "Tugas Belajar (Dibebas Tugaskan)", icon: <ClipboardCheck size={14} /> },
+  { key: "izin", label: "Tugas Belajar (Tetap Menjalankan Kewajiban)", icon: <FileText size={14} /> },
   { key: "doktor", label: "Doktor", icon: <GraduationCap size={14} /> },
   { key: "profesor", label: "Profesor", icon: <GraduationCap size={14} /> },
 ];
@@ -84,11 +89,11 @@ function useTabMeta(stats: Stats | null, loading: boolean): Record<TabKey, TabMe
       ),
     },
     tugas: {
-      title: "Buku Induk - Tugas Belajar",
-      subtitle: "Data dosen dengan status tugas belajar",
+      title: "Buku Induk - Tugas Belajar (Dibebas Tugaskan)",
+      subtitle: "Data dosen dengan status tugas belajar (dibebas tugaskan)",
       stats: (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-          <StatCard label="Total Tugas Belajar" value={loading ? "-" : tugasTotal} sub="Seluruh data" iconBg="bg-emerald-50" icon={<ClipboardCheck size={20} className="text-emerald-500" />} />
+          <StatCard label="Total Dibebas Tugaskan" value={loading ? "-" : tugasTotal} sub="Seluruh data" iconBg="bg-emerald-50" icon={<ClipboardCheck size={20} className="text-emerald-500" />} />
           <StatCard label="Aktif" value={loading ? "-" : tugasAktif} sub="Sedang studi" iconBg="bg-emerald-50" icon={<ClipboardCheck size={20} className="text-emerald-500" />} />
           <StatCard label="Lulus" value={loading ? "-" : tugasLulus} sub="Selesai studi" iconBg="bg-blue-50" icon={<GraduationCap size={20} className="text-blue-500" />} />
           <StatCard label="DO / Mengundurkan Diri" value={loading ? "-" : tugasDO} sub="Tidak melanjutkan" iconBg="bg-amber-50" icon={<Users size={20} className="text-amber-500" />} />
@@ -96,11 +101,11 @@ function useTabMeta(stats: Stats | null, loading: boolean): Record<TabKey, TabMe
       ),
     },
     izin: {
-      title: "Buku Induk - Izin Belajar",
-      subtitle: "Data dosen dengan status izin belajar",
+      title: "Buku Induk - Tugas Belajar (Tetap Menjalankan Kewajiban)",
+      subtitle: "Data dosen dengan status tugas belajar (tetap menjalankan kewajiban)",
       stats: (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-          <StatCard label="Total Izin Belajar" value={loading ? "-" : izinTotal} sub="Seluruh data" iconBg="bg-orange-50" icon={<FileText size={20} className="text-orange-400" />} />
+          <StatCard label="Total Tetap Kewajiban" value={loading ? "-" : izinTotal} sub="Seluruh data" iconBg="bg-orange-50" icon={<FileText size={20} className="text-orange-400" />} />
           <StatCard label="Aktif" value={loading ? "-" : izinAktif} sub="Sedang studi" iconBg="bg-orange-50" icon={<ClipboardCheck size={20} className="text-orange-400" />} />
           <StatCard label="Selesai" value={loading ? "-" : izinSelesai} sub="Selesai studi" iconBg="bg-orange-50" icon={<Users size={20} className="text-orange-400" />} />
         </div>
@@ -135,27 +140,31 @@ export default function BukuIndukClient({ apiUrl }: BukuIndukClientProps) {
   const [stats, setStats] = useState<Stats | null>(null);
   const [loading, setLoading] = useState(true);
 
+  const [detailId, setDetailId] = useState<number | null>(null);
+  const [editProfesorId, setEditProfesorId] = useState<number | null>(null);
+
   const metas = useTabMeta(stats, loading);
   const meta = metas[activeTab];
 
-  useEffect(() => {
-    async function fetchData() {
-      try {
-        setLoading(true);
-        const res = await fetch(apiUrl);
-        if (res.ok) {
-          const json = await res.json();
-          setData(json.daftarDosen || []);
-          if (json.stats) setStats(json.stats);
-        }
-      } catch (err) {
-        console.error("Gagal mengambil data buku induk:", err);
-      } finally {
-        setLoading(false);
+  const fetchData = useCallback(async () => {
+    try {
+      setLoading(true);
+      const res = await fetch(apiUrl);
+      if (res.ok) {
+        const json = await res.json();
+        setData(json.daftarDosen || []);
+        if (json.stats) setStats(json.stats);
       }
+    } catch (err) {
+      console.error("Gagal mengambil data buku induk:", err);
+    } finally {
+      setLoading(false);
     }
-    fetchData();
   }, [apiUrl]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   return (
     <div className="max-w-[1100px] mx-auto px-6 py-7">
@@ -174,6 +183,7 @@ export default function BukuIndukClient({ apiUrl }: BukuIndukClientProps) {
           <h1 className="text-2xl font-bold text-gray-900">{meta.title}</h1>
           <p className="text-sm text-gray-500 mt-0.5">{meta.subtitle}</p>
         </div>
+        <ImportExcelButton onImportComplete={fetchData} />
       </div>
 
       {meta.stats}
@@ -206,14 +216,47 @@ export default function BukuIndukClient({ apiUrl }: BukuIndukClientProps) {
           </div>
         ) : (
           <>
-            {activeTab === "semua" && <TabSemuaDosen data={data} />}
-            {activeTab === "tugas" && <TabTugasBelajar data={data} />}
-            {activeTab === "izin" && <TabIzinBelajar data={data} />}
-            {activeTab === "doktor" && <TabDoktor data={data} />}
-            {activeTab === "profesor" && <TabProfesor data={data} />}
+            {activeTab === "semua" && (
+              <TabSemuaDosen data={data} onViewDetail={setDetailId} />
+            )}
+            {activeTab === "tugas" && (
+              <TabTugasBelajar data={data} onViewDetail={setDetailId} />
+            )}
+            {activeTab === "izin" && (
+              <TabIzinBelajar data={data} onViewDetail={setDetailId} />
+            )}
+            {activeTab === "doktor" && (
+              <TabDoktor data={data} onViewDetail={setDetailId} />
+            )}
+            {activeTab === "profesor" && (
+              <TabProfesor
+                data={data}
+                onViewDetail={setDetailId}
+                onEditProfesor={setEditProfesorId}
+              />
+            )}
           </>
         )}
       </div>
+
+      <DetailDosenModal
+        dosenId={detailId}
+        isOpen={detailId !== null}
+        onClose={() => setDetailId(null)}
+        apiUrl={apiUrl}
+        onEdit={(id) => {
+          setDetailId(null);
+          setEditProfesorId(id);
+        }}
+      />
+
+      <EditProfesorModal
+        dosenId={editProfesorId}
+        isOpen={editProfesorId !== null}
+        onClose={() => setEditProfesorId(null)}
+        apiUrl={apiUrl}
+        onSave={fetchData}
+      />
     </div>
   );
 }

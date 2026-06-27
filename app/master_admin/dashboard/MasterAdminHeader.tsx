@@ -2,7 +2,6 @@
 
 import { useState, Suspense } from "react";
 import { Download, AlertCircle } from "lucide-react";
-import * as XLSX from "xlsx";
 import DateFilter from "./DateFilter";
 
 export default function MasterAdminHeader({
@@ -16,22 +15,23 @@ export default function MasterAdminHeader({
 }) {
   const [showAlert, setShowAlert] = useState(false);
 
-  const handleExport = () => {
+  const handleExport = async () => {
     if (!exportData || exportData.length === 0) {
       setShowAlert(true);
       setTimeout(() => setShowAlert(false), 4000);
       return;
     }
 
-    const wb = XLSX.utils.book_new();
-    const ws = XLSX.utils.json_to_sheet(exportData);
+    const XLSXModule = await import("xlsx");
+    const wb = XLSXModule.utils.book_new();
+    const ws = XLSXModule.utils.json_to_sheet(exportData);
 
     const colWidths = Object.keys(exportData[0] || {}).map((key) => ({
       wch: Math.max(key.length * 1.5, 20),
     }));
     ws["!cols"] = colWidths;
 
-    XLSX.utils.book_append_sheet(wb, ws, "Data_User");
+    XLSXModule.utils.book_append_sheet(wb, ws, "Data_User");
 
     let fileName = "Data_User_Master_Admin_Semua_Waktu.xlsx";
     if (dari && sampai) {
@@ -42,7 +42,7 @@ export default function MasterAdminHeader({
       fileName = `Data_User_Master_Admin_Hingga_${sampai}.xlsx`;
     }
 
-    XLSX.writeFile(wb, fileName);
+    XLSXModule.writeFile(wb, fileName);
   };
 
   return (
