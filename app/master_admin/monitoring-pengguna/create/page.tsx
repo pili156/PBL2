@@ -1,17 +1,23 @@
 import { Save } from "lucide-react";
 import BackLink from "@/app/components/BackLink";
 import { createUser } from '../actions';
+import { prisma } from "@/src/lib/prisma";
 
 export const dynamic = 'force-dynamic';
 
-const ROLE_OPTIONS = [
-  { id: 3, name: 'Dosen' },
-  { id: 2, name: 'Admin' },
-  { id: 1, name: 'Master Admin' },
-  { id: 4, name: 'Keuangan' },
-];
+function formatRoleName(name: string | null): string {
+  if (!name) return '';
+  return name
+    .split('_')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+}
 
 export default async function CreateUserPage() {
+  const roles = await prisma.masterRole.findMany({
+    orderBy: { id: 'asc' },
+  });
+
   return (
     <div className="max-w-2xl space-y-6">
       <div className="flex items-center gap-4">
@@ -78,8 +84,8 @@ export default async function CreateUserPage() {
               defaultValue={3}
               className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white"
             >
-              {ROLE_OPTIONS.map(r => (
-                <option key={r.id} value={r.id}>{r.name}</option>
+              {roles.map(role => (
+                <option key={role.id} value={role.id}>{formatRoleName(role.nama_role)}</option>
               ))}
             </select>
           </div>
