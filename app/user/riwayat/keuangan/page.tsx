@@ -31,7 +31,7 @@ export default async function RiwayatKeuanganPage() {
   });
 
   if (allPengajuan.length === 0) {
-    return <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-10 text-center text-slate-500">User tidak ditemukan</div>;
+    return <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-10 text-center text-slate-500">Lakukan Studi Terlebih Dahulu</div>;
   }
 
   const allRiwayat = allPengajuan.flatMap((p) =>

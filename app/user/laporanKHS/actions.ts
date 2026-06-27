@@ -262,6 +262,8 @@ export async function getDashboardData(userId: number) {
           monitoring_khs: {
             orderBy: { semester_ke: 'asc' },
           },
+          sk_kementerian: true,
+          status: true,
         },
         orderBy: { created_at: 'desc' },
         take: 1,

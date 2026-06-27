@@ -28,6 +28,7 @@ export default async function RiwayatStudiPage({
           monitoring_khs: { orderBy: { semester_ke: 'asc' } },
           jenis_studi: true,
           status: true,
+          sk_kementerian: true,
         },
         orderBy: { created_at: 'desc' },
       },
@@ -41,6 +42,9 @@ export default async function RiwayatStudiPage({
     ? allPengajuan.find(p => p.id === selectedId) ?? allPengajuan[0]
     : allPengajuan[0];
 
+  const isUploadAllowed = activePengajuan?.status?.nama_status === 'diterima'
+    && !!activePengajuan?.sk_kementerian?.some((sk: any) => sk.file_sk_path);
+
   return (
     <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-6 space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-center gap-4 border-b border-slate-100 pb-4">
@@ -48,35 +52,15 @@ export default async function RiwayatStudiPage({
           <h3 className="text-lg font-bold text-slate-800">Riwayat Studi</h3>
           <p className="text-sm text-slate-500 mt-0.5">Kelola dan unggah dokumen KHS Anda per semester</p>
         </div>
-        <Link
-          href="/user/laporanKHS/upload"
-          className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-blue-700 transition-colors shadow-sm"
-        >
-          <Plus size={16} /> Upload KHS
-        </Link>
+        {isUploadAllowed && (
+          <Link
+            href="/user/laporanKHS/upload"
+            className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-blue-700 transition-colors shadow-sm"
+          >
+            <Plus size={16} /> Upload KHS
+          </Link>
+        )}
       </div>
-
-      {allPengajuan.length > 1 && (
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="text-xs font-bold text-slate-500 mr-1">Pengajuan:</span>
-          {allPengajuan.map((p) => {
-            const isActive = p.id === activePengajuan?.id;
-            return (
-              <Link
-                key={p.id}
-                href={`/user/riwayat/studi?pengajuan=${p.id}`}
-                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ${
-                  isActive
-                    ? 'bg-blue-600 text-white shadow-sm'
-                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                }`}
-              >
-                {p.jenis_studi?.nama_jenis || `Pengajuan #${p.id}`}
-              </Link>
-            );
-          })}
-        </div>
-      )}
 
       {activePengajuan && (
         <div className="bg-slate-50 rounded-lg p-4 flex flex-wrap items-center gap-x-8 gap-y-2 text-sm">
@@ -97,7 +81,7 @@ export default async function RiwayatStudiPage({
         </div>
       )}
 
-      {activePengajuan && <KhsTable pengajuan={activePengajuan} />}
+      {activePengajuan && <KhsTable pengajuan={activePengajuan} isUploadAllowed={isUploadAllowed} />}
 
       {!activePengajuan && (
         <div className="text-center py-10 text-slate-500">
@@ -108,7 +92,7 @@ export default async function RiwayatStudiPage({
   );
 }
 
-async function KhsTable({ pengajuan }: { pengajuan: any }) {
+async function KhsTable({ pengajuan, isUploadAllowed }: { pengajuan: any; isUploadAllowed: boolean }) {
   const khsList = pengajuan.monitoring_khs || [];
   
   // Filter hanya KHS yang telah dikirim (sudah ada datanya)
@@ -124,9 +108,11 @@ async function KhsTable({ pengajuan }: { pengajuan: any }) {
       {tabelKHS.length === 0 ? (
         <div className="text-center py-10 text-slate-500">
           <p>Belum ada KHS yang dikirim.</p>
-          <Link href="/user/laporanKHS/upload" className="text-blue-600 font-bold text-sm mt-2 inline-block hover:underline">
-            Upload KHS Pertama
-          </Link>
+          {isUploadAllowed && (
+            <Link href="/user/laporanKHS/upload" className="text-blue-600 font-bold text-sm mt-2 inline-block hover:underline">
+              Upload KHS Pertama
+            </Link>
+          )}
         </div>
       ) : (
         <div className="overflow-x-auto">
