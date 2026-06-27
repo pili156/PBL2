@@ -130,7 +130,7 @@ export async function addManualKhs(prevState: { error?: string } | null, formDat
   const idDosen = Number(formData.get('idDosen'));
   const semesterKe = Number(formData.get('semesterKe'));
   const tahunAkademik = formData.get('tahunAkademik') as string;
-  const ipk = Number(formData.get('ipk'));
+  const ips = Number(formData.get('ips'));
   const file = formData.get('file') as File | null;
 
   if (!semesterKe || !tahunAkademik) {
@@ -153,7 +153,7 @@ export async function addManualKhs(prevState: { error?: string } | null, formDat
       pengajuan_id: pengajuanId,
       semester_ke: semesterKe,
       tahun_akademik: tahunAkademik,
-      ipk: ipk || undefined,
+      ips: ips || undefined,
       file_khs_path: filePath,
       tanggal_unggah: new Date(),
       status_evaluasi: 'diterima',
@@ -180,6 +180,15 @@ export async function addManualKeuangan(formData: FormData) {
   const bank = formData.get('bank') as string;
   const norek = formData.get('norek') as string;
   const file = formData.get('fileBukti') as File | null;
+  const fileFormulir = formData.get('fileFormulir') as File | null;
+  const fileBuktiPembayaran = formData.get('fileBuktiPembayaran') as File | null;
+
+  if (!fileFormulir || fileFormulir.size === 0) {
+    throw new Error('File Formulir Bantuan Studi harus dipilih');
+  }
+  if (!fileBuktiPembayaran || fileBuktiPembayaran.size === 0) {
+    throw new Error('File Bukti Pembayaran harus dipilih');
+  }
 
   let fileBukti: string | undefined;
   if (file && file.size > 0) {
@@ -190,6 +199,24 @@ export async function addManualKeuangan(formData: FormData) {
       if (e instanceof UploadError) throw e;
       throw new Error('Gagal mengupload file bukti');
     }
+  }
+
+  let filePathFormulir: string;
+  try {
+    const result = await uploadFile(fileFormulir, idDosen, 'dokumen');
+    filePathFormulir = result.filePath;
+  } catch (e) {
+    if (e instanceof UploadError) throw e;
+    throw new Error('Gagal mengupload file Formulir Bantuan Studi');
+  }
+
+  let filePathBuktiPembayaran: string;
+  try {
+    const result = await uploadFile(fileBuktiPembayaran, idDosen, 'dokumen');
+    filePathBuktiPembayaran = result.filePath;
+  } catch (e) {
+    if (e instanceof UploadError) throw e;
+    throw new Error('Gagal mengupload file Bukti Pembayaran');
   }
 
   const reimbursement = await prisma.pengajuanReimbursement.create({
@@ -204,6 +231,26 @@ export async function addManualKeuangan(formData: FormData) {
       tanggal_pencairan: new Date(),
     },
     include: { pengajuan_studi: { select: { user_id: true } } },
+  });
+
+  await prisma.dokumenPengajuan.create({
+    data: {
+      pengajuan_id: pengajuanId,
+      pengajuan_reimbursement_id: reimbursement.id,
+      master_dokumen_id: 21,
+      file_path: filePathFormulir,
+      status_verifikasi: 'pending',
+    },
+  });
+
+  await prisma.dokumenPengajuan.create({
+    data: {
+      pengajuan_id: pengajuanId,
+      pengajuan_reimbursement_id: reimbursement.id,
+      master_dokumen_id: 22,
+      file_path: filePathBuktiPembayaran,
+      status_verifikasi: 'pending',
+    },
   });
 
   await logActivity(idDosen, pengajuanId, `Pencairan manual Semester ${semesterKe}: Rp ${nominal.toLocaleString('id-ID')}`, 'pencairan');

@@ -18,8 +18,20 @@ export default function FileDropzone({ name, accept = '.pdf', maxSizeMB = 2, cur
 
   const maxSizeBytes = maxSizeMB * 1024 * 1024;
 
+  const acceptMimeMap: Record<string, string[]> = {
+    '.pdf': ['application/pdf'],
+    '.jpg': ['image/jpeg'],
+    '.jpeg': ['image/jpeg'],
+    '.png': ['image/png'],
+  };
+
+  const allowedMimes = accept
+    .split(',')
+    .map((a) => acceptMimeMap[a.trim()] || [])
+    .flat();
+
   const validateFile = (f: File): string | null => {
-    if (f.type !== 'application/pdf') return 'Hanya file PDF yang diperbolehkan';
+    if (allowedMimes.length > 0 && !allowedMimes.includes(f.type)) return `Format file tidak didukung. Gunakan: ${accept.replace(/\./g, '').toUpperCase()}`;
     if (f.size > maxSizeBytes) return `Ukuran file maksimal ${maxSizeMB}MB`;
     return null;
   };
@@ -95,7 +107,7 @@ export default function FileDropzone({ name, accept = '.pdf', maxSizeMB = 2, cur
               {currentFileName ? 'Pilih File Baru' : 'Klik untuk memilih file'}
             </p>
             <p className="text-sm text-slate-500 mt-1">atau drag & drop file di sini</p>
-            <p className="text-[10px] font-bold text-slate-400 mt-3 uppercase tracking-widest">Format PDF, maksimal {maxSizeMB}MB</p>
+            <p className="text-[10px] font-bold text-slate-400 mt-3 uppercase tracking-widest">Format {accept.replace(/\./g, '').toUpperCase()}, maksimal {maxSizeMB}MB</p>
           </>
         )}
       </div>

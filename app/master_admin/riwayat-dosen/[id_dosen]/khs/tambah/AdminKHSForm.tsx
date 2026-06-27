@@ -1,9 +1,11 @@
 'use client';
 
-import { useActionState } from 'react';
-import { Upload, AlertCircle } from 'lucide-react';
+import { useActionState, useEffect, useRef } from 'react';
+import { useRouter } from 'next/navigation';
+import { ArrowLeft, UploadCloud, Info, AlertCircle } from 'lucide-react';
+import Link from 'next/link';
 import { addManualKhs } from '../../../actions';
-import { getTahunAkademikOptions } from '@/src/lib/tahun-akademik';
+import FileDropzone from '@/app/user/laporanKHS/FileDropzone';
 
 export default function AdminKHSForm({
   pengajuanId,
@@ -15,13 +17,29 @@ export default function AdminKHSForm({
   nama: string;
 }) {
   const [state, formAction, pending] = useActionState(addManualKhs, null);
+  const router = useRouter();
+  const wasPending = useRef(false);
+
+  useEffect(() => {
+    if (wasPending.current && !pending && !state?.error) {
+      router.push(`/master_admin/riwayat-dosen/${idDosen}/khs`);
+    }
+    wasPending.current = pending;
+  }, [pending, state, router, idDosen]);
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="w-full space-y-6 animate-in fade-in duration-500">
+      <div className="flex items-center gap-4 border-b border-slate-200 pb-4">
+        <Link
+          href={`/master_admin/riwayat-dosen/${idDosen}/khs`}
+          className="p-2 hover:bg-slate-100 rounded-full transition-colors text-slate-600"
+          aria-label="Kembali"
+        >
+          <ArrowLeft size={20} />
+        </Link>
         <div>
-          <h2 className="text-xl font-bold text-slate-900">Tambah KHS Manual</h2>
-          <p className="text-sm text-slate-400 mt-0.5">Input data KHS untuk {nama}</p>
+          <h2 className="text-2xl font-bold text-slate-900">Tambah KHS Manual</h2>
+          <p className="text-sm text-slate-900 mt-1">Input data KHS untuk {nama}</p>
         </div>
       </div>
 
@@ -32,68 +50,120 @@ export default function AdminKHSForm({
         </div>
       )}
 
-      <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-6">
-        <form action={formAction} className="space-y-5" encType="multipart/form-data">
+      <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6 md:p-8">
+        <h3 className="text-base font-bold text-slate-900 mb-6 border-b border-slate-100 pb-3">
+          Form Upload KHS
+        </h3>
+
+        <form action={formAction} className="space-y-6">
           <input type="hidden" name="pengajuanId" value={pengajuanId} />
           <input type="hidden" name="idDosen" value={idDosen} />
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="block text-xs font-medium text-slate-500 mb-1.5">Semester Ke</label>
-              <select name="semesterKe" required
-                className="w-full px-4 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+              <label className="block text-sm font-bold text-slate-900 mb-2">
+                Semester <span className="text-red-500">*</span>
+              </label>
+              <select
+                name="semesterKe"
+                className="w-full p-3 bg-white border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none text-slate-900"
+                required
               >
                 <option value="">Pilih Semester</option>
-                {Array.from({ length: 8 }, (_, i) => i + 1).map((sem) => (
-                  <option key={sem} value={sem}>Semester {sem}</option>
+                {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14].map(num => (
+                  <option key={num} value={num}>
+                    Semester {num}
+                  </option>
                 ))}
               </select>
             </div>
+
             <div>
-              <label className="block text-xs font-medium text-slate-500 mb-1.5">IPS</label>
-              <input type="number" name="ipk" step="0.01" min="0" max="4" placeholder="3.50"
-                className="w-full px-4 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500" />
+              <label className="block text-sm font-bold text-slate-900 mb-2">
+                Tahun Akademik <span className="text-red-500">*</span>
+              </label>
+              <select
+                name="tahunAkademik"
+                className="w-full p-3 bg-white border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none text-slate-900"
+                required
+              >
+                <option value="">Pilih Tahun Akademik</option>
+                {Array.from({ length: 4 }, (_, i) => {
+                  const currentYear = new Date().getFullYear();
+                  const startYear = currentYear - 2 + i;
+                  const endYear = startYear + 1;
+                  return (
+                    <option key={startYear} value={`${startYear}/${endYear}`}>
+                      {startYear}/{endYear}
+                    </option>
+                  );
+                })}
+              </select>
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-slate-500 mb-1.5">Tahun Akademik</label>
-            <select
-              name="tahunAkademik"
-              required
-              className="w-full px-4 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+            <label className="block text-sm font-bold text-slate-900 mb-2">
+              IPS <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="number"
+              name="ips"
+              step="0.01"
+              min="0"
+              max="4.00"
+              placeholder="Contoh: 3.50"
+              className="w-full md:w-1/2 p-3 bg-white border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none text-slate-900"
+            />
+            <p className="text-xs text-slate-900 mt-2">Masukkan IPS sesuai yang tertera di KHS (skala 0 - 4.00)</p>
+          </div>
+
+          <div>
+            <label className="block text-sm font-bold text-slate-900 mb-2">
+              Upload File KHS (PDF) <span className="text-red-500">*</span>
+            </label>
+            <FileDropzone name="file" />
+          </div>
+
+          <div>
+            <label className="block text-sm font-bold text-slate-900 mb-2">
+              Catatan (Opsional)
+            </label>
+            <textarea
+              name="catatan"
+              rows={3}
+              placeholder="Tulis catatan jika diperlukan..."
+              className="w-full p-3 bg-white border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none resize-none text-slate-900"
+            ></textarea>
+          </div>
+
+          <div className="flex justify-end gap-3 pt-4 border-t border-slate-100">
+            <Link
+              href={`/master_admin/riwayat-dosen/${idDosen}/khs`}
+              className="px-6 py-2.5 border border-slate-200 text-slate-900 text-sm font-bold rounded-lg hover:bg-slate-50 transition-colors"
             >
-              <option value="">Pilih Tahun Akademik</option>
-              {getTahunAkademikOptions().map((tahun) => (
-                <option key={tahun} value={tahun}>{tahun}</option>
-              ))}
-            </select>
+              Batal
+            </Link>
+            <button
+              type="submit"
+              disabled={pending}
+              className="px-8 py-2.5 bg-blue-600 text-white text-sm font-bold rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 shadow-sm disabled:opacity-50"
+            >
+              {pending ? (
+                <>Memproses...</>
+              ) : (
+                <><UploadCloud size={16} /> Submit</>
+              )}
+            </button>
           </div>
-
-          <div>
-            <label className="block text-xs font-medium text-slate-500 mb-1.5">File KHS (PDF/JPG/PNG, maks 5MB)</label>
-            <div className="relative">
-              <input
-                type="file"
-                name="file"
-                accept=".pdf,.jpg,.jpeg,.png"
-                className="w-full px-4 py-2.5 border border-slate-200 rounded-lg text-sm file:mr-3 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-600 hover:file:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
-              />
-            </div>
-            <p className="text-[10px] text-slate-400 mt-1">Upload file KHS. Format: PDF, JPG, PNG. Maksimal 5MB.</p>
-          </div>
-
-          <div className="bg-amber-50 border border-amber-200/60 rounded-lg px-4 py-3">
-            <p className="text-xs text-amber-700 font-medium">
-              Data akan otomatis dicatat ke aktivitas log sebagai input manual.
-            </p>
-          </div>
-
-          <button type="submit" disabled={pending}
-            className="w-full flex items-center justify-center gap-2 py-2.5 bg-blue-600 text-white rounded-lg text-sm font-semibold hover:bg-blue-700 transition-colors shadow-sm disabled:opacity-50">
-            {pending ? 'Memproses...' : <><Upload size={16} /> Upload & Simpan KHS</>}
-          </button>
         </form>
+      </div>
+
+      <div className="bg-blue-50 border border-blue-100 rounded-lg p-4 flex items-start gap-3">
+        <Info className="text-blue-500 flex-shrink-0 mt-0.5" size={16} />
+        <p className="text-xs text-blue-800 font-medium">
+          Data akan otomatis dicatat ke aktivitas log sebagai input manual.
+        </p>
       </div>
     </div>
   );

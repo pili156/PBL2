@@ -83,8 +83,6 @@ export default async function DashboardDosen({ params }: Props) {
   const ipkValues = khsList.map((k) => Number(k.ipk || 0)).filter((v) => v > 0);
   const rataIpk = ipkValues.length > 0 ? (ipkValues.reduce((a, b) => a + b, 0) / ipkValues.length).toFixed(2) : '-';
   const maxIpk = ipkValues.length > 0 ? Math.max(...ipkValues).toFixed(2) : '-';
-  const totalSks = semesterAktif * 20;
-
   const totalBantuan = pengajuan.pengajuan_reimbursement.reduce((s, r) => s + Number(r.nominal || 0), 0);
   const totalCair = pengajuan.pengajuan_reimbursement
     .filter((r) => r.status_pencairan === 'dicairkan')
@@ -182,10 +180,6 @@ export default async function DashboardDosen({ params }: Props) {
               <div className="text-center p-4 bg-slate-50 rounded-xl">
                 <p className="text-2xl font-bold text-slate-800">{maxIpk}</p>
                 <p className="text-[10px] text-slate-400 font-medium mt-1">IPS Tertinggi</p>
-              </div>
-              <div className="text-center p-4 bg-slate-50 rounded-xl">
-                <p className="text-2xl font-bold text-slate-800">{totalSks}</p>
-                <p className="text-[10px] text-slate-400 font-medium mt-1">SKS Lulus</p>
               </div>
               <div className="text-center p-4 bg-slate-50 rounded-xl">
                 <p className="text-2xl font-bold text-slate-800">{semesterAktif}</p>
