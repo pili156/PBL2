@@ -20,7 +20,7 @@ export async function getProfile() {
     return NextResponse.json({ error: "User not found" }, { status: 404 });
   }
 
-  return NextResponse.json({
+  const response = NextResponse.json({
     id: user.id,
     email: user.email,
     username: user.username,
@@ -29,7 +29,7 @@ export async function getProfile() {
       nip: user.master_dosen.nip,
       nidn: user.master_dosen.nidn,
       nama_lengkap: user.master_dosen.nama_lengkap,
-      tanggal_lahir: user.master_dosen.tanggal_lahir,
+      tanggal_lahir: user.master_dosen.tanggal_lahir ? user.master_dosen.tanggal_lahir.toISOString() : null,
       jenis_kelamin: user.master_dosen.jenis_kelamin,
       email_pribadi: user.master_dosen.email_pribadi,
       alamat: user.master_dosen.alamat,
@@ -44,6 +44,11 @@ export async function getProfile() {
       kota_lahir: user.master_dosen.kota_lahir,
     } : null,
   });
+
+  response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate');
+  response.headers.set('Pragma', 'no-cache');
+
+  return response;
 }
 
 export async function updateProfile(request: Request) {
@@ -103,7 +108,43 @@ export async function updateProfile(request: Request) {
         kota_lahir: kota_lahir !== undefined ? kota_lahir : user.master_dosen.kota_lahir,
       }
     });
+  } else {
+    await prisma.masterDosen.create({
+      data: {
+        user_id: user.id,
+        nip: nip || undefined,
+        nidn: nidn || undefined,
+        nama_lengkap: nama_lengkap || undefined,
+        tanggal_lahir: tanggal_lahir ? new Date(tanggal_lahir) : undefined,
+        jenis_kelamin: jenis_kelamin || undefined,
+        email_pribadi: email_pribadi || undefined,
+        alamat: alamat || undefined,
+        pangkat_golongan: pangkat_golongan || undefined,
+        jabatan: jabatan || undefined,
+        jurusan: jurusan || undefined,
+        program_studi: program_studi || undefined,
+        no_telp: no_telp || undefined,
+        gelar: gelar || undefined,
+        pendidikan_terakhir: pendidikan_terakhir || undefined,
+        provinsi_lahir: provinsi_lahir || undefined,
+        kota_lahir: kota_lahir || undefined,
+      }
+    });
   }
 
-  return NextResponse.json({ message: "Profil berhasil diperbarui" });
+  const updatedUser = await prisma.user.findUnique({
+    where: { email: userEmail },
+    include: { role: true, master_dosen: true }
+  });
+
+  return NextResponse.json({
+    message: "Profil berhasil diperbarui",
+    master_dosen: updatedUser?.master_dosen ? {
+      nidn: updatedUser.master_dosen.nidn,
+      tanggal_lahir: updatedUser.master_dosen.tanggal_lahir ? updatedUser.master_dosen.tanggal_lahir.toISOString() : null,
+      jenis_kelamin: updatedUser.master_dosen.jenis_kelamin,
+      email_pribadi: updatedUser.master_dosen.email_pribadi,
+      alamat: updatedUser.master_dosen.alamat,
+    } : null,
+  });
 }

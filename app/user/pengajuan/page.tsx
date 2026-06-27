@@ -77,11 +77,15 @@ export default function PengajuanPage() {
           setProfileIncomplete(true);
           return;
         }
-        const requiredFields = ['nidn', 'tanggal_lahir', 'jenis_kelamin', 'email_pribadi', 'alamat'];
-        const missing = requiredFields.some((field) => !dosen[field] || String(dosen[field]).trim() === '');
+        const requiredFields = ['nidn', 'tanggal_lahir', 'jenis_kelamin', 'email_pribadi', 'alamat'] as const;
+        const missing = requiredFields.some((field) => {
+          const val = dosen[field];
+          return val === null || val === undefined || val === '' || (typeof val === 'string' && val.trim() === '');
+        });
         setProfileIncomplete(missing);
       } catch (error) {
         logger.error('Failed to fetch profile:', error);
+        setProfileIncomplete(true);
       }
     }
     fetchProfile();

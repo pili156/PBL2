@@ -12,6 +12,38 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      include: { master_dosen: true },
+    });
+
+    if (!user?.master_dosen) {
+      return NextResponse.json(
+        { error: 'Data profil dosen belum ada. Silakan lengkapi profil terlebih dahulu.' },
+        { status: 400 }
+      );
+    }
+
+    const dosen = user.master_dosen;
+    const requiredFields: { key: string; label: string }[] = [
+      { key: 'nidn', label: 'NIDN' },
+      { key: 'tanggal_lahir', label: 'Tanggal Lahir' },
+      { key: 'jenis_kelamin', label: 'Jenis Kelamin' },
+      { key: 'email_pribadi', label: 'Email Pribadi' },
+      { key: 'alamat', label: 'Alamat' },
+    ];
+
+    const missingFields = requiredFields
+      .filter((f) => !dosen[f.key as keyof typeof dosen] || String(dosen[f.key as keyof typeof dosen]).trim() === '')
+      .map((f) => f.label);
+
+    if (missingFields.length > 0) {
+      return NextResponse.json(
+        { error: `Profil belum lengkap. Silakan lengkapi data berikut: ${missingFields.join(', ')}` },
+        { status: 400 }
+      );
+    }
+
     const body = await request.json();
     const parsed = pengajuanSchema.safeParse(body);
 

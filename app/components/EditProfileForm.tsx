@@ -224,22 +224,28 @@ export default function EditProfileForm({ backUrl, apiUrl = "/api/user/profile" 
 
       if (res.ok) {
         setSuccessMsg("Profil berhasil diperbarui!");
-        if (profileData) {
-          setProfileData({
-            ...profileData,
-            master_dosen: profileData.master_dosen ? {
-              ...profileData.master_dosen,
-              nama_lengkap: formData.nama_lengkap || profileData.master_dosen.nama_lengkap,
-              pangkat_golongan: formData.pangkat_golongan || profileData.master_dosen.pangkat_golongan,
-              jabatan: formData.jabatan || profileData.master_dosen.jabatan,
-              jurusan: formData.jurusan || profileData.master_dosen.jurusan,
-              program_studi: formData.program_studi || profileData.master_dosen.program_studi,
-              no_telp: formData.no_telp || profileData.master_dosen.no_telp,
-              gelar: formData.gelar || profileData.master_dosen.gelar,
-              pendidikan_terakhir: formData.pendidikan_terakhir || profileData.master_dosen.pendidikan_terakhir,
-            } : null,
-          });
-        }
+        setProfileData((prev) => prev ? {
+          ...prev,
+          master_dosen: prev.master_dosen ? {
+            ...prev.master_dosen,
+            nip: formData.nip || prev.master_dosen.nip,
+            nidn: formData.nidn || prev.master_dosen.nidn,
+            nama_lengkap: formData.nama_lengkap || prev.master_dosen.nama_lengkap,
+            tanggal_lahir: formData.tanggal_lahir || prev.master_dosen.tanggal_lahir,
+            jenis_kelamin: formData.jenis_kelamin || prev.master_dosen.jenis_kelamin,
+            email_pribadi: formData.email_pribadi || prev.master_dosen.email_pribadi,
+            alamat: formData.alamat || prev.master_dosen.alamat,
+            pangkat_golongan: formData.pangkat_golongan || prev.master_dosen.pangkat_golongan,
+            jabatan: formData.jabatan || prev.master_dosen.jabatan,
+            jurusan: formData.jurusan || prev.master_dosen.jurusan,
+            program_studi: formData.program_studi || prev.master_dosen.program_studi,
+            no_telp: formData.no_telp || prev.master_dosen.no_telp,
+            gelar: formData.gelar || prev.master_dosen.gelar,
+            pendidikan_terakhir: formData.pendidikan_terakhir || prev.master_dosen.pendidikan_terakhir,
+            provinsi_lahir: formData.provinsi_lahir || prev.master_dosen.provinsi_lahir,
+            kota_lahir: formData.kota_lahir || prev.master_dosen.kota_lahir,
+          } : null,
+        } : prev);
       } else {
         setErrorMsg(data.error || "Gagal memperbarui profil");
       }
