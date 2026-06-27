@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Check, RotateCcw } from "lucide-react";
+import { logger } from '@/src/lib/logger';
 
 interface KhsVerificationProps {
   khsId: number;
@@ -37,7 +38,7 @@ export default function KhsVerification({
         onSuccess?.();
       }
     } catch (error) {
-      console.error("Error:", error);
+      logger.error("Error:", error);
       alert("Terjadi kesalahan saat memverifikasi KHS");
     } finally {
       setLoading(false);
@@ -67,7 +68,7 @@ export default function KhsVerification({
         alert("Gagal mengirim permintaan revisi");
       }
     } catch (error) {
-      console.error("Error:", error);
+      logger.error("Error:", error);
       alert("Terjadi kesalahan saat mengirim permintaan revisi");
     } finally {
       setLoading(false);

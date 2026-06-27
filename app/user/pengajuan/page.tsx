@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { AlertCircle, CheckCircle } from "lucide-react";
+import { logger } from "@/src/lib/logger";
 import Step1JenisStudi from "./components/Step1JenisStudi";
 import Step2Dokumen from "./components/Step2Dokumen";
 import Step3DocumentUpload from "./components/Step3DocumentUpload";
@@ -65,7 +66,7 @@ export default function PengajuanPage() {
           // If the profile endpoint returns non-ok (401/404/etc.) we should
           // consider the profile incomplete so the UI shows the warning and
           // guides the user to complete their profile.
-          console.warn('[fetchProfile] non-ok response', res.status);
+          logger.warn('[fetchProfile] non-ok response', res.status);
           setProfileIncomplete(true);
           return;
         }
@@ -80,7 +81,7 @@ export default function PengajuanPage() {
         const missing = requiredFields.some((field) => !dosen[field] || String(dosen[field]).trim() === '');
         setProfileIncomplete(missing);
       } catch (error) {
-        console.error('Failed to fetch profile:', error);
+        logger.error('Failed to fetch profile:', error);
       }
     }
     fetchProfile();
@@ -97,7 +98,7 @@ export default function PengajuanPage() {
           wilayah: data.wilayah || [],
         });
       } catch (error) {
-        console.error('Failed to fetch master data:', error);
+        logger.error('Failed to fetch master data:', error);
       }
     }
     fetchMasterData();
@@ -159,7 +160,7 @@ export default function PengajuanPage() {
           }
         }
       } catch (error) {
-        console.error('Error checking pengajuan:', error);
+        logger.error('Error checking pengajuan:', error);
       } finally {
         setIsInitialized(true);
       }
@@ -192,9 +193,6 @@ export default function PengajuanPage() {
     setLoading(true);
     setError(null);
     try {
-      console.log('[DEBUG] Input from Step1:', data);
-      console.log('[DEBUG] masterData.jalurPendanaan:', masterData.jalurPendanaan);
-      
       const selectedJenisStudi = data.studyType
         ? masterData.jenisStudi.find(
             (j) => j.nama_jenis?.toLowerCase().includes(data.studyType!.toLowerCase().replace(/_/g, ' '))
@@ -206,13 +204,6 @@ export default function PengajuanPage() {
       const selectedWilayah = masterData.wilayah.find(
         (w) => w.nama_wilayah?.toLowerCase().includes(data.studyRegion.toLowerCase().replace(/_/g, ' '))
       );
-
-      console.log('[DEBUG] selectedJenisStudi:', selectedJenisStudi);
-      console.log('[DEBUG] selectedWilayah:', selectedWilayah);
-      console.log('[DEBUG] studyType value:', data.studyType);
-      console.log('[DEBUG] studyRegion value:', data.studyRegion);
-      console.log('[DEBUG] selectedJalurPendanaan:', selectedJalurPendanaan);
-      console.log('[DEBUG] fundingType value:', data.fundingType);
 
       const response = await fetch('/api/pengajuan', {
         method: 'POST',
@@ -247,7 +238,7 @@ export default function PengajuanPage() {
       localStorage.removeItem("pengajuan_step1_draft");
       setFlowStep("step2");
     } catch (error: unknown) {
-      console.error('Error creating pengajuan:', error);
+      logger.error('Error creating pengajuan:', error);
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       setError(`Gagal membuat pengajuan: ${errorMessage}`);
     } finally {
@@ -308,7 +299,7 @@ export default function PengajuanPage() {
       }));
       setLastSaved(new Date());
     } catch (error: unknown) {
-      console.error('Error uploading document:', error);
+      logger.error('Error uploading document:', error);
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       setError(`Gagal mengunggah dokumen: ${errorMessage}`);
     }

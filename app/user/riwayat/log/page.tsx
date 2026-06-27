@@ -92,27 +92,28 @@ export default async function LogAktivitasPage() {
     ? `Dr. ${namaLengkapBase}` 
     : namaLengkapBase;
 
-  const allPengajuan = await prisma.pengajuanStudi.findMany({
-    where: { user_id: user.id },
-    orderBy: { created_at: 'desc' },
-    include: {
-      monitoring_khs: { orderBy: { created_at: 'desc' } },
-      pengajuan_reimbursement: { orderBy: { created_at: 'desc' } },
-      sk_kementerian: true,
-      status: true,
-      pesan_komunikasi: {
-        orderBy: { waktu_kirim: 'desc' },
-        include: { pengirim: { include: { master_dosen: true } } },
+  const [allPengajuan, activityLogs] = await Promise.all([
+    prisma.pengajuanStudi.findMany({
+      where: { user_id: user.id },
+      orderBy: { created_at: 'desc' },
+      include: {
+        monitoring_khs: { orderBy: { created_at: 'desc' } },
+        pengajuan_reimbursement: { orderBy: { created_at: 'desc' } },
+        sk_kementerian: true,
+        status: true,
+        pesan_komunikasi: {
+          orderBy: { waktu_kirim: 'desc' },
+          include: { pengirim: { include: { master_dosen: true } } },
+        },
       },
-    },
-  });
+    }),
+    prisma.activityLog.findMany({
+      where: { user_id: user.id },
+      orderBy: { created_at: 'desc' },
+    }),
+  ]);
 
   const activities: Activity[] = [];
-
-  const activityLogs = await prisma.activityLog.findMany({
-    where: { user_id: user.id },
-    orderBy: { created_at: 'desc' },
-  });
 
   for (const log of activityLogs) {
     activities.push({

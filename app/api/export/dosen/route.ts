@@ -1,7 +1,6 @@
 import { prisma } from '@/src/lib/prisma';
 import { getStatusLabel } from '@/src/lib/status-utils';
 import { exportDosen, type DosenRow } from '@/src/lib/export-excel';
-import { logActivity } from '@/src/lib/activity-log';
 import { NextResponse } from 'next/server';
 
 export const dynamic = 'force-dynamic';
@@ -30,8 +29,18 @@ export async function GET() {
 
     const buffer = exportDosen(data);
 
-    for (const u of users) {
-      await logActivity(u.id as number, null, 'Export data dosen ke Excel', 'export_data');
+    // Batch insert activity logs instead of individual inserts
+    const userIds = users.map(u => u.id as number).filter(Boolean);
+    if (userIds.length > 0) {
+      await prisma.activityLog.createMany({
+        data: userIds.map(userId => ({
+          user_id: userId,
+          aktivitas: 'Export data dosen ke Excel',
+          tipe: 'export_data',
+          created_at: new Date(),
+          created_by: 'Admin Sistem',
+        })),
+      });
     }
 
     return new NextResponse(new Blob([Buffer.from(buffer)]), {

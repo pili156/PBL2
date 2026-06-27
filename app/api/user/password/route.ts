@@ -3,6 +3,7 @@ import { headers } from 'next/headers';
 import { prisma } from '@/src/lib/prisma';
 import bcrypt from 'bcryptjs';
 import { changePasswordSchema } from '@/src/lib/validation';
+import { logger } from '@/src/lib/logger';
 
 export async function PUT(request: Request) {
   try {
@@ -44,7 +45,7 @@ export async function PUT(request: Request) {
     return NextResponse.json({ message: "Password berhasil diperbarui" }, { status: 200 });
 
   } catch (error) {
-    console.error("Update Password Error:", error);
+    logger.error("Update Password Error:", error);
     return NextResponse.json({ error: "Terjadi kesalahan pada server" }, { status: 500 });
   }
 }

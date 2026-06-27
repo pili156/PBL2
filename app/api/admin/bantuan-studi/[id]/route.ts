@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/src/lib/prisma";
 import { headers } from "next/headers";
+import { logger } from '@/src/lib/logger';
 
 export async function PUT(
   request: Request,
@@ -42,7 +43,7 @@ export async function PUT(
 
     return NextResponse.json(updated, { status: 200 });
   } catch (error) {
-    console.error("Error updating bantuan studi:", error);
+    logger.error("Error updating bantuan studi:", error);
     return NextResponse.json({ error: "Gagal memperbarui" }, { status: 500 });
   }
 }

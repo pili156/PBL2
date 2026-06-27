@@ -19,14 +19,8 @@ export default async function RiwayatStudiPage({
 
   if (!userEmail) return <div className="text-center py-10 text-slate-500">Silakan login terlebih dahulu</div>;
 
-  const currentUser = await prisma.user.findUnique({
-    where: { email: userEmail },
-  });
-
-  if (!currentUser) return <div className="text-center py-10 text-slate-500">User tidak ditemukan</div>;
-
   const dosen = await prisma.user.findUnique({
-    where: { id: currentUser.id },
+    where: { email: userEmail },
     include: {
       master_dosen: true,
       pengajuan_studi: {

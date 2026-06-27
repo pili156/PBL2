@@ -2,15 +2,16 @@
 "use server";
 
 import { prisma } from "@/src/lib/prisma";
+import { logger } from "@/src/lib/logger";
 
 export async function getKampusDariDatabase() {
   try {
     const data = await prisma.masterPerguruanTinggi.findMany({ 
       orderBy: { nama_pt: "asc" } 
     });
-    return JSON.parse(JSON.stringify(data));
+    return data;
   } catch (error) {
-    console.error("Gagal mengambil data kampus:", error);
+    logger.error("Gagal mengambil data kampus:", error);
     return [];
   }
 }
@@ -19,9 +20,9 @@ export async function getBeasiswaDariDatabase() {
     const data = await prisma.masterBeasiswa.findMany({ 
       orderBy: { nama_beasiswa: "asc" } 
     });
-    return JSON.parse(JSON.stringify(data));
+    return data;
   } catch (error) {
-    console.error("Gagal mengambil data beasiswa:", error);
+    logger.error("Gagal mengambil data beasiswa:", error);
     return [];
   }
 }

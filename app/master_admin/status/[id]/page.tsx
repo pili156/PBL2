@@ -5,8 +5,9 @@ import Link from "next/link";
 import BackLink from "@/app/components/BackLink";
 import { 
   ArrowLeft, UploadCloud, Check, Loader2, 
-  User, FileText, MapPin, ShieldCheck, AlertCircle, FileCheck 
+  User, FileText, MapPin, ShieldCheck, AlertCircle,   FileCheck 
 } from "lucide-react";
+import { logger } from '@/src/lib/logger';
 
 type Props = {
   params: Promise<{ id: string }>;
@@ -44,7 +45,7 @@ export default function ManajemenStatusPage({ params }: Props) {
         setData(result);
       }
     } catch (error) {
-      console.error('Error fetching data:', error);
+      logger.error('Error fetching data:', error);
     } finally {
       setLoading(false);
     }

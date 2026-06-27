@@ -16,6 +16,7 @@ import TabProfesor from "./TabProfesor";
 import DetailDosenModal from "./DetailDosenModal";
 import EditProfesorModal from "./EditProfesorModal";
 import ImportExcelButton from "./ImportExcelButton";
+import { logger } from '@/src/lib/logger';
 
 interface DosenItem {
   id: number;
@@ -156,7 +157,7 @@ export default function BukuIndukClient({ apiUrl }: BukuIndukClientProps) {
         if (json.stats) setStats(json.stats);
       }
     } catch (err) {
-      console.error("Gagal mengambil data buku induk:", err);
+      logger.error("Gagal mengambil data buku induk:", err);
     } finally {
       setLoading(false);
     }

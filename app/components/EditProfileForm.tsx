@@ -6,6 +6,7 @@ import { ROLE_DISPLAY } from "@/src/lib/constants/roles";
 // PERBAIKAN: Menambahkan icon Phone untuk Nomor HP
 import { User, Mail, Shield, Briefcase, BadgeCheck, Save, ArrowLeft, Loader2, Hash, Phone } from "lucide-react";
 import { getJurusanData, getProvinsiData, getKotaData } from "@/app/register/actions";
+import { logger } from '@/src/lib/logger';
 
 type ProfileData = {
   email: string;
@@ -143,7 +144,7 @@ export default function EditProfileForm({ backUrl, apiUrl = "/api/user/profile" 
             const kotaRes = await getKotaData(provinsi.id);
             if (kotaRes) setDataKota(kotaRes);
           } catch (error) {
-            console.error("Gagal memuat data kota:", error);
+            logger.error("Gagal memuat data kota:", error);
           } finally {
             setIsLoadingKota(false);
           }
@@ -194,7 +195,7 @@ export default function EditProfileForm({ backUrl, apiUrl = "/api/user/profile" 
         const kotaRes = await getKotaData(provinsiId);
         if (kotaRes) setDataKota(kotaRes);
       } catch (error) {
-        console.error("Gagal memuat data kota:", error);
+        logger.error("Gagal memuat data kota:", error);
       } finally {
         setIsLoadingKota(false);
       }

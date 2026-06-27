@@ -1,4 +1,3 @@
-import { prisma } from '@/src/lib/prisma';
 import { Shield, ShieldCheck, Users, BookOpen, Wallet, Settings } from "lucide-react";
 
 export const dynamic = 'force-dynamic';
@@ -72,8 +71,6 @@ const permissionMatrix = [
 ];
 
 export default async function RolePermissionPage() {
-  const roles = await prisma.masterRole.findMany();
-
   return (
     <div className="space-y-6">
       <div>

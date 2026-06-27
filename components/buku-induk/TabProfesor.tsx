@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Eye, Pencil } from "lucide-react";
 import StatusBadge from "./StatusBadge";
 import FilterBar from "./FilterBar";
@@ -46,7 +46,7 @@ export default function TabProfesor({ data, onViewDetail, onEditProfesor }: TabP
   const [jurusan, setJurusan] = useState("Semua Jurusan");
   const [page, setPage] = useState(1);
 
-  const filtered = data.filter((d) => {
+  const filtered = useMemo(() => data.filter((d) => {
     if (!isProfesor(d)) return false;
 
     const nama = (d.nama_lengkap || "").toLowerCase();
@@ -57,7 +57,7 @@ export default function TabProfesor({ data, onViewDetail, onEditProfesor }: TabP
     const matchJurusan = jurusan === "Semua Jurusan" || jur.includes(jurusan.toLowerCase());
 
     return matchSearch && matchJurusan;
-  });
+  }), [data, search, jurusan]);
 
   const totalPages = Math.ceil(filtered.length / PER_PAGE);
   const paged = filtered.slice((page - 1) * PER_PAGE, page * PER_PAGE);

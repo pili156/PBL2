@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/src/lib/prisma';
 import { headers } from 'next/headers';
+import { logger } from '@/src/lib/logger';
 
 export async function GET(
   request: Request,
@@ -37,7 +38,7 @@ export async function GET(
 
     return NextResponse.json(khs, { status: 200 });
   } catch (error) {
-    console.error('Error fetching KHS:', error);
+    logger.error('Error fetching KHS:', error);
     return NextResponse.json(
       { error: 'Failed to fetch KHS' },
       { status: 500 }
@@ -92,7 +93,7 @@ export async function PUT(
 
     return NextResponse.json(updated, { status: 200 });
   } catch (error) {
-    console.error('Error updating KHS:', error);
+    logger.error('Error updating KHS:', error);
     return NextResponse.json(
       { error: 'Failed to update KHS' },
       { status: 500 }

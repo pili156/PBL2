@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/src/lib/prisma';
 import bcrypt from 'bcryptjs';
 import { bukuIndukSchema } from '@/src/lib/validation';
+import { logger } from '@/src/lib/logger';
 
 export async function POST(request: Request) {
   try {
@@ -56,7 +57,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ message: `Data pegawai berhasil ditambahkan! Password awal: ${rawPassword}` }, { status: 201 });
   } catch (error) {
-    console.error("Buku Induk Create Error:", error);
+    logger.error("Buku Induk Create Error:", error);
     return NextResponse.json({ error: "Terjadi kesalahan pada server." }, { status: 500 });
   }
 }

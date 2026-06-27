@@ -11,6 +11,7 @@ import {
 import { formatDateTime } from "@/src/lib/formatters";
 import StatusBadge from "@/src/components/StatusBadge";
 import DateFilter from "./DateFilter";
+import { logger } from '@/src/lib/logger';
 
 const RechartsBar = dynamic(() => import("recharts").then(mod => {
   const { ResponsiveContainer, BarChart, Bar, CartesianGrid, Tooltip, XAxis, YAxis, Legend } = mod;
@@ -51,37 +52,56 @@ const RechartsPie = dynamic(() => import("recharts").then(mod => {
 
 export default function DashboardClient({ data }: { data: any }) {
   const router = useRouter();
-  const [showAlert, setShowAlert] = useState(false); // State untuk alert custom
+  const [showAlert, setShowAlert] = useState(false);
+  const [loadingExport, setLoadingExport] = useState(false);
 
-  // Fungsi Export Excel
+  // Fungsi Export Excel - fetch data on-demand
   const handleExport = async () => {
-    if (!data.exportData || data.exportData.length === 0) {
+    setLoadingExport(true);
+    try {
+      const params = new URLSearchParams();
+      if (data.dari) params.set('dari', data.dari);
+      if (data.sampai) params.set('sampai', data.sampai);
+      
+      const response = await fetch(`/api/admin/dashboard-export?${params.toString()}`);
+      if (!response.ok) throw new Error('Gagal mengambil data export');
+      
+      const exportData = await response.json();
+      
+      if (!exportData || exportData.length === 0) {
+        setShowAlert(true);
+        setTimeout(() => setShowAlert(false), 4000);
+        return;
+      }
+
+      const XLSXModule = await import("xlsx");
+      const wb = XLSXModule.utils.book_new();
+      const ws = XLSXModule.utils.json_to_sheet(exportData);
+      
+      const colWidths = Object.keys(exportData[0] || {}).map((key) => ({
+        wch: Math.max(key.length * 1.5, 20),
+      }));
+      ws['!cols'] = colWidths;
+
+      XLSXModule.utils.book_append_sheet(wb, ws, "Ringkasan_Dashboard");
+      
+      let fileName = "Ringkasan_Admin_Semua_Waktu.xlsx";
+      if (data.dari && data.sampai) {
+        fileName = `Ringkasan_Admin_${data.dari}_sd_${data.sampai}.xlsx`;
+      } else if (data.dari) {
+        fileName = `Ringkasan_Admin_Sejak_${data.dari}.xlsx`;
+      } else if (data.sampai) {
+        fileName = `Ringkasan_Admin_Hingga_${data.sampai}.xlsx`;
+      }
+
+      XLSXModule.writeFile(wb, fileName);
+    } catch (error) {
+      logger.error('Export error:', error);
       setShowAlert(true);
       setTimeout(() => setShowAlert(false), 4000);
-      return;
+    } finally {
+      setLoadingExport(false);
     }
-
-    const XLSXModule = await import("xlsx");
-    const wb = XLSXModule.utils.book_new();
-    const ws = XLSXModule.utils.json_to_sheet(data.exportData);
-    
-    const colWidths = Object.keys(data.exportData[0] || {}).map((key) => ({
-      wch: Math.max(key.length * 1.5, 20),
-    }));
-    ws['!cols'] = colWidths;
-
-    XLSXModule.utils.book_append_sheet(wb, ws, "Ringkasan_Dashboard");
-    
-    let fileName = "Ringkasan_Admin_Semua_Waktu.xlsx";
-    if (data.dari && data.sampai) {
-      fileName = `Ringkasan_Admin_${data.dari}_sd_${data.sampai}.xlsx`;
-    } else if (data.dari) {
-      fileName = `Ringkasan_Admin_Sejak_${data.dari}.xlsx`;
-    } else if (data.sampai) {
-      fileName = `Ringkasan_Admin_Hingga_${data.sampai}.xlsx`;
-    }
-
-    XLSXModule.writeFile(wb, fileName);
   };
 
   return (
@@ -113,10 +133,15 @@ export default function DashboardClient({ data }: { data: any }) {
 
           <button 
             onClick={handleExport} 
-            className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-lg text-sm font-bold transition-all shadow-sm hover:shadow-md"
+            disabled={loadingExport}
+            className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-lg text-sm font-bold transition-all shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <Download size={16} strokeWidth={2.5} />
-            Export Data
+            {loadingExport ? (
+              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+            ) : (
+              <Download size={16} strokeWidth={2.5} />
+            )}
+            {loadingExport ? 'Mengambil Data...' : 'Export Data'}
           </button>
         </div>
       </div>

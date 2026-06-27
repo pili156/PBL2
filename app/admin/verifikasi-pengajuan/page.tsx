@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
 import { Download, Search, ClipboardList, AlertTriangle, CheckCircle } from "lucide-react";
 import { PengajuanMonitoring } from "./types";
@@ -48,36 +48,21 @@ export default function VerifikasiPengajuanPage() {
       )
     : data;
 
-  const stats = [
-    {
-      label: "Belum Direview",
-      count: data.filter((d) => d.status === "pending").length,
-      color: "bg-slate-100",
-      icon: ClipboardList,
-      iconColor: "text-slate-600",
-    },
-    {
-      label: "Revisi",
-      count: data.filter((d) => d.status === "revisi").length,
-      color: "bg-red-100",
-      icon: AlertTriangle,
-      iconColor: "text-red-600",
-    },
-    {
-      label: "Ditolak",
-      count: data.filter((d) => d.status === "ditolak").length,
-      color: "bg-red-100",
-      icon: AlertTriangle,
-      iconColor: "text-red-600",
-    },
-    {
-      label: "Terverifikasi",
-      count: data.filter((d) => d.status === "terverifikasi").length,
-      color: "bg-green-100",
-      icon: CheckCircle,
-      iconColor: "text-green-600",
-    },
-  ];
+  const stats = useMemo(() => {
+    const counts = { pending: 0, revisi: 0, ditolak: 0, terverifikasi: 0 };
+    for (const d of data) {
+      if (d.status === "pending") counts.pending++;
+      else if (d.status === "revisi") counts.revisi++;
+      else if (d.status === "ditolak") counts.ditolak++;
+      else if (d.status === "terverifikasi") counts.terverifikasi++;
+    }
+    return [
+      { label: "Belum Direview", count: counts.pending, color: "bg-slate-100", icon: ClipboardList, iconColor: "text-slate-600" },
+      { label: "Revisi", count: counts.revisi, color: "bg-red-100", icon: AlertTriangle, iconColor: "text-red-600" },
+      { label: "Ditolak", count: counts.ditolak, color: "bg-red-100", icon: AlertTriangle, iconColor: "text-red-600" },
+      { label: "Terverifikasi", count: counts.terverifikasi, color: "bg-green-100", icon: CheckCircle, iconColor: "text-green-600" },
+    ];
+  }, [data]);
 
   return (
     <div className="max-w-7xl mx-auto space-y-6">

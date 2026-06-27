@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/src/lib/prisma';
 import { writeFile, mkdir } from 'fs/promises';
 import { join } from 'path';
+import { logger } from '@/src/lib/logger';
 
 export async function POST(
   request: Request,
@@ -84,7 +85,7 @@ export async function POST(
 
     return NextResponse.json({ dokumen, filePath: relativePath }, { status: 201 });
   } catch (error) {
-    console.error('=== ERROR UPLOAD ===', error);
+    logger.error('=== ERROR UPLOAD ===', error);
     return NextResponse.json({ error: String(error) }, { status: 500 });
   }
 }

@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { getJurusanData, getPangkatData, getJabatanData, getProvinsiData, getKotaData } from "./actions"; 
+import { logger } from '@/src/lib/logger';
 
 interface ProgramStudi {
   id: number;
@@ -79,7 +80,7 @@ export default function Register() {
         if (jabatanRes) setDataJabatan(jabatanRes);
         if (provinsiRes) setDataProvinsi(provinsiRes);
       } catch (error) {
-        console.error("Gagal memuat data master:", error);
+        logger.error("Gagal memuat data master:", error);
       } finally {
         setIsLoadingMaster(false);
       }
@@ -111,7 +112,7 @@ export default function Register() {
         const kotaRes = await getKotaData(selected.id);
         if (kotaRes) setDataKota(kotaRes);
       } catch (error) {
-        console.error("Gagal memuat data kota:", error);
+        logger.error("Gagal memuat data kota:", error);
       } finally {
         setIsLoadingKota(false);
       }

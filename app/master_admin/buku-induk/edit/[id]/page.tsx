@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Save, Loader2, AlertCircle } from "lucide-react";
+import { logger } from '@/src/lib/logger';
 
 export default function EditBukuIndukExcelPage() {
   const router = useRouter();
@@ -68,10 +69,10 @@ export default function EditBukuIndukExcelPage() {
           }
         } else {
           // JIKA API NOT FOUND / ERROR: Jangan di-throw error biar ga crash merah!
-          console.warn(`API Route /api/buku-induk/${id} merespon status ${response.status}. Menggunakan form kosong.`);
+          logger.warn(`API Route /api/buku-induk/${id} merespon status ${response.status}. Menggunakan form kosong.`);
         }
       } catch (err: any) {
-        console.error("Gagal fetch data lama, sistem dialihkan ke form kosong:", err.message);
+        logger.error("Gagal fetch data lama, sistem dialihkan ke form kosong:", err.message);
       } finally {
         setFetching(false);
       }

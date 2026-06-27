@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { formatDateLong } from '@/src/lib/formatters';
 import { getStatusLabel } from '@/src/lib/status-utils';
 import KhsVerification from './components/KhsVerification';
+import { logger } from '@/src/lib/logger';
 
 interface KhsData {
   id: number;
@@ -52,7 +53,7 @@ export default function DetailKhsPage({ params }: Props) {
           setKhs(data);
         }
       } catch (error) {
-        console.error('Error fetching KHS:', error);
+        logger.error('Error fetching KHS:', error);
       } finally {
         setLoading(false);
       }

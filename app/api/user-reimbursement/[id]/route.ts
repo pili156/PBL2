@@ -1,6 +1,7 @@
 import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 import { prisma } from "@/src/lib/prisma";
+import { logger } from '@/src/lib/logger';
 
 export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -22,7 +23,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
       include: {
         pengajuan_studi: {
           include: {
-            user: true,
+            user: { select: { email: true } },
             jalur_pendanaan: true,
             jenis_studi: true,
             wilayah: true,
@@ -38,14 +39,14 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
       },
     });
 
-    const dosen = await prisma.masterDosen.findUnique({
-      where: { user_id: reimbursement?.pengajuan_studi?.user_id || 0 },
-      select: { pendidikan_terakhir: true, tanggal_lulus: true, gelar: true },
-    });
-
     if (!reimbursement || reimbursement.pengajuan_studi?.user?.email !== userEmail) {
       return NextResponse.json({ error: "Pengajuan tidak ditemukan." }, { status: 404 });
     }
+
+    const dosen = await prisma.masterDosen.findUnique({
+      where: { user_id: reimbursement.pengajuan_studi?.user_id || 0 },
+      select: { pendidikan_terakhir: true, tanggal_lulus: true, gelar: true },
+    });
 
     const isDoktorLulus = 
       (dosen?.pendidikan_terakhir === 'S3' && dosen?.tanggal_lulus) ||
@@ -55,7 +56,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
 
     return NextResponse.json({ ...reimbursement, isDoktorLulus });
   } catch (error) {
-    console.error("Error fetching bantuan studi detail", error);
+    logger.error("Error fetching bantuan studi detail", error);
     return NextResponse.json({ error: "Gagal memuat detail." }, { status: 500 });
   }
 }

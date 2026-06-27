@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/src/lib/prisma';
 import { headers } from 'next/headers';
+import { logger } from '@/src/lib/logger';
 
 function isAdminRole(role: string | null): boolean {
   return role === 'master_admin' || role === 'admin';
@@ -55,7 +56,11 @@ export async function GET(
     const dosen = pengajuan.user?.master_dosen;
     const detail = {
       id: pengajuan.id,
-      nama_lengkap: dosen?.nama_lengkap || pengajuan.user?.username || 'Unknown',
+      nama_lengkap: (() => {
+        const name = dosen?.nama_lengkap || pengajuan.user?.username || 'Unknown';
+        const gelar = dosen?.gelar || '';
+        return gelar ? `${name}.${gelar}` : name;
+      })(),
       nip: dosen?.nip || 'N/A',
       jenis_studi: pengajuan.jenis_studi?.nama_jenis || 'N/A',
       jenis_studi_id: pengajuan.jenis_studi_id || null,
@@ -82,7 +87,7 @@ export async function GET(
 
     return NextResponse.json(detail, { status: 200 });
   } catch (error) {
-    console.error('Error fetching pengajuan detail:', error);
+    logger.error('Error fetching pengajuan detail:', error);
     return NextResponse.json(
       { error: 'Failed to fetch detail' },
       { status: 500 }
@@ -157,7 +162,7 @@ export async function PUT(
 
     return NextResponse.json(updated, { status: 200 });
   } catch (error) {
-    console.error('Error updating dokumen:', error);
+    logger.error('Error updating dokumen:', error);
     return NextResponse.json(
       { error: 'Failed to update' },
       { status: 500 }
@@ -199,7 +204,7 @@ export async function PATCH(
 
     return NextResponse.json({ success: true, pengajuan: updated }, { status: 200 });
   } catch (error) {
-    console.error('Error updating pengajuan:', error);
+    logger.error('Error updating pengajuan:', error);
     return NextResponse.json(
       { error: 'Failed to update pengajuan' },
       { status: 500 }

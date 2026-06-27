@@ -4,6 +4,7 @@ import { prisma } from '@/src/lib/prisma';
 import { writeFile, mkdir, unlink } from 'fs/promises';
 import { join } from 'path';
 import { existsSync } from 'fs';
+import { logger } from '@/src/lib/logger';
 
 export async function PUT(
   request: Request,
@@ -90,7 +91,7 @@ export async function PUT(
 
     return NextResponse.json({ dokumen: updated, filePath: relativePath }, { status: 200 });
   } catch (error) {
-    console.error('Error updating dokumen file:', error);
+    logger.error('Error updating dokumen file:', error);
     return NextResponse.json({ error: String(error) }, { status: 500 });
   }
 }

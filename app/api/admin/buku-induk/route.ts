@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { prisma } from "@/src/lib/prisma";
+import { logger } from "@/src/lib/logger";
 
 function normalizeStatus(val: string | null): string | null {
   if (!val) return null;
@@ -27,6 +28,7 @@ export async function GET(request: NextRequest) {
                   status: true,
                 },
                 orderBy: { created_at: "desc" },
+                take: 1,
               },
             },
           },
@@ -77,63 +79,52 @@ export async function GET(request: NextRequest) {
         };
       });
     } catch (dbError) {
-      console.error("Gagal query ke tabel masterDosen:", dbError);
+      logger.error("Gagal query ke tabel masterDosen:", dbError);
       dataDosen = [];
     }
 
     const totalDosen = dataDosen.length;
 
-    const tugasBelajarTotal = dataDosen.filter((d: any) =>
-      (d.jenis_pengajuan_studi || "").toLowerCase().includes("tugas belajar") &&
-      (d.pendidikan_terakhir || "").toUpperCase() !== "S3"
-    ).length;
+    // Single-pass stats computation
+    let tugasBelajarTotal = 0;
+    let tugasBelajarAktif = 0;
+    let tugasBelajarLulus = 0;
+    let tugasBelajarDO = 0;
+    let izinBelajarTotal = 0;
+    let izinBelajarAktif = 0;
+    let izinBelajarSelesai = 0;
+    let doktorTotal = 0;
+    let profesorTotal = 0;
 
-    const tugasBelajarAktif = dataDosen.filter((d: any) =>
-      (d.jenis_pengajuan_studi || "").toLowerCase().includes("tugas belajar") &&
-      normalizeStatus(d.status_kuliah) === "Aktif" &&
-      (d.pendidikan_terakhir || "").toUpperCase() !== "S3"
-    ).length;
+    for (const d of dataDosen) {
+      const jenis = (d.jenis_pengajuan_studi || "").toLowerCase();
+      const pendidikan = (d.pendidikan_terakhir || "").toUpperCase();
+      const isTB = jenis.includes("tugas belajar") && pendidikan !== "S3";
+      const isIB = jenis.includes("izin belajar") && pendidikan !== "S3";
+      const status = normalizeStatus(d.status_kuliah);
 
-    const tugasBelajarLulus = dataDosen.filter((d: any) =>
-      (d.jenis_pengajuan_studi || "").toLowerCase().includes("tugas belajar") &&
-      normalizeStatus(d.status_kuliah) === "Lulus" &&
-      (d.pendidikan_terakhir || "").toUpperCase() !== "S3"
-    ).length;
+      if (isTB) {
+        tugasBelajarTotal++;
+        if (status === "Aktif") tugasBelajarAktif++;
+        else if (status === "Lulus") tugasBelajarLulus++;
+        else if (status === "DO") tugasBelajarDO++;
+      }
 
-    const tugasBelajarDO = dataDosen.filter((d: any) =>
-      (d.jenis_pengajuan_studi || "").toLowerCase().includes("tugas belajar") &&
-      normalizeStatus(d.status_kuliah) === "DO" &&
-      (d.pendidikan_terakhir || "").toUpperCase() !== "S3"
-    ).length;
+      if (isIB) {
+        izinBelajarTotal++;
+        if (status === "Aktif") izinBelajarAktif++;
+        else if (status === "Selesai") izinBelajarSelesai++;
+      }
 
-    const izinBelajarTotal = dataDosen.filter((d: any) =>
-      (d.jenis_pengajuan_studi || "").toLowerCase().includes("izin belajar") &&
-      (d.pendidikan_terakhir || "").toUpperCase() !== "S3"
-    ).length;
-
-    const izinBelajarAktif = dataDosen.filter((d: any) =>
-      (d.jenis_pengajuan_studi || "").toLowerCase().includes("izin belajar") &&
-      normalizeStatus(d.status_kuliah) === "Aktif" &&
-      (d.pendidikan_terakhir || "").toUpperCase() !== "S3"
-    ).length;
-
-    const izinBelajarSelesai = dataDosen.filter((d: any) =>
-      (d.jenis_pengajuan_studi || "").toLowerCase().includes("izin belajar") &&
-      normalizeStatus(d.status_kuliah) === "Selesai" &&
-      (d.pendidikan_terakhir || "").toUpperCase() !== "S3"
-    ).length;
-
-    const doktorTotal = dataDosen.filter((d: any) => {
-      const pendidikanTerakhir = (d.pendidikan_terakhir || "").toUpperCase();
-      return pendidikanTerakhir === "S3";
-    }).length;
-
-    const profesorTotal = dataDosen.filter((d: any) => {
-      const isJabatanProfesor = (d.jabatan || "").toLowerCase() === "profesor";
-      const hasProfesorData = d.data_profesor != null;
-      const isS3 = (d.pendidikan_terakhir || "").toUpperCase() === "S3";
-      return (isJabatanProfesor || hasProfesorData) && isS3;
-    }).length;
+      if (pendidikan === "S3") {
+        doktorTotal++;
+        const isJabatanProfesor = (d.jabatan || "").toLowerCase() === "profesor";
+        const hasProfesorData = d.data_profesor != null;
+        if (isJabatanProfesor || hasProfesorData) {
+          profesorTotal++;
+        }
+      }
+    }
 
     return NextResponse.json({
       daftarDosen: dataDosen,
@@ -157,7 +148,7 @@ export async function GET(request: NextRequest) {
     }, { status: 200 });
 
   } catch (error) {
-    console.error("Error global pada API Buku Induk:", error);
+    logger.error("Error global pada API Buku Induk:", error);
     return NextResponse.json(
       { error: "Internal Server Error" },
       { status: 500 }

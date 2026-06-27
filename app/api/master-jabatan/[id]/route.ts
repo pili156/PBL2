@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/src/lib/prisma";
 import { masterJabatanSchema } from "@/src/lib/validation";
+import { logger } from '@/src/lib/logger';
 
 export async function GET(
   request: Request,
@@ -51,7 +52,7 @@ export async function PUT(
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
       return NextResponse.json({ error: "Nama atau singkatan jabatan sudah terdaftar." }, { status: 409 });
     }
-    console.error("Master Jabatan update error:", error);
+    logger.error("Master Jabatan update error:", error);
     return NextResponse.json({ error: "Terjadi kesalahan pada server." }, { status: 500 });
   }
 }
@@ -73,7 +74,7 @@ export async function DELETE(
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2025") {
       return NextResponse.json({ error: "Master jabatan tidak ditemukan." }, { status: 404 });
     }
-    console.error("Master Jabatan delete error:", error);
+    logger.error("Master Jabatan delete error:", error);
     return NextResponse.json({ error: "Terjadi kesalahan pada server." }, { status: 500 });
   }
 }

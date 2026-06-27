@@ -2,6 +2,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/src/lib/prisma";
 import bcrypt from "bcryptjs";
+import { logger } from '@/src/lib/logger';
 
 export async function POST(req: Request) {
   try {
@@ -104,7 +105,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ message: "Registrasi berhasil!", user: newUser }, { status: 201 });
 
   } catch (error: any) {
-    console.error("Error saat registrasi:", error);
+    logger.error("Error saat registrasi:", error);
     return NextResponse.json({ error: "Terjadi kesalahan pada server" }, { status: 500 });
   }
 }

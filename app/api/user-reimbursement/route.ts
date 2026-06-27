@@ -2,6 +2,7 @@ import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 import { prisma } from "@/src/lib/prisma";
 import { reimbursementSchema } from "@/src/lib/validation";
+import { logger } from '@/src/lib/logger';
 
 export async function GET() {
   try {
@@ -30,7 +31,7 @@ export async function GET() {
       orderBy: { semester_ke: "asc" },
       include: {
         pengajuan_studi: {
-          include: {
+          select: {
             dokumen_pengajuan: {
               where: {
                 master_dokumen_id: { in: [21, 22, 23, 24] },
@@ -44,7 +45,7 @@ export async function GET() {
 
     return NextResponse.json({ data: bantuanStudiList, exists: true });
   } catch (error) {
-    console.error("Error fetching bantuan studi", error);
+    logger.error("Error fetching bantuan studi", error);
     return NextResponse.json({ error: "Gagal memuat data." }, { status: 500 });
   }
 }
@@ -119,7 +120,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json(reimbursement);
   } catch (error) {
-    console.error("Error creating bantuan studi", error);
+    logger.error("Error creating bantuan studi", error);
     return NextResponse.json({ error: "Gagal membuat pengajuan." }, { status: 500 });
   }
 }

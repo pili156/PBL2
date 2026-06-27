@@ -5,6 +5,7 @@ import bcrypt from 'bcryptjs';
 import { signToken } from '@/src/lib/jwt';
 import { loginSchema } from '@/src/lib/validation';
 import { checkRateLimit } from '@/src/lib/rate-limit';
+import { logger } from '@/src/lib/logger';
 
 export async function POST(request: Request) {
   try {
@@ -109,7 +110,7 @@ export async function POST(request: Request) {
     }, { status: 200 });
 
   } catch (error) {
-    console.error("Login Error Catch:", error);
+    logger.error("Login Error Catch:", error);
     return NextResponse.json({ error: "Terjadi kesalahan pada server" }, { status: 500 });
   }
 }

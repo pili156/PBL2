@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/src/lib/prisma';
 import { headers } from 'next/headers';
 import { getStatusLabel } from '@/src/lib/status-utils';
+import { logger } from '@/src/lib/logger';
 
 const determinePengajuanStatus = (dokumen: any[], dbStatus?: string | null): string => {
   if (dbStatus && dbStatus.toLowerCase() === 'ditolak') return 'ditolak';
@@ -87,7 +88,11 @@ export async function GET(request: Request) {
       return {
         id: p.id,
         user_id: p.user_id,
-        nama_lengkap: dosen?.nama_lengkap || p.user?.username || 'Unknown',
+        nama_lengkap: (() => {
+          const name = dosen?.nama_lengkap || p.user?.username || 'Unknown';
+          const gelar = dosen?.gelar || '';
+          return gelar ? `${name}.${gelar}` : name;
+        })(),
         nip: dosen?.nip || 'N/A',
         jenis_studi: p.jenis_studi?.nama_jenis || 'N/A',
         status: calculatedStatus,
@@ -107,7 +112,7 @@ export async function GET(request: Request) {
       { status: 200 }
     );
   } catch (error) {
-    console.error('Error fetching pengajuan monitoring:', error);
+    logger.error('Error fetching pengajuan monitoring:', error);
     return NextResponse.json(
       { error: 'Failed to fetch data' },
       { status: 500 }

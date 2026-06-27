@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Download, Search, ClipboardList, AlertTriangle, CheckCircle } from "lucide-react";
 import { PengajuanMonitoring } from "./types";
 import MonitoringTable from "./components/MonitoringTable";
+import { logger } from '@/src/lib/logger';
 
 export default function VerifikasiPengajuanPage() {
   const [data, setData] = useState<PengajuanMonitoring[]>([]);
@@ -36,7 +37,7 @@ export default function VerifikasiPengajuanPage() {
         setTotalPages(result.totalPages);
       }
     } catch (error) {
-      console.error("Error fetching data:", error);
+      logger.error("Error fetching data:", error);
     } finally {
       setLoading(false);
     }

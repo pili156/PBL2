@@ -50,7 +50,6 @@ export default async function AdminDashboardPage({
     statusGroups,
     masterStatuses,
     lewatBatas,
-    allExportDataRaw // <-- Tambahan khusus query Excel
   ] = await Promise.all([
     prisma.dokumenPengajuan.count({ where: { status_verifikasi: "pending" } }),
     prisma.skKementerian.count(),
@@ -111,17 +110,6 @@ export default async function AdminDashboardPage({
       },
       orderBy: { updated_at: "asc" },
     }),
-
-    // Terapkan Range Tanggal untuk Excel Export (Semua data, tidak dilimit)
-    prisma.pengajuanStudi.findMany({
-      where: Object.keys(dateCondition).length > 0 ? dateCondition : {},
-      include: {
-        user: { include: { master_dosen: true } },
-        dokumen_pengajuan: { include: { master_dokumen: true } },
-        status: true,
-      },
-      orderBy: { created_at: "desc" },
-    }),
   ]);
 
   const mappedUrgentTasks = urgentTasks.map((t) => ({
@@ -156,14 +144,6 @@ export default async function AdminDashboardPage({
       value: g._count,
     }));
 
-  // Mapping semua data hasil query allExportDataRaw (tanpa take: 5)
-  const exportData = allExportDataRaw.map((p) => ({
-    Dosen: p.user?.master_dosen?.nama_lengkap || "Dosen",
-    Jenis: p.dokumen_pengajuan?.[0]?.master_dokumen?.nama_dokumen || "Pengajuan",
-    Tanggal: p.created_at ? p.created_at.toLocaleDateString("id-ID") : "-",
-    Status: p.status?.nama_status || "pending",
-  }));
-
   return (
     <DashboardClient
       data={{
@@ -173,9 +153,8 @@ export default async function AdminDashboardPage({
         urgentTasks: mappedUrgentTasks,
         lewatBatas: mappedLewatBatas,
         grafikStatus,
-        exportData, // Sekarang berisi semua data utuh
-        dari,       // Parameter ini dipass untuk nama file Excel
-        sampai,     // Parameter ini dipass untuk nama file Excel
+        dari,
+        sampai,
       }}
     />
   );

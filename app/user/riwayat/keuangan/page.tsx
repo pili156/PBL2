@@ -17,16 +17,8 @@ export default async function RiwayatKeuanganPage() {
     return <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-10 text-center text-slate-500">Silakan login terlebih dahulu</div>;
   }
 
-  const currentUser = await prisma.user.findUnique({
-    where: { email: userEmail },
-  });
-
-  if (!currentUser) {
-    return <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-10 text-center text-slate-500">User tidak ditemukan</div>;
-  }
-
   const allPengajuan = await prisma.pengajuanStudi.findMany({
-    where: { user_id: currentUser.id },
+    where: { user: { email: userEmail } },
     orderBy: { created_at: "desc" },
     include: {
       pengajuan_reimbursement: {
@@ -37,6 +29,10 @@ export default async function RiwayatKeuanganPage() {
       },
     },
   });
+
+  if (allPengajuan.length === 0) {
+    return <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-10 text-center text-slate-500">User tidak ditemukan</div>;
+  }
 
   const allRiwayat = allPengajuan.flatMap((p) =>
     p.pengajuan_reimbursement.map((r) => ({

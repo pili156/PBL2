@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/src/lib/prisma";
 import { masterJabatanSchema } from "@/src/lib/validation";
+import { logger } from '@/src/lib/logger';
 
 export async function GET() {
   const masterJabatan = await prisma.masterJabatan.findMany({ orderBy: { urutan: "asc" } });
@@ -23,7 +24,7 @@ export async function POST(request: Request) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
       return NextResponse.json({ error: "Nama atau singkatan jabatan sudah terdaftar." }, { status: 409 });
     }
-    console.error("Master Jabatan create error:", error);
+    logger.error("Master Jabatan create error:", error);
     return NextResponse.json({ error: "Terjadi kesalahan pada server." }, { status: 500 });
   }
 }

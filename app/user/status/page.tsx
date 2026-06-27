@@ -13,20 +13,15 @@ export default async function StatusProsesUser() {
   let statusPengajuan = "belum_ada";
   let skFile: { nomor_sk: string | null; file_sk_path: string | null } | null = null;
   if (userEmail) {
-    const currentUser = await prisma.user.findUnique({
-      where: { email: userEmail },
+    const pengajuan = await prisma.pengajuanStudi.findFirst({
+      where: { user: { email: userEmail } },
+      orderBy: { created_at: "desc" },
+      include: { status: true, sk_kementerian: true },
     });
-    if (currentUser) {
-      const pengajuan = await prisma.pengajuanStudi.findFirst({
-        where: { user_id: currentUser.id },
-        orderBy: { created_at: "desc" },
-        include: { status: true, sk_kementerian: true },
-      });
-      statusPengajuan = pengajuan?.status?.nama_status || "belum_ada";
-      if (pengajuan?.sk_kementerian?.length) {
-        const latestSk = pengajuan.sk_kementerian[pengajuan.sk_kementerian.length - 1];
-        skFile = { nomor_sk: latestSk.nomor_sk, file_sk_path: latestSk.file_sk_path };
-      }
+    statusPengajuan = pengajuan?.status?.nama_status || "belum_ada";
+    if (pengajuan?.sk_kementerian?.length) {
+      const latestSk = pengajuan.sk_kementerian[pengajuan.sk_kementerian.length - 1];
+      skFile = { nomor_sk: latestSk.nomor_sk, file_sk_path: latestSk.file_sk_path };
     }
   }
 

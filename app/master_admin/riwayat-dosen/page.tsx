@@ -39,52 +39,46 @@ interface PageProps {
 }
 
 async function getSummaryData() {
-  const allDosen = await prisma.user.findMany({
-    where: { role_id: 3 },
-    include: {
-      master_dosen: true,
-      pengajuan_studi: {
-        include: {
-          monitoring_khs: true,
-          pengajuan_reimbursement: true,
-          status: true,
-        },
+  const totalDosenAktif = await prisma.user.count({
+    where: { role_id: 3, status_akun: 'aktif' },
+  });
+
+  const aktifStudi = await prisma.pengajuanStudi.count({
+    where: {
+      status: {
+        nama_status: { in: ['aktif', 'disetujui', 'sedang berjalan'] },
       },
     },
   });
 
-  const totalDosenAktif = allDosen.filter((d) => d.status_akun === 'aktif').length;
+  const studiLulus = await prisma.pengajuanStudi.count({
+    where: {
+      status: {
+        nama_status: { in: ['lulus', 'selesai', 'completed'] },
+      },
+    },
+  });
 
-  const aktifStudi = allDosen.filter((d) =>
-    d.pengajuan_studi.some((p) => {
-      const s = p.status?.nama_status?.toLowerCase();
-      return s === 'aktif' || s === 'disetujui' || s === 'sedang berjalan';
-    })
-  ).length;
+  const belumUploadKhs = await prisma.pengajuanStudi.count({
+    where: {
+      monitoring_khs: { none: {} },
+      status: {
+        nama_status: { not: 'ditolak' },
+      },
+    },
+  });
 
-  const studiLulus = allDosen.filter((d) =>
-    d.pengajuan_studi.some((p) => {
-      const s = p.status?.nama_status?.toLowerCase();
-      return s === 'lulus' || s === 'selesai' || s === 'completed';
-    })
-  ).length;
+  const pengajuanKeuanganPending = await prisma.pengajuanReimbursement.count({
+    where: { status_pencairan: 'pending' },
+  });
 
-  const belumUploadKhs = allDosen.filter((d) =>
-    d.pengajuan_studi.some((p) => 
-      p.monitoring_khs.length === 0 && 
-      p.status?.nama_status?.toLowerCase() !== 'ditolak'
-    )
-  ).length;
+  const jurusanList = await prisma.masterDosen.findMany({
+    select: { jurusan: true },
+    distinct: ['jurusan'],
+    where: { jurusan: { not: null } },
+  }).then((result) => result.map((d) => d.jurusan).filter(Boolean) as string[]);
 
-  const pengajuanKeuanganPending = allDosen.flatMap((d) =>
-    d.pengajuan_studi.flatMap((p) =>
-      p.pengajuan_reimbursement.filter((r) => r.status_pencairan?.toLowerCase() === 'pending')
-    )
-  ).length;
-
-  const jurusanList = [...new Set(allDosen.map((d) => d.master_dosen?.jurusan).filter(Boolean))] as string[];
-
-  const empty = allDosen.length === 0;
+  const empty = totalDosenAktif === 0;
 
   return { totalDosenAktif, aktifStudi, studiLulus, belumUploadKhs, pengajuanKeuanganPending, jurusanList, empty };
 }

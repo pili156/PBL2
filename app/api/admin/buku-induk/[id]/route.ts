@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/src/lib/prisma";
+import { logger } from '@/src/lib/logger';
 
 interface BukuIndukInput {
   nip?: string;
@@ -93,7 +94,7 @@ export async function PUT(
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2025") {
       return NextResponse.json({ error: "Data dosen tidak ditemukan." }, { status: 404 });
     }
-    console.error("Buku Induk update error:", error);
+    logger.error("Buku Induk update error:", error);
     return NextResponse.json({ error: "Terjadi kesalahan pada server." }, { status: 500 });
   }
 }

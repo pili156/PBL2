@@ -7,6 +7,7 @@ import DocumentList from "../components/DocumentList";
 import DocumentViewer from "../components/DocumentViewer";
 import AdminComments from "../components/AdminComments";
 import { PengajuanDetail, DokumenDetail } from "../types";
+import { logger } from '@/src/lib/logger';
 
 export default function DetailPage() {
   const params = useParams();
@@ -44,7 +45,7 @@ export default function DetailPage() {
         });
       }
     } catch (error) {
-      console.error("Error fetching detail:", error);
+      logger.error("Error fetching detail:", error);
       setMessage({ type: "error", text: "Terjadi kesalahan" });
     } finally {
       setLoading(false);
@@ -77,7 +78,7 @@ export default function DetailPage() {
         setMessage({ type: "error", text: "Gagal memperbarui dokumen" });
       }
     } catch (error) {
-      console.error("Error updating document:", error);
+      logger.error("Error updating document:", error);
       setMessage({ type: "error", text: "Terjadi kesalahan" });
     } finally {
       setUpdating(false);
@@ -103,7 +104,7 @@ export default function DetailPage() {
         setMessage({ type: "error", text: result?.error || "Gagal menolak pengajuan" });
       }
     } catch (error) {
-      console.error("Error rejecting pengajuan:", error);
+      logger.error("Error rejecting pengajuan:", error);
       setMessage({ type: "error", text: "Terjadi kesalahan" });
     } finally {
       setUpdating(false);

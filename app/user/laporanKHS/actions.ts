@@ -8,6 +8,7 @@ import { writeFile, mkdir, unlink } from 'fs/promises';
 import { join } from 'path';
 import { v4 as uuidv4 } from 'uuid';
 import { ipkSchema } from '@/src/lib/validation';
+import { logger } from '@/src/lib/logger';
 const MAX_FILE_SIZE = 2 * 1024 * 1024;
 const ALLOWED_TYPES = ['application/pdf'];
 
@@ -101,7 +102,7 @@ export async function uploadKHS(prevState: { error?: string; id?: number } | nul
     revalidatePath('/user/laporanKHS');
     return { id: newKhs.id };
   } catch (error) {
-    console.error('[uploadKHS] Unexpected error:', error);
+    logger.error('[uploadKHS] Unexpected error:', error);
     return { error: 'Terjadi kesalahan saat mengupload KHS. Silakan coba lagi.' };
   }
 }

@@ -1,4 +1,5 @@
 import { DocumentType } from "./type";
+import { logger } from '@/src/lib/logger';
 
 export const DOCUMENT_GROUPS = {
   kesehatan: {
@@ -256,7 +257,7 @@ export async function fetchMasterData() {
     if (!response.ok) throw new Error('Failed to fetch master data');
     return await response.json();
   } catch (error) {
-    console.error('Error fetching master data:', error);
+    logger.error('Error fetching master data:', error);
     return null;
   }
 }

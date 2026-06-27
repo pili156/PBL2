@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Eye, FileText } from "lucide-react";
 import StatusBadge from "./StatusBadge";
 import FilterBar from "./FilterBar";
@@ -40,7 +40,7 @@ export default function TabTugasBelajar({ data, onViewDetail }: TabTugasBelajarP
   const [status, setStatus] = useState("Semua Status");
   const [page, setPage] = useState(1);
 
-  const filtered = data.filter((d) => {
+  const filtered = useMemo(() => data.filter((d) => {
     const jenisStudi = (d.jenis_pengajuan_studi || "").toLowerCase();
     if (!jenisStudi.includes("tugas belajar")) return false;
 
@@ -58,7 +58,7 @@ export default function TabTugasBelajar({ data, onViewDetail }: TabTugasBelajarP
     const matchStatus = status === "Semua Status" || stat === status;
 
     return matchSearch && matchJurusan && matchStatus;
-  });
+  }), [data, search, jurusan, status]);
 
   const totalPages = Math.ceil(filtered.length / PER_PAGE);
   const paged = filtered.slice((page - 1) * PER_PAGE, page * PER_PAGE);

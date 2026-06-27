@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Eye, MoreVertical } from "lucide-react";
 import StatusBadge from "./StatusBadge";
 import FilterBar from "./FilterBar";
@@ -46,7 +46,7 @@ export default function TabSemuaDosen({ data, onViewDetail }: TabSemuaDosenProps
   const [status, setStatus] = useState("Semua Status");
   const [page, setPage] = useState(1);
 
-  const filtered = data.filter((d) => {
+  const filtered = useMemo(() => data.filter((d) => {
     const nama = (d.nama_lengkap || "").toLowerCase();
     const nip = (d.nip || "").toString();
     const jur = (d.jurusan || "").toLowerCase();
@@ -58,7 +58,7 @@ export default function TabSemuaDosen({ data, onViewDetail }: TabSemuaDosenProps
     const matchStatus = status === "Semua Status" || studyStatus === status;
 
     return matchSearch && matchJurusan && matchStatus;
-  });
+  }), [data, search, jurusan, status]);
 
   const totalPages = Math.ceil(filtered.length / PER_PAGE);
   const paged = filtered.slice((page - 1) * PER_PAGE, page * PER_PAGE);

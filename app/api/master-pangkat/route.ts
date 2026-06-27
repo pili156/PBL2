@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/src/lib/prisma";
 import { masterPangkatSchema } from "@/src/lib/validation";
+import { logger } from '@/src/lib/logger';
 
 export async function GET() {
   const masterPangkat = await prisma.masterPangkat.findMany({ orderBy: { golongan: "asc" } });
@@ -23,7 +24,7 @@ export async function POST(request: Request) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
       return NextResponse.json({ error: "Golongan pangkat sudah terdaftar." }, { status: 409 });
     }
-    console.error("Master Pangkat create error:", error);
+    logger.error("Master Pangkat create error:", error);
     return NextResponse.json({ error: "Terjadi kesalahan pada server." }, { status: 500 });
   }
 }

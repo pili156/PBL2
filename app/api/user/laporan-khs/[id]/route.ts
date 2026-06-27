@@ -4,6 +4,7 @@ import { prisma } from "@/src/lib/prisma";
 import { writeFile, unlink } from "fs/promises";
 import { join } from "path";
 import { v4 as uuidv4 } from "uuid";
+import { logger } from '@/src/lib/logger';
 
 const MAX_FILE_SIZE = 2 * 1024 * 1024;
 const ALLOWED_TYPES = ["application/pdf"];
@@ -72,7 +73,7 @@ export async function PUT(
 
     return NextResponse.json({ success: true, file_khs_path: fileUrl });
   } catch (error) {
-    console.error("Error reuploading KHS:", error);
+    logger.error("Error reuploading KHS:", error);
     return NextResponse.json({ error: "Gagal mengupload file" }, { status: 500 });
   }
 }

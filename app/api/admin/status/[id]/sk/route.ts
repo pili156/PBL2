@@ -4,6 +4,7 @@ import { headers } from 'next/headers';
 import { writeFile, mkdir } from 'fs/promises';
 import path from 'path';
 import { existsSync } from 'fs';
+import { logger } from '@/src/lib/logger';
 
 export async function POST(
   request: Request,
@@ -84,7 +85,7 @@ export async function POST(
       });
 
       if (!statusMaster) {
-        console.error(`Status "${statusPengajuan}" tidak ditemukan di master_status_pengajuan`);
+        logger.error(`Status "${statusPengajuan}" tidak ditemukan di master_status_pengajuan`);
         return NextResponse.json(
           { error: `Status "${statusPengajuan}" tidak valid` },
           { status: 400 }
@@ -104,7 +105,7 @@ export async function POST(
     }, { status: 200 });
 
   } catch (error) {
-    console.error('Error uploading SK:', error);
+    logger.error('Error uploading SK:', error);
     return NextResponse.json({ error: 'Gagal mengupload SK' }, { status: 500 });
   }
 }

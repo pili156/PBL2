@@ -1,4 +1,5 @@
 import { prisma } from './prisma';
+import { logger } from './logger';
 
 export type LogTipe =
   | 'upload_khs'
@@ -42,7 +43,7 @@ export async function logActivity(
         });
       }
     } catch {
-      console.error('Gagal mencatat aktivitas');
+      logger.error('Gagal mencatat aktivitas');
     }
   }
 }

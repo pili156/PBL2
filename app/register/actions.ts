@@ -2,6 +2,7 @@
 "use server";
 
 import { prisma } from "@/src/lib/prisma";
+import { logger } from '@/src/lib/logger';
 
 export async function getJurusanData() {
   try {
@@ -12,7 +13,7 @@ export async function getJurusanData() {
     });
     return data;
   } catch (error) {
-    console.error("Gagal mengambil data jurusan:", error);
+    logger.error("Gagal mengambil data jurusan:", error);
     return [];
   }
 }
@@ -24,7 +25,7 @@ export async function getPangkatData() {
     });
     return data;
   } catch (error) {
-    console.error("Gagal mengambil data pangkat:", error);
+    logger.error("Gagal mengambil data pangkat:", error);
     return [];
   }
 }
@@ -36,7 +37,7 @@ export async function getJabatanData() {
     });
     return data;
   } catch (error) {
-    console.error("Gagal mengambil data jabatan:", error);
+    logger.error("Gagal mengambil data jabatan:", error);
     return [];
   }
 }
@@ -48,7 +49,7 @@ export async function getProvinsiData() {
     });
     return data;
   } catch (error) {
-    console.error("Gagal mengambil data provinsi:", error);
+    logger.error("Gagal mengambil data provinsi:", error);
     return [];
   }
 }
@@ -62,7 +63,7 @@ export async function getKotaData(provinsiId?: number) {
     });
     return data;
   } catch (error) {
-    console.error("Gagal mengambil data kota/kabupaten:", error);
+    logger.error("Gagal mengambil data kota/kabupaten:", error);
     return [];
   }
 }

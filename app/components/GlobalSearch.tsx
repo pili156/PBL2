@@ -1,5 +1,5 @@
 "use client";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { Search, Command, FileText, User, Menu, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 
@@ -62,25 +62,30 @@ export default function GlobalSearch() {
       setResults([]);
       return;
     }
-    const q = query.toLowerCase();
 
-    // Filter menu items locally
-    const allItems = [...menuItems, ...userMenuItems];
-    const menuResults: SearchResult[] = allItems
-      .filter((item) => item.label.toLowerCase().includes(q))
-      .map((item) => ({ type: "menu", label: item.label, href: item.href }));
+    const timeoutId = setTimeout(() => {
+      const q = query.toLowerCase();
 
-    // Fetch dosen from API
-    setLoading(true);
-    fetch(`/api/search?q=${encodeURIComponent(q)}`)
-      .then((res) => res.json())
-      .then((data: { results: SearchResult[] }) => {
-        setResults([...data.results, ...menuResults]);
-      })
-      .catch(() => {
-        setResults(menuResults);
-      })
-      .finally(() => setLoading(false));
+      // Filter menu items locally
+      const allItems = [...menuItems, ...userMenuItems];
+      const menuResults: SearchResult[] = allItems
+        .filter((item) => item.label.toLowerCase().includes(q))
+        .map((item) => ({ type: "menu", label: item.label, href: item.href }));
+
+      // Fetch dosen from API
+      setLoading(true);
+      fetch(`/api/search?q=${encodeURIComponent(q)}`)
+        .then((res) => res.json())
+        .then((data: { results: SearchResult[] }) => {
+          setResults([...data.results, ...menuResults]);
+        })
+        .catch(() => {
+          setResults(menuResults);
+        })
+        .finally(() => setLoading(false));
+    }, 300);
+
+    return () => clearTimeout(timeoutId);
   }, [query]);
 
   const handleSelect = (result: SearchResult) => {

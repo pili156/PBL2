@@ -1,4 +1,5 @@
 import { prisma } from '@/src/lib/prisma';
+import { logger } from '@/src/lib/logger';
 import {
   Search,
   Users,
@@ -61,7 +62,38 @@ export default async function MonitoringPenggunaPage({ searchParams }: PageProps
   const currentPage = Math.max(1, Number(params.page) || 1);
   const itemsPerPage = Number(params.per_page) || 10;
 
+  // Build where clause for DB-level filtering
+  const whereClause: any = {};
+  if (search) {
+    whereClause.OR = [
+      { master_dosen: { nama_lengkap: { contains: search, mode: 'insensitive' } } },
+      { email: { contains: search, mode: 'insensitive' } },
+      { master_dosen: { nip: { contains: search, mode: 'insensitive' } } },
+    ];
+  }
+  if (roleFilter) {
+    const roleId = Number(roleFilter);
+    if (roleId) whereClause.role_id = roleId;
+  }
+  if (statusFilter) {
+    whereClause.status_akun = statusFilter;
+  }
+
+  // Use DB aggregates for summary cards
+  const [totalUsers, dosenCount, adminCount, menungguCount, aktifCount] = await Promise.all([
+    prisma.user.count(),
+    prisma.user.count({ where: { role_id: 3 } }),
+    prisma.user.count({ where: { role_id: { in: [1, 2] } } }),
+    prisma.user.count({ where: { status_akun: 'menunggu' } }),
+    prisma.user.count({ where: { status_akun: 'aktif' } }),
+  ]);
+
+  const totalFiltered = await prisma.user.count({ where: whereClause });
+  const totalPages = Math.ceil(totalFiltered / itemsPerPage);
+
+  // Fetch only the current page with DB-level filtering
   const allUsers = await prisma.user.findMany({
+    where: whereClause,
     include: {
       role: true,
       master_dosen: true,
@@ -76,36 +108,11 @@ export default async function MonitoringPenggunaPage({ searchParams }: PageProps
       },
     },
     orderBy: { created_at: 'desc' },
+    skip: (currentPage - 1) * itemsPerPage,
+    take: itemsPerPage,
   });
 
-  const totalUsers = allUsers.length;
-  const dosenCount = allUsers.filter(u => u.role_id === 3).length;
-  const adminCount = allUsers.filter(u => u.role_id === 2 || u.role_id === 1).length;
-  const menungguCount = allUsers.filter(u => u.status_akun === 'menunggu').length;
-  const aktifCount = allUsers.filter(u => u.status_akun === 'aktif').length;
-
-  let filtered = allUsers;
-  if (search) {
-    const q = search.toLowerCase();
-    filtered = filtered.filter(u =>
-      (u.master_dosen?.nama_lengkap || '').toLowerCase().includes(q) ||
-      (u.email || '').toLowerCase().includes(q) ||
-      (u.master_dosen?.nip || '').includes(q)
-    );
-  }
-  if (roleFilter) {
-    const roleId = Number(roleFilter);
-    if (roleId) filtered = filtered.filter(u => u.role_id === roleId);
-  }
-  if (statusFilter) {
-    filtered = filtered.filter(u => u.status_akun === statusFilter);
-  }
-
-  const totalFiltered = filtered.length;
-  const totalPages = Math.ceil(totalFiltered / itemsPerPage);
-  const paged = filtered.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
-
-  const data = paged.map((u) => {
+  const data = allUsers.map((u) => {
     const isDoktorLulus = 
       (u.master_dosen?.pendidikan_terakhir === 'S3' && u.master_dosen?.tanggal_lulus) ||
       (u.pengajuan_studi[0]?.status?.nama_status === 'lulus' && 
