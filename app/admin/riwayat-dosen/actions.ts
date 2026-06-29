@@ -153,7 +153,7 @@ export async function addManualKhs(prevState: { error?: string } | null, formDat
       pengajuan_id: pengajuanId,
       semester_ke: semesterKe,
       tahun_akademik: tahunAkademik,
-      ips: ips || undefined,
+      ipk: ips || undefined,
       file_khs_path: filePath,
       tanggal_unggah: new Date(),
       status_evaluasi: 'diterima',

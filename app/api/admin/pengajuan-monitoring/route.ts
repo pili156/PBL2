@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/src/lib/prisma';
 import { headers } from 'next/headers';
 import { getStatusLabel } from '@/src/lib/status-utils';
+import { formatNamaDenganGelar } from '@/src/lib/formatters';
 import { logger } from '@/src/lib/logger';
 
 const determinePengajuanStatus = (dokumen: any[], dbStatus?: string | null): string => {
@@ -88,11 +89,7 @@ export async function GET(request: Request) {
       return {
         id: p.id,
         user_id: p.user_id,
-        nama_lengkap: (() => {
-          const name = dosen?.nama_lengkap || p.user?.username || 'Unknown';
-          const gelar = dosen?.gelar || '';
-          return gelar ? `${name}.${gelar}` : name;
-        })(),
+        nama_lengkap: formatNamaDenganGelar(dosen?.nama_lengkap || p.user?.username || 'Unknown', dosen?.gelar || ''),
         nip: dosen?.nip || 'N/A',
         jenis_studi: p.jenis_studi?.nama_jenis || 'N/A',
         status: calculatedStatus,

@@ -10,7 +10,7 @@ import { revalidatePath } from 'next/cache';
 import { updateUserProfile, updateUserRole, resetPassword } from '../actions';
 import DeleteUserButton from './DeleteUserButton';
 import ToggleSwitch from '../ToggleSwitch';
-import { formatDateTime } from '@/src/lib/formatters';
+import { formatDateTime, formatNamaDenganGelar } from '@/src/lib/formatters';
 
 export const dynamic = 'force-dynamic';
 
@@ -118,7 +118,7 @@ export default async function EditUserPage({ params }: Props) {
           <div className="h-5 w-px bg-slate-200" />
           <div>
             <h2 className="text-2xl font-bold text-slate-900 tracking-tight">
-              {namaDisplay}{gelarDisplay ? `.${gelarDisplay}` : ''}
+              {formatNamaDenganGelar(namaDisplay, gelarDisplay)}
             </h2>
             <p className="text-sm text-slate-500 mt-0.5">{user.email} — {roleName(user.role_id)}</p>
           </div>

@@ -176,7 +176,7 @@ export async function updateIPS(id: number, ipk: number) {
   await prisma.monitoringKhs.update({
     where: { id },
     data: {
-      ipk,
+      ipk: ipk,
       status_evaluasi: 'pending',
     },
   });

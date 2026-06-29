@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/src/lib/prisma';
 import { headers } from 'next/headers';
 import { getOverallPengajuanStatus } from '@/src/lib/status-utils';
+import { formatNamaDenganGelar } from '@/src/lib/formatters';
 
 export async function GET() {
   try {
@@ -111,7 +112,7 @@ export async function GET() {
     }
 
     const dashboardData = {
-      nama_dosen: namaDisplay + (gelarDisplay ? `.${gelarDisplay}` : ''),
+      nama_dosen: formatNamaDenganGelar(namaDisplay, gelarDisplay),
       status_pengajuan: overallStatusPengajuan,
       semester: currentSemester,
       progress_studi: progressPersen,

@@ -66,9 +66,14 @@ export async function PUT(
       "pangkat_golongan", "status_dosen", "bidang_keahlian",
       "pendidikan_terakhir", "tanggal_lulus",
     ];
+    const dateFields = ["tanggal_lahir", "tanggal_lulus"];
     for (const key of allowedFields) {
       if (masterFields[key] !== undefined) {
-        updateData[key] = masterFields[key] || null;
+        if (dateFields.includes(key) && masterFields[key]) {
+          updateData[key] = new Date(masterFields[key]);
+        } else {
+          updateData[key] = masterFields[key] || null;
+        }
       }
     }
 

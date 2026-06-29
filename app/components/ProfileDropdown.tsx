@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { formatNamaDenganGelar } from "@/src/lib/formatters";
 import {
   User,
   ChevronDown,
@@ -83,7 +84,7 @@ export default function ProfileDropdown({ user }: { user: UserData }) {
         </div>
         <div className="flex flex-col">
           <span className="text-sm font-semibold leading-none text-white truncate max-w-[140px]">
-            {user.name}{user.gelar ? `.${user.gelar}` : ''}
+            {formatNamaDenganGelar(user.name || '', user.gelar || '')}
           </span>
           <span className="text-xs text-slate-400 mt-1">{user.roleDisplay}</span>
         </div>
@@ -106,7 +107,7 @@ export default function ProfileDropdown({ user }: { user: UserData }) {
                 </div>
                 <div>
                   <p className="font-semibold text-slate-800 text-sm leading-tight">
-                    {user.name}{user.gelar ? `.${user.gelar}` : ''}
+            {formatNamaDenganGelar(user.name || '', user.gelar || '')}
                   </p>
                   {user.nip && (
                     <p className="text-xs text-slate-500 mt-0.5">NIP: {user.nip}</p>

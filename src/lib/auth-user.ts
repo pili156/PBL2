@@ -62,7 +62,7 @@ async function getUserFromTokenImpl(role: string, fallbackRoles?: string[]): Pro
     if (!user) continue;
 
     const namaLengkap = user.master_dosen?.nama_lengkap || user.username || payload.nama;
-    const gelar = user.master_dosen?.gelar || undefined;
+    const gelarRaw = user.master_dosen?.gelar || '';
 
     const isDoktorLulus = 
       user.master_dosen?.pendidikan_terakhir === 'S3' && user.master_dosen?.tanggal_lulus ||
@@ -74,11 +74,16 @@ async function getUserFromTokenImpl(role: string, fallbackRoles?: string[]): Pro
       ? `Dr. ${namaLengkap}` 
       : namaLengkap;
 
+    let gelar = gelarRaw;
+    if (displayName.startsWith('Dr.') && gelar.startsWith('Dr.')) {
+      gelar = gelar.slice(3).trim();
+    }
+
     return {
       email: user.email || payload.email,
       name: displayName,
       nip: user.master_dosen?.nip || undefined,
-      gelar: gelar,
+      gelar: gelar || undefined,
       role: payload.role,
       roleDisplay: ROLE_DISPLAY[payload.role] || payload.role,
       jabatan: user.master_dosen?.jabatan || undefined,

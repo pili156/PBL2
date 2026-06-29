@@ -43,3 +43,16 @@ export function formatDateLong(date: Date | string | null | undefined): string {
     year: "numeric",
   });
 }
+
+export function formatNamaDenganGelar(namaDisplay: string, gelarDisplay: string): string {
+  if (!gelarDisplay) return namaDisplay;
+  let gelar = gelarDisplay;
+  const titlePrefixes = ['Prof. ', 'Dr. ', 'Dr.'];
+  for (const prefix of titlePrefixes) {
+    if (namaDisplay.startsWith(prefix) && gelar.startsWith(prefix)) {
+      gelar = gelar.slice(prefix.length).trim();
+      break;
+    }
+  }
+  return gelar ? `${namaDisplay}.${gelar}` : namaDisplay;
+}

@@ -112,7 +112,7 @@ export default async function DetailKHSUserPage({
                 <span className="text-xs text-slate-500">IPS</span>
                 <EditIPSForm
                   khsId={khsId}
-                  currentValue={khs.ips ? Number(khs.ips) : null}
+                  currentValue={khs.ipk ? Number(khs.ipk) : null}
                   isRevisi={isRevisi}
                   hideEdit={isRevisi}
                 />
@@ -188,7 +188,7 @@ export default async function DetailKHSUserPage({
               {isRevisi && (
                 <RevisiKHSButton
                   khsId={khsId}
-                  currentIps={khs.ips ? Number(khs.ips) : null}
+                  currentIps={khs.ipk ? Number(khs.ipk) : null}
                 />
               )}
             </div>

@@ -3,6 +3,7 @@ import { prisma } from '@/src/lib/prisma';
 import { notFound } from 'next/navigation';
 import { Building2, GraduationCap } from 'lucide-react';
 import TabNavigation from './TabNavigation';
+import { formatNamaDenganGelar } from '@/src/lib/formatters';
 
 export const dynamic = 'force-dynamic';
 
@@ -63,7 +64,7 @@ export default async function RiwayatLayout({ children }: { children: React.Reac
     : namaLengkap;
   const gelarDisplay = gelar;
 
-  const namaLengkapWithGelar = namaDisplay + (gelarDisplay ? `.${gelarDisplay}` : '');
+  const namaLengkapWithGelar = formatNamaDenganGelar(namaDisplay, gelarDisplay);
   const inisial = namaLengkap.charAt(0).toUpperCase();
   const nip = user.master_dosen?.nip || '-';
   const jurusan = user.master_dosen?.jurusan || '-';

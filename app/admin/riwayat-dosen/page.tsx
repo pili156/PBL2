@@ -13,7 +13,7 @@ import {
   Download,
 } from "lucide-react";
 import Link from "next/link";
-import { formatDate } from "@/src/lib/formatters";
+import { formatDate, formatNamaDenganGelar } from "@/src/lib/formatters";
 import type { StatusDosen } from "@/src/types/buku-induk";
 import StatusBadge from "@/components/buku-induk/StatusBadge";
 
@@ -161,7 +161,7 @@ export default async function RiwayatDosenPage({ searchParams }: PageProps) {
 
     return {
       id: user.id,
-      nama: namaDisplay + (gelarDisplay ? `.${gelarDisplay}` : ''),
+      nama: formatNamaDenganGelar(namaDisplay, gelarDisplay),
       jurusan: user.master_dosen?.jurusan || '-',
       nip: user.master_dosen?.nip || 'NIP Belum Diatur',
       statusKuliah: statusKuliah as StatusDosen,

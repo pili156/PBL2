@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/src/lib/prisma';
 import { headers } from 'next/headers';
 import { logger } from '@/src/lib/logger';
+import { formatNamaDenganGelar } from '@/src/lib/formatters';
 
 function isAdminRole(role: string | null): boolean {
   return role === 'master_admin' || role === 'admin';
@@ -56,11 +57,7 @@ export async function GET(
     const dosen = pengajuan.user?.master_dosen;
     const detail = {
       id: pengajuan.id,
-      nama_lengkap: (() => {
-        const name = dosen?.nama_lengkap || pengajuan.user?.username || 'Unknown';
-        const gelar = dosen?.gelar || '';
-        return gelar ? `${name}.${gelar}` : name;
-      })(),
+      nama_lengkap: formatNamaDenganGelar(dosen?.nama_lengkap || pengajuan.user?.username || 'Unknown', dosen?.gelar || ''),
       nip: dosen?.nip || 'N/A',
       jenis_studi: pengajuan.jenis_studi?.nama_jenis || 'N/A',
       jenis_studi_id: pengajuan.jenis_studi_id || null,
