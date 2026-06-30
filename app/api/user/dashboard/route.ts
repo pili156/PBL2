@@ -118,7 +118,9 @@ export async function GET() {
       progress_studi: progressPersen,
       wilayah_studi: pengajuan?.wilayah_studi || "Belum ditentukan",
       jenis_studi: pengajuan?.jenis_studi?.nama_jenis || "Belum ditentukan",
-      status_studi: pengajuan?.sk_kementerian[0]?.status_studi || "Belum ada SK",
+      status_studi: pengajuan?.status?.nama_status === 'lulus' 
+        ? 'lulus' 
+        : (pengajuan?.sk_kementerian[0]?.status_studi || "Belum ada SK"),
       pendanaan: pengajuan?.jalur_pendanaan?.nama_pendanaan || "Belum ditentukan",
       timelineKHS,
       grafikIPS,

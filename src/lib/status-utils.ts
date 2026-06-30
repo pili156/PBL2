@@ -42,6 +42,7 @@ const STATUS_LABELS: Record<string, Record<string, string>> = {
   studi: {
     aktif: 'Aktif',
     belum_ada_sk: 'Belum ada SK',
+    lulus: 'LULUS',
   },
 };
 
@@ -87,6 +88,7 @@ const STATUS_COLORS: Record<string, Record<string, string>> = {
   studi: {
     aktif: 'text-emerald-700 bg-emerald-50 border border-emerald-200',
     belum_ada_sk: 'text-slate-500 bg-slate-50 border border-slate-200',
+    lulus: 'text-sky-700 bg-sky-50 border border-sky-200',
   },
 };
 
@@ -132,6 +134,7 @@ const STATUS_TOOLTIPS: Record<string, Record<string, string>> = {
   studi: {
     aktif: 'Status studi aktif',
     belum_ada_sk: 'Belum ada SK yang diterbitkan',
+    lulus: 'Program studi telah selesai dan dinyatakan lulus',
   },
 };
 
@@ -180,7 +183,7 @@ export function isStatusDone(status?: string | null, domain?: StatusDomain): boo
     pencairan: ['dicairkan', 'selesai'],
     pengajuan: ['diterima', 'lulus', 'terverifikasi'],
     akun: ['aktif'],
-    studi: ['aktif'],
+    studi: ['aktif', 'lulus'],
   };
   const d = domain || detectDomain(s);
   return doneValues[d]?.includes(s) || false;

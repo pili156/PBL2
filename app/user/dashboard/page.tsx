@@ -186,7 +186,9 @@ export default function DashboardPage() {
         </div>
         <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between">
           <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Status Studi Terkini</span>
-          <p className="text-lg font-bold text-emerald-600 mt-2">{data.status_studi}</p>
+          <div className="mt-2">
+            <StatusBadge status={data.status_studi} domain="studi" size="md" />
+          </div>
         </div>
         <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
           <span className="text-xs font-bold uppercase tracking-wider text-slate-400 block mb-2">SK Kementerian</span>
